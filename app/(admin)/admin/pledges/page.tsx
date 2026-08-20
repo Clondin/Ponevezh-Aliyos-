@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PledgeQueue from "@/components/PledgeQueue";
 import { getCatalog } from "@/lib/catalog";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export const metadata: Metadata = { title: "Pending pledges" };
 export const dynamic = "force-dynamic";

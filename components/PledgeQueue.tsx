@@ -4,10 +4,6 @@ import { useState } from "react";
 import type { Pledge } from "@/contracts/types";
 import { usd, formatDateTime } from "@/lib/format";
 
-/**
- * Pending pledge queue. Confirm/release act on local state only —
- * at integration they call POST /api/admin/pledge/[id]/confirm|release.
- */
 export default function PledgeQueue({
   pledges,
   itemNames,
@@ -16,7 +12,28 @@ export default function PledgeQueue({
   itemNames: Record<string, string>;
 }) {
   const [resolved, setResolved] = useState<Record<string, "confirmed" | "released">>({});
+  const [busy, setBusy] = useState<string>();
+  const [error, setError] = useState<string>();
   const open = pledges.filter((p) => !resolved[p.id]);
+
+  async function resolvePledge(id: string, action: "confirm" | "release") {
+    setBusy(id);
+    setError(undefined);
+    try {
+      const response = await fetch(`/api/admin/pledge/${id}/${action}`, {
+        method: "POST",
+      });
+      if (!response.ok) throw new Error("The office action could not be saved.");
+      setResolved((current) => ({
+        ...current,
+        [id]: action === "confirm" ? "confirmed" : "released",
+      }));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The office action could not be saved.");
+    } finally {
+      setBusy(undefined);
+    }
+  }
 
   if (pledges.length === 0) {
     return (
@@ -74,13 +91,15 @@ export default function PledgeQueue({
                       <span style={{ display: "flex", gap: 6 }}>
                         <button
                           className="btn btn--sm btn--fill"
-                          onClick={() => setResolved((r) => ({ ...r, [p.id]: "confirmed" }))}
+                          disabled={busy === p.id}
+                          onClick={() => void resolvePledge(p.id, "confirm")}
                         >
                           Wire received
                         </button>
                         <button
                           className="btn btn--sm btn--outline-bronze"
-                          onClick={() => setResolved((r) => ({ ...r, [p.id]: "released" }))}
+                          disabled={busy === p.id}
+                          onClick={() => void resolvePledge(p.id, "release")}
                         >
                           Release
                         </button>
@@ -93,6 +112,7 @@ export default function PledgeQueue({
           </tbody>
         </table>
       </div>
+      {error ? <p className="admin-note" role="alert">{error}</p> : null}
       <p className="admin-note">
         {open.length} awaiting settlement. Confirming marks the kibbud sold;
         releasing returns it to the site immediately.

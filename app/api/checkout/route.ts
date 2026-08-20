@@ -11,7 +11,7 @@ import {
   AlreadyTakenError,
   getRepository,
   HoldExpiredError,
-} from "@/lib/redis/repository";
+} from "@/lib/storage/repository";
 import {
   BanquestApiError,
   BanquestConfigurationError,

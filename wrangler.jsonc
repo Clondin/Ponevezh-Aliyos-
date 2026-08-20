@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ponevez-kibbudim",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ponevez-kibbudim",
+      "database_id": "9f89db21-4717-451a-9668-a07dadb9f5d3",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

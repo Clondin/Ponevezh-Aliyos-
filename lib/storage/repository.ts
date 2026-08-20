@@ -1,14 +1,14 @@
 import type { KibbudStatus, Order, Pledge } from "@/contracts/types";
-import { getRedisStore } from "@/lib/redis/client";
-import { keys } from "@/lib/redis/keys";
+import { getStateStore } from "@/lib/storage/client";
+import { keys } from "@/lib/storage/keys";
 import type {
   CheckoutRecord,
   HoldRecord,
   PendingRecord,
-  RedisStore,
+  StateStore,
   StoredOrder,
   StoredPledge,
-} from "@/lib/redis/types";
+} from "@/lib/storage/types";
 
 export const CHECKOUT_HOLD_SECONDS = 12 * 60;
 export const PLEDGE_HOLD_SECONDS = 72 * 60 * 60;
@@ -19,7 +19,7 @@ export class AlreadyTakenError extends Error {}
 export class HoldExpiredError extends Error {}
 
 export class KibbudRepository {
-  constructor(private readonly redis: RedisStore = getRedisStore()) {}
+  constructor(private readonly redis: StateStore = getStateStore()) {}
 
   async acquireHold(
     kibbudId: string,
@@ -422,9 +422,6 @@ export class KibbudRepository {
   }
 }
 
-let repository: KibbudRepository | undefined;
-
 export function getRepository(): KibbudRepository {
-  repository ??= new KibbudRepository();
-  return repository;
+  return new KibbudRepository();
 }

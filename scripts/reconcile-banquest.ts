@@ -1,40 +1,19 @@
-import { sendDonorConfirmation } from "../lib/notifications/email";
-import { listBanquestTransactions } from "../lib/banquest/transactions";
-import { getRepository } from "../lib/redis/repository";
+export {};
 
-const FAILED = new Set([
-  "returned",
-  "cancelled",
-  "declined",
-  "error",
-  "voided",
-  "blocked",
-  "expired",
-]);
-const repository = getRepository();
-let offset = 0;
-let checked = 0;
-let updated = 0;
+const siteUrl = process.env.SITE_URL?.trim();
+const adminToken = process.env.ADMIN_TOKEN?.trim();
 
-for (;;) {
-  const transactions = await listBanquestTransactions(offset, 100);
-  for (const transaction of transactions) {
-    const paymentId =
-      transaction.custom_fields?.custom1 ?? transaction.transaction_details?.key;
-    if (!paymentId || !(await repository.checkout(paymentId))) continue;
-    checked += 1;
-    const status = transaction.status_details?.status;
-    if (status && FAILED.has(status)) {
-      await repository.reverseCheckout(paymentId);
-      updated += 1;
-    } else if (status === "settled" || status === "captured" || status === "approved") {
-      const order = await repository.markCheckoutSold(paymentId, "card");
-      await sendDonorConfirmation(order).catch((error) => console.error(error));
-      updated += 1;
-    }
-  }
-  if (transactions.length < 100) break;
-  offset += transactions.length;
+if (!siteUrl || !adminToken) {
+  throw new Error("SITE_URL and ADMIN_TOKEN are required for reconciliation");
 }
 
-console.log(`Banquest reconciliation complete: checked ${checked}, updated ${updated}`);
+const response = await fetch(new URL("/api/admin/reconcile-banquest", siteUrl), {
+  method: "POST",
+  headers: { "x-admin-token": adminToken },
+});
+const result = (await response.json()) as unknown;
+if (!response.ok) {
+  throw new Error(`Banquest reconciliation failed (${response.status}): ${JSON.stringify(result)}`);
+}
+
+console.log("Banquest reconciliation complete:", result);

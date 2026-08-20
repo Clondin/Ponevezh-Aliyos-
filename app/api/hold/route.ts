@@ -16,7 +16,7 @@ import {
   AlreadyTakenError,
   CHECKOUT_HOLD_SECONDS,
   getRepository,
-} from "@/lib/redis/repository";
+} from "@/lib/storage/repository";
 
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: Request): Promise<Response> {
         const existing = await repository.holdOwnedBy(kibbudId, previous.token);
         return NextResponse.json({ kibbudId, expiresAt: existing.expiresAt });
       } catch {
-        // The cookie outlived its Redis hold; create a fresh hold below.
+        // The cookie outlived its persisted hold; create a fresh hold below.
       }
     } else if (previous) {
       await repository.releaseHold(previous.kibbudId, previous.token);

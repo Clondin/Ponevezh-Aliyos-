@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import PrintButton from "@/components/PrintButton";
 import { getMinyan, getOccasion, itemsFor } from "@/lib/catalog";
 import { OCCASION_HE, kibbudHe } from "@/lib/hebrew";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export const dynamic = "force-dynamic";
 

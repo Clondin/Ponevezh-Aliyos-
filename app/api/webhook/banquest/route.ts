@@ -9,7 +9,7 @@ import {
   AlreadyTakenError,
   getRepository,
   HoldExpiredError,
-} from "@/lib/redis/repository";
+} from "@/lib/storage/repository";
 
 const FAILED_STATUSES = new Set([
   "returned",

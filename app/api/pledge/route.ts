@@ -13,8 +13,8 @@ import {
   AlreadyTakenError,
   getRepository,
   PLEDGE_HOLD_SECONDS,
-} from "@/lib/redis/repository";
-import type { StoredPledge } from "@/lib/redis/types";
+} from "@/lib/storage/repository";
+import type { StoredPledge } from "@/lib/storage/types";
 
 export async function POST(request: Request): Promise<Response> {
   try {

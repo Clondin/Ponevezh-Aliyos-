@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { getCatalog, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog";
 import { kibbudHe } from "@/lib/hebrew";
 import { usd } from "@/lib/format";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export const metadata: Metadata = { title: "Confirmation" };
 export const dynamic = "force-dynamic";

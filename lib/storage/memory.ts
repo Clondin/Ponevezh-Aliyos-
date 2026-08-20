@@ -1,9 +1,9 @@
-import type { RedisStore, SetOptions } from "@/lib/redis/types";
+import type { SetOptions, StateStore } from "@/lib/storage/types";
 
 type Entry = { value: unknown; expiresAt?: number };
 
-/** Minimal Redis semantics for deterministic transition tests. */
-export class MemoryRedisStore implements RedisStore {
+/** Minimal state-store semantics for deterministic transition tests. */
+export class MemoryStateStore implements StateStore {
   private readonly values = new Map<string, Entry>();
   private readonly sets = new Map<string, Set<unknown>>();
 
@@ -76,4 +76,3 @@ export class MemoryRedisStore implements RedisStore {
     return Array.from(this.sets.get(key) ?? []) as T;
   }
 }
-

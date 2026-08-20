@@ -8,8 +8,8 @@ import {
   BanquestConfigurationError,
 } from "@/lib/banquest/client";
 import { sendDonorConfirmation } from "@/lib/notifications/email";
-import { getRepository } from "@/lib/redis/repository";
-import type { CheckoutRecord } from "@/lib/redis/types";
+import { getRepository } from "@/lib/storage/repository";
+import type { CheckoutRecord } from "@/lib/storage/types";
 
 interface CardChargeResponse {
   status?: string;

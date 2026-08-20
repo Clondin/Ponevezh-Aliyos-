@@ -1,3 +1,4 @@
+/** Stable logical keys retained across the Upstash-to-D1 migration. */
 export const keys = {
   hold: (kibbudId: string) => `hold:${kibbudId}`,
   sold: (kibbudId: string) => `sold:${kibbudId}`,

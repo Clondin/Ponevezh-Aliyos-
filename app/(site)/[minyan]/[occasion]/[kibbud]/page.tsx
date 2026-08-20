@@ -5,7 +5,7 @@ import CheckoutExperience from "@/components/CheckoutExperience";
 import Notice from "@/components/Notice";
 import { getKibbud, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog";
 import { TIER_LABEL, kibbudHe } from "@/lib/hebrew";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 import { usd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";

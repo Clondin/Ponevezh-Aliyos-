@@ -4,7 +4,7 @@ import {
   AlreadyTakenError,
   getRepository,
   HoldExpiredError,
-} from "@/lib/redis/repository";
+} from "@/lib/storage/repository";
 
 export async function POST(
   request: Request,
@@ -29,4 +29,3 @@ export async function POST(
     return apiErrorResponse(error);
   }
 }
-

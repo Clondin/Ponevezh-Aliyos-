@@ -5,7 +5,7 @@ import KibbudCard from "@/components/KibbudCard";
 import { getMinyan, getOccasion, itemsFor, priceForKibbud } from "@/lib/catalog";
 import { availabilityFromStatuses } from "@/lib/availability";
 import { OCCASION_HE } from "@/lib/hebrew";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export const dynamic = "force-dynamic";
 

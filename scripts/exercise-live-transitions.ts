@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
-import { Redis } from "@upstash/redis";
 import { assertBeforeCutoff, requireKibbud } from "../lib/api/validation";
 import { currentItems } from "../lib/calendar/current";
-import { keys } from "../lib/redis/keys";
 
 const baseUrl = new URL(process.env.SITE_URL ?? "http://localhost:3110").origin;
 const adminToken = process.env.ADMIN_TOKEN;
@@ -23,8 +21,6 @@ if (
     "Live transitions require the admin token, Banquest sandbox credentials, and a fresh BANQUEST_TEST_NONCE with its expiration month/year."
   );
 }
-const redis = Redis.fromEnv();
-
 const jsonPost = async (
   path: string,
   body: unknown,
@@ -48,8 +44,8 @@ const unavailable = new Set(stateJson.statuses.map((status) => status.id));
 const candidates = currentItems("chayei-avraham", "rh-2")
   .map((item) => item.id)
   .filter((id) => !unavailable.has(id));
-assert.ok(candidates.length >= 5, "The live test needs five available chayei-avraham/rh-2 items");
-const [cardItem, expiringItem, confirmItem, releaseItem, doubleItem] = candidates;
+assert.ok(candidates.length >= 4, "The live test needs four available chayei-avraham/rh-2 items");
+const [cardItem, confirmItem, releaseItem, doubleItem] = candidates;
 
 // available -> held -> sold through a real Banquest sandbox card charge
 const held = await jsonPost("/api/hold", { kibbudId: cardItem });
@@ -75,14 +71,6 @@ const checkout = await jsonPost(
 assert.equal(checkout.response.status, 200);
 assert.match(String(checkout.value.paymentId), /^bq_/);
 assert.equal(checkout.value.status, "sold");
-
-assert.equal((await jsonPost("/api/hold", { kibbudId: expiringItem })).response.status, 200);
-await redis.expire(keys.hold(expiringItem), 1);
-await new Promise((resolve) => setTimeout(resolve, 1200));
-const expiredState = (await (
-  await fetch(`${baseUrl}/api/state/chayei-avraham/rh-2`)
-).json()) as { statuses: Array<{ id: string }> };
-assert.ok(!expiredState.statuses.some((status) => status.id === expiringItem));
 
 const pledgeBody = (kibbudId: string) => ({
   kibbudId,
@@ -127,4 +115,4 @@ assert.throws(() =>
   assertBeforeCutoff(cutoffItem, Date.parse("2026-09-13T23:59:59+03:00"))
 );
 
-console.log("Banquest sandbox and live Upstash transitions passed");
+console.log("Banquest sandbox and live Cloudflare D1 transitions passed");

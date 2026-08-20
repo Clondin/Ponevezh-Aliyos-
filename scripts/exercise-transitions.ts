@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
-import type { StoredPledge } from "../lib/redis/types";
+import type { StoredPledge } from "../lib/storage/types";
 import { ApiError } from "../lib/api/errors";
 import { assertBeforeCutoff, requireKibbud } from "../lib/api/validation";
-import { MemoryRedisStore } from "../lib/redis/memory";
+import { MemoryStateStore } from "../lib/storage/memory";
 import {
   AlreadyTakenError,
   KibbudRepository,
-} from "../lib/redis/repository";
+} from "../lib/storage/repository";
 
-const redis = new MemoryRedisStore();
-const repository = new KibbudRepository(redis);
+const store = new MemoryStateStore();
+const repository = new KibbudRepository(store);
 
 // available -> held -> sold (card)
 const cardItem = "grodna/yk-mincha/maftir-yonah";

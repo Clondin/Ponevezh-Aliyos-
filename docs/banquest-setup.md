@@ -17,11 +17,11 @@ Copy `.env.example` to `.env.local` and set:
 - `BANQUEST_SOURCE_KEY` and `BANQUEST_PIN` for server-side API calls
 - `BANQUEST_TOKENIZATION_KEY` (the `pk_...` key safe for the browser iframe)
 - `BANQUEST_SANDBOX_AMOUNT_USD=1` while testing
-- Upstash, site, admin, and email variables as described in `.env.example`
+- Cloudflare D1, site, admin, and email variables as described in `.env.example`
 
-For a local smoke test only, `ALLOW_IN_MEMORY_REDIS=true` enables process-wide
-temporary state. Never set it on the deployed site; production data must use
-Upstash so it survives restarts and is shared by every server instance.
+Cloudflare supplies D1 through the `DB` binding in `wrangler.jsonc`; there is no
+database password to copy into the application. Apply `migrations/` locally or
+remotely before starting the corresponding application environment.
 
 Do not put the portal username/password in the application. Never expose the API
 source key or PIN to browser code. `.env.local` is ignored by Git.
@@ -49,5 +49,5 @@ real-card transaction followed by a refund. Sandbox transactions cannot be moved
 to production.
 
 Run `npm run check` before deploying. `npm run test:live` additionally requires a
-fresh Banquest nonce and a configured Upstash database; nonces expire after 15
+fresh Banquest nonce and a configured Cloudflare D1 database; nonces expire after 15
 minutes.

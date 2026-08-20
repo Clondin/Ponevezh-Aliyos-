@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { setRedisStoreForTests } from "../lib/redis/client";
-import { MemoryRedisStore } from "../lib/redis/memory";
-import { getRepository } from "../lib/redis/repository";
+import { setStateStoreForTests } from "../lib/storage/client";
+import { MemoryStateStore } from "../lib/storage/memory";
+import { getRepository } from "../lib/storage/repository";
 import { setBanquestFetchForTests } from "../lib/banquest/client";
 import { POST as holdPost } from "../app/api/hold/route";
 import { POST as checkoutPost } from "../app/api/checkout/route";
@@ -11,8 +11,6 @@ import { GET as stateGet } from "../app/api/state/[minyan]/[occasion]/route";
 import { POST as webhookPost } from "../app/api/webhook/banquest/route";
 import { POST as pledgeConfirmPost } from "../app/api/admin/pledge/[id]/confirm/route";
 
-process.env.UPSTASH_REDIS_REST_URL = "https://unused.example";
-process.env.UPSTASH_REDIS_REST_TOKEN = "unused";
 process.env.BANQUEST_WEBHOOK_SIGNATURE = "banquest-contract-signature";
 process.env.BANQUEST_SOURCE_KEY = "sandbox-source-key";
 process.env.BANQUEST_PIN = "sandbox-pin";
@@ -22,7 +20,7 @@ process.env.OFFICE_NOTIFY_EMAIL = "office@example.com";
 process.env.ADMIN_TOKEN = "test-admin-token";
 process.env.SITE_URL = "http://localhost:3110";
 
-setRedisStoreForTests(new MemoryRedisStore());
+setStateStoreForTests(new MemoryStateStore());
 
 const jsonRequest = (url: string, body: unknown, headers: HeadersInit = {}) =>
   new Request(url, {

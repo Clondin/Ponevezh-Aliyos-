@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getCatalog, getMinyanim, priceFor } from "@/lib/catalog";
 import { usd } from "@/lib/format";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export const metadata: Metadata = { title: "Sold summary" };
 export const dynamic = "force-dynamic";

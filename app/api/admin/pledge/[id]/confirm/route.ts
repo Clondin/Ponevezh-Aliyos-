@@ -1,7 +1,7 @@
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { requireAdmin } from "@/lib/api/auth";
 import { sendDonorConfirmation } from "@/lib/notifications/email";
-import { getRepository, HoldExpiredError } from "@/lib/redis/repository";
+import { getRepository, HoldExpiredError } from "@/lib/storage/repository";
 
 export async function POST(
   request: Request,
@@ -22,4 +22,3 @@ export async function POST(
     return apiErrorResponse(error);
   }
 }
-

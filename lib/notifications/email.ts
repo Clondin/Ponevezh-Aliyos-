@@ -1,8 +1,8 @@
 import { Resend } from "resend";
 import type { Order, Pledge } from "@/contracts/types";
 import { currentKibbud, currentOccasion } from "@/lib/calendar/current";
-import { getRedisStore } from "@/lib/redis/client";
-import { keys } from "@/lib/redis/keys";
+import { getStateStore } from "@/lib/storage/client";
+import { keys } from "@/lib/storage/keys";
 
 interface EmailRecord {
   id: string;
@@ -37,15 +37,15 @@ function sender(): string {
 }
 
 async function deliver(record: EmailRecord): Promise<void> {
-  const redis = getRedisStore();
-  const existing = await redis.get<EmailRecord>(keys.email(record.id));
+  const store = getStateStore();
+  const existing = await store.get<EmailRecord>(keys.email(record.id));
   if (existing?.status === "sent") return;
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     await Promise.all([
-      redis.set(keys.email(record.id), record),
-      redis.sadd(keys.emailOutbox, record.id),
+      store.set(keys.email(record.id), record),
+      store.sadd(keys.emailOutbox, record.id),
     ]);
     console.warn(`Email ${record.id} queued because RESEND_API_KEY is not configured`);
     return;
@@ -63,18 +63,18 @@ async function deliver(record: EmailRecord): Promise<void> {
   );
   if (response.error) {
     await Promise.all([
-      redis.set(keys.email(record.id), record),
-      redis.sadd(keys.emailOutbox, record.id),
+      store.set(keys.email(record.id), record),
+      store.sadd(keys.emailOutbox, record.id),
     ]);
     throw new Error(`Resend rejected ${record.id}: ${response.error.message}`);
   }
   await Promise.all([
-    redis.set(keys.email(record.id), {
+    store.set(keys.email(record.id), {
       ...record,
       status: "sent",
       providerId: response.data?.id,
     }),
-    redis.srem(keys.emailOutbox, record.id),
+    store.srem(keys.emailOutbox, record.id),
   ]);
 }
 
@@ -119,4 +119,3 @@ export async function sendDonorConfirmation(order: Order): Promise<void> {
   };
   await deliver(record);
 }
-

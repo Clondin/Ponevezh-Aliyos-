@@ -1,6 +1,6 @@
 import { apiErrorResponse } from "@/lib/api/errors";
 import { requireAdmin } from "@/lib/api/auth";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 function csvCell(value: string | number): string {
   const raw = String(value);

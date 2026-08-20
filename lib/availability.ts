@@ -4,7 +4,7 @@
  */
 import type { KibbudStatus, MinyanSlug, OccasionSlug } from "@/contracts/types";
 import { itemsFor, occasionsForMinyan, priceForKibbud } from "@/lib/catalog";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export interface Availability {
   available: number;

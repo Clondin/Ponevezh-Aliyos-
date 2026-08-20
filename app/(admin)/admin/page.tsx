@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getMinyanim, occasionsForMinyan } from "@/lib/catalog";
 import { usd } from "@/lib/format";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export const dynamic = "force-dynamic";
 

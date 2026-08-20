@@ -36,7 +36,7 @@ export interface SetOptions {
   xx?: true;
 }
 
-export interface RedisStore {
+export interface StateStore {
   get<T>(key: string): Promise<T | null>;
   mget<T extends unknown[]>(...keys: string[]): Promise<T>;
   set<T>(key: string, value: T, options?: SetOptions): Promise<"OK" | T | null>;

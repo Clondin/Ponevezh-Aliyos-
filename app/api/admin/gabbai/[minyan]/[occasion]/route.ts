@@ -5,7 +5,7 @@ import {
   currentMinyan,
   currentOccasion,
 } from "@/lib/calendar/current";
-import { getRepository } from "@/lib/redis/repository";
+import { getRepository } from "@/lib/storage/repository";
 
 export const dynamic = "force-dynamic";
 
@@ -52,4 +52,3 @@ export async function GET(
     return apiErrorResponse(error);
   }
 }
-
