@@ -1,0 +1,43 @@
+{
+  "name": "ponevez-kibbudim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3110",
+    "build": "next build",
+    "start": "next start -p 3110",
+    "fixtures": "node scripts/generate-fixtures.mjs",
+    "catalogs": "tsx scripts/generate-catalogs.ts",
+    "test:calendar": "tsx scripts/calendar-snapshot.ts",
+    "test:transitions": "tsx scripts/exercise-transitions.ts",
+    "test:api": "tsx scripts/test-api-contract.ts",
+    "test:live": "node --env-file-if-exists=.env.local --import tsx scripts/exercise-live-transitions.ts",
+    "check:terminology": "node scripts/check-terminology.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run test:calendar && npm run test:transitions && npm run test:api && npm run check:terminology",
+    "catalog:diff": "tsx scripts/catalog-diff.ts",
+    "reconcile": "node --env-file-if-exists=.env.local --import tsx scripts/reconcile-stripe.ts"
+  },
+  "dependencies": {
+    "@hebcal/core": "^6.9.2",
+    "@hebcal/leyning": "^10.0.0",
+    "@upstash/redis": "^1.38.2",
+    "next": "^15.4.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "resend": "^6.21.0",
+    "stripe": "^22.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.23.12",
+    "typescript": "^5.8.0"
+  },
+  "overrides": {
+    "postcss": "8.5.23",
+    "sharp": "0.35.0"
+  }
+}

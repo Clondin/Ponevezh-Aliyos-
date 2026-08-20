@@ -1,0 +1,115 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import KibbudCard from "@/components/KibbudCard";
+import { getMinyan, getOccasion, itemsFor, priceForKibbud } from "@/lib/catalog";
+import { occasionAvailability } from "@/lib/availability";
+import { OCCASION_HE } from "@/lib/hebrew";
+import { statusMap } from "@/lib/state";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ minyan: string; occasion: string }>;
+}): Promise<Metadata> {
+  const { minyan, occasion } = await params;
+  const m = getMinyan(minyan);
+  const o = getOccasion(occasion);
+  return { title: m && o ? `${o.name} — ${m.name}` : "Kibbudim" };
+}
+
+export default async function OccasionPage({
+  params,
+}: {
+  params: Promise<{ minyan: string; occasion: string }>;
+}) {
+  const { minyan, occasion } = await params;
+  const m = getMinyan(minyan);
+  const o = getOccasion(occasion);
+  if (!m || !o) notFound();
+  if (o.minyanim && !o.minyanim.includes(m.slug)) notFound();
+
+  const items = itemsFor(m.slug, o.slug);
+  const statuses = statusMap(m.slug, o.slug);
+  const { fraction } = occasionAvailability(m.slug, o.slug);
+
+  return (
+    <>
+      <div className="band">
+        <div className="container" style={{ padding: "40px 40px 56px" }}>
+          <nav className="crumbs" aria-label="Breadcrumb">
+            <Link href="/">Kibbudim</Link>
+            <span aria-hidden="true">/</span>
+            <Link href={`/${m.slug}`}>{m.name}</Link>
+            <span aria-hidden="true">/</span>
+            <span className="current">{o.shortName}</span>
+          </nav>
+
+          <div className="head-split">
+            <div className="page-head">
+              <div className="he he--left" lang="he">
+                {OCCASION_HE[o.slug]}
+              </div>
+              <h1>{o.name}</h1>
+              <div className="meta">
+                {o.dateLabel} &middot; {o.hebrewDateLabel} &middot; {m.name} Minyan
+              </div>
+            </div>
+            <div className="head-stat">
+              <div className="head-stat__value">{fraction}</div>
+              <div className="head-stat__label">Available</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section className="container" style={{ padding: "56px 40px 96px" }}>
+        {items.length === 0 ? (
+          <div className="notice" style={{ padding: "40px 0 60px" }}>
+            <div className="notice__glyph" aria-hidden="true">
+              ✳
+            </div>
+            <h1>No kibbudim listed</h1>
+            <p>
+              The kibbudim for this tefillah have not been posted yet. Please
+              check back, or contact the office.
+            </p>
+            <div className="actions">
+              <Link href={`/${m.slug}`} className="btn btn--fill">
+                Other days
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="micro micro--wide" style={{ marginBottom: 22 }}>
+              In the order of the kriah
+            </div>
+            <div className="kibbud-grid">
+              {items.map((item) => (
+                <KibbudCard
+                  key={item.id}
+                  item={item}
+                  price={priceForKibbud(item)}
+                  status={statuses.get(item.id) ?? { id: item.id, state: "available" }}
+                />
+              ))}
+            </div>
+
+            <div className="grid-footnote">
+              <p>A sponsored kibbud remains listed in honor of its donor.</p>
+              <Link
+                href={`/${m.slug}`}
+                className="btn btn--sm btn--outline-bronze"
+              >
+                Other days
+              </Link>
+            </div>
+          </>
+        )}
+      </section>
+    </>
+  );
+}
