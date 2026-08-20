@@ -3,13 +3,13 @@ export const keys = {
   sold: (kibbudId: string) => `sold:${kibbudId}`,
   pending: (kibbudId: string) => `pending:${kibbudId}`,
   pledge: (pledgeId: string) => `pledge:${pledgeId}`,
-  checkout: (sessionId: string) => `checkout:${sessionId}`,
+  checkout: (paymentId: string) => `checkout:${paymentId}`,
+  checkoutByHold: (holdToken: string) => `checkout:hold:${holdToken}`,
   order: (orderId: string) => `order:${orderId}`,
-  stripeEventLock: (eventId: string) => `stripe:event-lock:${eventId}`,
-  stripeEventDone: (eventId: string) => `stripe:event-done:${eventId}`,
+  paymentEventLock: (eventId: string) => `payment:event-lock:${eventId}`,
+  paymentEventDone: (eventId: string) => `payment:event-done:${eventId}`,
   email: (emailId: string) => `email:${emailId}`,
   pendingPledges: "pledges:pending",
   orders: "orders",
   emailOutbox: "emails:outbox",
 } as const;
-

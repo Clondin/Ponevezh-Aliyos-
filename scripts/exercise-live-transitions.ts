@@ -1,22 +1,29 @@
 import assert from "node:assert/strict";
 import { Redis } from "@upstash/redis";
-import type Stripe from "stripe";
 import { assertBeforeCutoff, requireKibbud } from "../lib/api/validation";
 import { currentItems } from "../lib/calendar/current";
 import { keys } from "../lib/redis/keys";
-import { getStripe } from "../lib/stripe/client";
 
 const baseUrl = new URL(process.env.SITE_URL ?? "http://localhost:3110").origin;
 const adminToken = process.env.ADMIN_TOKEN;
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-const stripeKey = process.env.STRIPE_SECRET_KEY;
-if (!adminToken || !webhookSecret || !stripeKey?.startsWith("sk_test_")) {
+const testNonce = process.env.BANQUEST_TEST_NONCE;
+const testExpiryMonth = Number(process.env.BANQUEST_TEST_EXPIRY_MONTH);
+const testExpiryYear = Number(process.env.BANQUEST_TEST_EXPIRY_YEAR);
+if (
+  !adminToken ||
+  !testNonce ||
+  !Number.isInteger(testExpiryMonth) ||
+  !Number.isInteger(testExpiryYear) ||
+  !process.env.BANQUEST_SOURCE_KEY ||
+  !process.env.BANQUEST_PIN ||
+  !process.env.BANQUEST_TOKENIZATION_KEY ||
+  process.env.BANQUEST_ENV !== "sandbox"
+) {
   throw new Error(
-    "Live transitions require ADMIN_TOKEN, STRIPE_WEBHOOK_SECRET, and a Stripe test-mode STRIPE_SECRET_KEY."
+    "Live transitions require the admin token, Banquest sandbox credentials, and a fresh BANQUEST_TEST_NONCE with its expiration month/year."
   );
 }
 const redis = Redis.fromEnv();
-const stripe = getStripe();
 
 const jsonPost = async (
   path: string,
@@ -44,61 +51,31 @@ const candidates = currentItems("chayei-avraham", "rh-2")
 assert.ok(candidates.length >= 5, "The live test needs five available chayei-avraham/rh-2 items");
 const [cardItem, expiringItem, confirmItem, releaseItem, doubleItem] = candidates;
 
-// available -> held -> sold (real Stripe test-mode Checkout creation, signed webhook)
+// available -> held -> sold through a real Banquest sandbox card charge
 const held = await jsonPost("/api/hold", { kibbudId: cardItem });
 assert.equal(held.response.status, 200);
 const cookie = held.response.headers.get("set-cookie")?.split(";", 1)[0];
 assert.ok(cookie, "Hold response did not set its httpOnly cookie");
-const checkoutStartedAt = Math.floor(Date.now() / 1000) - 2;
 const checkout = await jsonPost(
   "/api/checkout",
   {
     kibbudId: cardItem,
-    donorName: "Stripe Transition Test",
+    donorName: "Banquest Transition Test",
     email: "transition-test@example.com",
     misheberachNames: ["Transition Test"],
+    payment: {
+      nonce: testNonce,
+      expiryMonth: testExpiryMonth,
+      expiryYear: testExpiryYear,
+      avsZip: process.env.BANQUEST_TEST_AVS_ZIP ?? "10001",
+    },
   },
-  { cookie, "x-preferred-payment-method": "card" }
+  { cookie }
 );
 assert.equal(checkout.response.status, 200);
-assert.equal(typeof checkout.value.url, "string");
+assert.match(String(checkout.value.paymentId), /^bq_/);
+assert.equal(checkout.value.status, "sold");
 
-let session: Stripe.Checkout.Session | undefined;
-for await (const candidate of stripe.checkout.sessions.list({ limit: 100 })) {
-  if (
-    candidate.client_reference_id === cardItem &&
-    candidate.created >= checkoutStartedAt
-  ) {
-    session = candidate;
-    break;
-  }
-}
-assert.ok(session, "Could not find the Checkout Session created by /api/checkout");
-const eventPayload = JSON.stringify({
-  id: `evt_transition_${Date.now()}`,
-  object: "event",
-  created: Math.floor(Date.now() / 1000),
-  data: { object: { ...session, payment_status: "paid" } },
-  livemode: false,
-  pending_webhooks: 1,
-  request: { id: null, idempotency_key: null },
-  type: "checkout.session.completed",
-});
-const signature = stripe.webhooks.generateTestHeaderString({
-  payload: eventPayload,
-  secret: webhookSecret,
-});
-const sendWebhook = () =>
-  fetch(`${baseUrl}/api/webhook/stripe`, {
-    method: "POST",
-    headers: { "stripe-signature": signature },
-    body: eventPayload,
-  });
-assert.equal((await sendWebhook()).status, 200);
-assert.equal((await sendWebhook()).status, 200, "Webhook replay must be idempotent");
-await stripe.checkout.sessions.expire(session.id).catch(() => undefined);
-
-// available -> held -> expired -> available (force the acquired Redis TTL to 1s)
 assert.equal((await jsonPost("/api/hold", { kibbudId: expiringItem })).response.status, 200);
 await redis.expire(keys.hold(expiringItem), 1);
 await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -114,7 +91,6 @@ const pledgeBody = (kibbudId: string) => ({
   misheberachNames: ["Transition Test"],
 });
 
-// available -> pledged -> confirmed
 const confirmPledge = await jsonPost("/api/pledge", pledgeBody(confirmItem));
 assert.equal(confirmPledge.response.status, 200);
 const confirmId = String(confirmPledge.value.pledgeId);
@@ -129,7 +105,6 @@ assert.equal(
   200
 );
 
-// available -> pledged -> released
 const releasePledge = await jsonPost("/api/pledge", pledgeBody(releaseItem));
 assert.equal(releasePledge.response.status, 200);
 const releaseId = String(releasePledge.value.pledgeId);
@@ -144,15 +119,12 @@ assert.equal(
   200
 );
 
-// double hold rejection
 assert.equal((await jsonPost("/api/hold", { kibbudId: doubleItem })).response.status, 200);
 assert.equal((await jsonPost("/api/hold", { kibbudId: doubleItem })).response.status, 409);
 
-// The same server-side cutoff helper rejects after this occasion's own cutoff.
 const cutoffItem = requireKibbud(cardItem);
 assert.throws(() =>
   assertBeforeCutoff(cutoffItem, Date.parse("2026-09-13T23:59:59+03:00"))
 );
 
-console.log("Stripe test-mode and live Upstash transitions passed");
-
+console.log("Banquest sandbox and live Upstash transitions passed");

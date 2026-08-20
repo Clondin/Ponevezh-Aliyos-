@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import PledgeQueue from "@/components/PledgeQueue";
 import { getCatalog } from "@/lib/catalog";
-import { pendingPledges } from "@/lib/state";
+import { getRepository } from "@/lib/redis/repository";
 
 export const metadata: Metadata = { title: "Pending pledges" };
 export const dynamic = "force-dynamic";
 
-export default function PledgesPage() {
-  const pledges = pendingPledges();
+export default async function PledgesPage() {
+  const pledges = await getRepository().pendingPledges();
   const itemNames: Record<string, string> = {};
   for (const i of getCatalog().items) itemNames[i.id] = i.name;
 

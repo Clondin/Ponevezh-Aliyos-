@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { getMinyanim, occasionsForMinyan } from "@/lib/catalog";
-import { allOrders, pendingPledges } from "@/lib/state";
 import { usd } from "@/lib/format";
+import { getRepository } from "@/lib/redis/repository";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminHome() {
+export default async function AdminHome() {
   const minyanim = getMinyanim();
-  const orders = allOrders();
-  const pledges = pendingPledges();
+  const [orders, pledges] = await Promise.all([
+    getRepository().allOrders(),
+    getRepository().pendingPledges(),
+  ]);
   const raised = orders.reduce((s, o) => s + o.amount, 0);
 
   return (

@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import KibbudCard from "@/components/KibbudCard";
 import { getMinyan, getOccasion, itemsFor, priceForKibbud } from "@/lib/catalog";
-import { occasionAvailability } from "@/lib/availability";
+import { availabilityFromStatuses } from "@/lib/availability";
 import { OCCASION_HE } from "@/lib/hebrew";
-import { statusMap } from "@/lib/state";
+import { getRepository } from "@/lib/redis/repository";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +32,9 @@ export default async function OccasionPage({
   if (o.minyanim && !o.minyanim.includes(m.slug)) notFound();
 
   const items = itemsFor(m.slug, o.slug);
-  const statuses = statusMap(m.slug, o.slug);
-  const { fraction } = occasionAvailability(m.slug, o.slug);
+  const statusList = await getRepository().statuses(items.map((item) => item.id));
+  const statuses = new Map(statusList.map((status) => [status.id, status]));
+  const { fraction } = availabilityFromStatuses(items.length, statusList);
 
   return (
     <>

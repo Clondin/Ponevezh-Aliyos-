@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { getCatalog, getMinyanim, priceFor } from "@/lib/catalog";
-import { allOrders } from "@/lib/state";
 import { usd } from "@/lib/format";
+import { getRepository } from "@/lib/redis/repository";
 
 export const metadata: Metadata = { title: "Sold summary" };
 export const dynamic = "force-dynamic";
 
-export default function SoldSummaryPage() {
+export default async function SoldSummaryPage() {
   const minyanim = getMinyanim();
   const catalog = getCatalog();
-  const orders = allOrders();
+  const orders = await getRepository().allOrders();
   const soldIds = new Set(orders.map((o) => o.kibbudId));
 
   const rows = minyanim.map((m) => {

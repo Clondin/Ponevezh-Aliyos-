@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import PrintButton from "@/components/PrintButton";
 import { getMinyan, getOccasion, itemsFor } from "@/lib/catalog";
 import { OCCASION_HE, kibbudHe } from "@/lib/hebrew";
-import { orderFor, pledgeFor, statusMap } from "@/lib/state";
+import { getRepository } from "@/lib/redis/repository";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,15 @@ export default async function GabbaiSheet({
   if (o.minyanim && !o.minyanim.includes(m.slug)) notFound();
 
   const items = itemsFor(m.slug, o.slug);
-  const statuses = statusMap(m.slug, o.slug);
+  const repository = getRepository();
+  const [statusList, orders, pledges] = await Promise.all([
+    repository.statuses(items.map((item) => item.id)),
+    repository.allOrders(),
+    repository.pendingPledges(),
+  ]);
+  const statuses = new Map(statusList.map((status) => [status.id, status]));
+  const ordersByItem = new Map(orders.map((order) => [order.kibbudId, order]));
+  const pledgesByItem = new Map(pledges.map((pledge) => [pledge.kibbudId, pledge]));
 
   return (
     <section className="admin-section print-sheet">
@@ -71,8 +79,8 @@ export default async function GabbaiSheet({
             <tbody>
               {items.map((item) => {
                 const st = statuses.get(item.id)?.state ?? "available";
-                const order = st === "sold" ? orderFor(item.id) : undefined;
-                const pledge = st === "pending" ? pledgeFor(item.id) : undefined;
+                const order = st === "sold" ? ordersByItem.get(item.id) : undefined;
+                const pledge = st === "pending" ? pledgesByItem.get(item.id) : undefined;
                 const unsold = st !== "sold" && st !== "pending";
                 return (
                   <tr key={item.id} className={unsold ? "row--muted" : undefined}>

@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import HoldBanner from "@/components/HoldBanner";
+import CheckoutExperience from "@/components/CheckoutExperience";
 import Notice from "@/components/Notice";
-import SponsorForm from "@/components/SponsorForm";
 import { getKibbud, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog";
 import { TIER_LABEL, kibbudHe } from "@/lib/hebrew";
-import { statusFor } from "@/lib/state";
+import { getRepository } from "@/lib/redis/repository";
 import { usd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -33,9 +32,14 @@ export default async function KibbudPage({
   if (!m || !o || !item) notFound();
 
   const price = priceForKibbud(item);
-  const status = statusFor(item.id);
+  const [status] = await getRepository().statuses([item.id]);
+  const tokenizationKey = process.env.BANQUEST_TOKENIZATION_KEY?.trim() ?? "";
+  const banquestEnvironment =
+    process.env.BANQUEST_ENV?.trim().toLowerCase() === "production"
+      ? "production"
+      : "sandbox";
 
-  if (status.state !== "available") {
+  if (status && status.state !== "available" && status.state !== "held") {
     const sold = status.state === "sold";
     return (
       <Notice
@@ -53,10 +57,6 @@ export default async function KibbudPage({
       />
     );
   }
-
-  // Demo shim: entering the page takes the 12-minute checkout hold.
-  // At integration this comes from POST /api/hold → { expiresAt }.
-  const holdExpiresAt = new Date(Date.now() + 12 * 60_000).toISOString();
 
   return (
     <>
@@ -94,10 +94,13 @@ export default async function KibbudPage({
         className="container container--narrow"
         style={{ padding: "32px 40px 96px" }}
       >
-        <HoldBanner expiresAt={holdExpiresAt} itemId={item.id} />
-        <div className="form-card">
-          <SponsorForm itemId={item.id} />
-        </div>
+        <CheckoutExperience
+          itemId={item.id}
+          occasionHref={`/${m.slug}/${o.slug}`}
+          minyanHref={`/${m.slug}`}
+          tokenizationKey={tokenizationKey}
+          banquestEnvironment={banquestEnvironment}
+        />
       </section>
     </>
   );

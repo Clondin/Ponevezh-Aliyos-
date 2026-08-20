@@ -15,14 +15,15 @@ export interface PendingRecord {
 }
 
 export interface CheckoutRecord {
-  sessionId: string;
+  paymentId: string;
   kibbudId: string;
   holdToken: string;
   donorName: string;
   email: string;
   misheberachNames: string[];
   amount: number;
-  preferredMethod: "card" | "ach";
+  preferredMethod: "card";
+  status: "created" | "pending" | "sold" | "released" | "reversed";
   createdAt: string;
 }
 
@@ -44,4 +45,3 @@ export interface RedisStore {
   srem<T>(key: string, ...members: T[]): Promise<number>;
   smembers<T extends unknown[] = string[]>(key: string): Promise<T>;
 }
-

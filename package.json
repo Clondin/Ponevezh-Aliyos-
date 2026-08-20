@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run test:calendar && npm run test:transitions && npm run test:api && npm run check:terminology",
     "catalog:diff": "tsx scripts/catalog-diff.ts",
-    "reconcile": "node --env-file-if-exists=.env.local --import tsx scripts/reconcile-stripe.ts"
+    "reconcile": "node --env-file-if-exists=.env.local --import tsx scripts/reconcile-banquest.ts"
   },
   "dependencies": {
     "@hebcal/core": "^6.9.2",
@@ -26,8 +26,7 @@
     "next": "^15.4.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "resend": "^6.21.0",
-    "stripe": "^22.5.0"
+    "resend": "^6.21.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

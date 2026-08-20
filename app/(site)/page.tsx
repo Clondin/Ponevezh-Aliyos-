@@ -25,9 +25,17 @@ const STEPS = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
   const minyanim = getMinyanim();
   const occasions = getOccasions();
+  const availability = new Map(
+    await Promise.all(
+      minyanim.map(async (minyan) => [
+        minyan.slug,
+        await minyanAvailability(minyan.slug),
+      ] as const)
+    )
+  );
 
   return (
     <>
@@ -52,7 +60,7 @@ export default function HomePage() {
         <SectionHeading he={HEADING_HE.chooseMinyan}>Choose a minyan</SectionHeading>
         <div className="minyan-grid">
           {minyanim.map((m) => {
-            const { fraction } = minyanAvailability(m.slug);
+            const fraction = availability.get(m.slug)?.fraction ?? "00 / 00";
             return (
               <Link key={m.slug} href={`/${m.slug}`} className="minyan-card">
                 <div>

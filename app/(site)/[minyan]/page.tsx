@@ -33,6 +33,14 @@ export default async function MinyanPage({
   if (!m) notFound();
 
   const occasions = occasionsForMinyan(m.slug);
+  const availability = new Map(
+    await Promise.all(
+      occasions.map(async (occasion) => [
+        occasion.slug,
+        await occasionAvailability(m.slug, occasion.slug),
+      ] as const)
+    )
+  );
 
   return (
     <>
@@ -60,7 +68,7 @@ export default async function MinyanPage({
 
         <div className="day-list">
           {occasions.map((o) => {
-            const { fraction } = occasionAvailability(m.slug, o.slug);
+            const fraction = availability.get(o.slug)?.fraction ?? "00 / 00";
             return (
               <Link key={o.slug} href={`/${m.slug}/${o.slug}`} className="day-row">
                 <span className="day-row__date">

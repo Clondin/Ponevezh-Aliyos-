@@ -980,11 +980,36 @@ a.kibbud-card--very-special:hover {
   outline-offset: 1px;
 }
 
+.card-fields {
+  min-height: 178px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  padding: 16px;
+  margin: 0 0 26px;
+}
+.card-fields--hidden {
+  display: none;
+}
+.card-fields__loading {
+  color: var(--faint);
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
 .fineprint {
   text-align: center;
   font-size: 12.5px;
   color: var(--faint);
   margin-top: 12px;
+}
+
+.form-error {
+  border: 1px solid #b94a48;
+  color: #8b2f2d;
+  background: #fff7f6;
+  padding: 11px 13px;
+  margin-top: 12px;
+  font-size: 13.5px;
 }
 
 /* ---- confirmation ---- */

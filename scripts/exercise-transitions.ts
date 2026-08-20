@@ -18,7 +18,7 @@ assert.deepEqual(await repository.statuses([cardItem]), [
   { id: cardItem, state: "held", expiresAt: (await repository.holdOwnedBy(cardItem, "card-token")).expiresAt },
 ]);
 await repository.saveCheckout({
-  sessionId: "cs_test_card",
+  paymentId: "pay_test_card",
   kibbudId: cardItem,
   holdToken: "card-token",
   donorName: "Card Donor",
@@ -26,9 +26,10 @@ await repository.saveCheckout({
   misheberachNames: ["Card Name"],
   amount: 5000,
   preferredMethod: "card",
+  status: "created",
   createdAt: new Date().toISOString(),
 });
-await repository.markCheckoutSold("cs_test_card", "card");
+await repository.markCheckoutSold("pay_test_card", "card");
 assert.deepEqual(await repository.statuses([cardItem]), [{ id: cardItem, state: "sold" }]);
 
 // available -> held -> expired -> available
@@ -74,43 +75,6 @@ await repository.createPledge(pledge("plg_release", releasedItem), "pledge-relea
 await repository.releasePledge("plg_release");
 assert.deepEqual(await repository.statuses([releasedItem]), []);
 
-// available -> held -> ACH pending -> sold
-const achItem = "grodna/rh-1/chamishi";
-await repository.acquireHold(achItem, "ach-token");
-await repository.saveCheckout({
-  sessionId: "cs_test_ach",
-  kibbudId: achItem,
-  holdToken: "ach-token",
-  donorName: "ACH Donor",
-  email: "ach@example.com",
-  misheberachNames: [],
-  amount: 1800,
-  preferredMethod: "ach",
-  createdAt: new Date().toISOString(),
-});
-await repository.markCheckoutPending("cs_test_ach");
-assert.deepEqual(await repository.statuses([achItem]), [{ id: achItem, state: "pending" }]);
-await repository.markCheckoutSold("cs_test_ach", "ach");
-assert.deepEqual(await repository.statuses([achItem]), [{ id: achItem, state: "sold" }]);
-
-// ACH failure releases the item.
-const failedAchItem = "grodna/rh-1/shishi";
-await repository.acquireHold(failedAchItem, "ach-fail-token");
-await repository.saveCheckout({
-  sessionId: "cs_test_ach_fail",
-  kibbudId: failedAchItem,
-  holdToken: "ach-fail-token",
-  donorName: "ACH Failure",
-  email: "ach-fail@example.com",
-  misheberachNames: [],
-  amount: 1800,
-  preferredMethod: "ach",
-  createdAt: new Date().toISOString(),
-});
-await repository.markCheckoutPending("cs_test_ach_fail");
-await repository.releaseCheckout("cs_test_ach_fail");
-assert.deepEqual(await repository.statuses([failedAchItem]), []);
-
 // Per-occasion post-cutoff rejection.
 const cutoffItem = requireKibbud("grodna/yk-mincha/maftir-yonah");
 const cutoff = new Date("2026-09-20T18:20:00+03:00").getTime();
@@ -120,9 +84,8 @@ assert.throws(
 );
 
 // Webhook replay idempotency.
-assert.equal(await repository.beginStripeEvent("evt_replay"), "process");
-await repository.finishStripeEvent("evt_replay");
-assert.equal(await repository.beginStripeEvent("evt_replay"), "done");
+assert.equal(await repository.beginPaymentEvent("evt_replay"), "process");
+await repository.finishPaymentEvent("evt_replay");
+assert.equal(await repository.beginPaymentEvent("evt_replay"), "done");
 
 console.log("all state transitions passed");
-

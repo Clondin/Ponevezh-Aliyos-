@@ -14,6 +14,15 @@ export interface SponsorPayload {
   misheberachNames: string[];
 }
 
+export interface CardPaymentPayload extends SponsorPayload {
+  payment: {
+    nonce: string;
+    expiryMonth: number;
+    expiryYear: number;
+    avsZip?: string;
+  };
+}
+
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -83,6 +92,62 @@ export function sponsorPayload(
   return { kibbudId, donorName, email, phone, misheberachNames };
 }
 
+export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPayload {
+  const allowed = new Set([
+    "kibbudId",
+    "donorName",
+    "email",
+    "misheberachNames",
+    "payment",
+  ]);
+  if (Object.keys(body).some((key) => !allowed.has(key)) || !isRecord(body.payment)) {
+    invalidInput("Request contains an unsupported or missing payment field.");
+  }
+  const sponsor = sponsorPayload(
+    {
+      kibbudId: body.kibbudId,
+      donorName: body.donorName,
+      email: body.email,
+      misheberachNames: body.misheberachNames,
+    },
+    false
+  );
+  const payment = body.payment;
+  const paymentAllowed = new Set(["nonce", "expiryMonth", "expiryYear", "avsZip"]);
+  if (Object.keys(payment).some((key) => !paymentAllowed.has(key))) {
+    invalidInput("Payment contains an unsupported field.");
+  }
+  const nonce = cleanString(payment.nonce, "payment.nonce", 255);
+  if (!/^[A-Za-z0-9_-]+$/.test(nonce)) invalidInput("payment.nonce is invalid.");
+  if (
+    !Number.isInteger(payment.expiryMonth) ||
+    Number(payment.expiryMonth) < 1 ||
+    Number(payment.expiryMonth) > 12
+  ) {
+    invalidInput("payment.expiryMonth is invalid.");
+  }
+  if (
+    !Number.isInteger(payment.expiryYear) ||
+    Number(payment.expiryYear) < new Date().getUTCFullYear() ||
+    Number(payment.expiryYear) > 9999
+  ) {
+    invalidInput("payment.expiryYear is invalid.");
+  }
+  const avsZip =
+    payment.avsZip == null || payment.avsZip === ""
+      ? undefined
+      : cleanString(payment.avsZip, "payment.avsZip", 50);
+  return {
+    ...sponsor,
+    payment: {
+      nonce,
+      expiryMonth: Number(payment.expiryMonth),
+      expiryYear: Number(payment.expiryYear),
+      avsZip,
+    },
+  };
+}
+
 export function requireKibbud(kibbudId: string): Kibbud {
   const item = currentKibbud(kibbudId);
   if (!item) throw new ApiError("not_found", "Kibbud not found.", 404);
@@ -100,4 +165,3 @@ export function assertBeforeCutoff(item: Kibbud, now = Date.now()): void {
 export function trustedAmount(item: Kibbud): number {
   return currentPrice(item);
 }
-

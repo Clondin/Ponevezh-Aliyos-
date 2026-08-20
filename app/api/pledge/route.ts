@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
+import { holdCookieFromRequest } from "@/lib/api/hold-cookie";
 import {
   assertBeforeCutoff,
   readJson,
@@ -33,7 +34,13 @@ export async function POST(request: Request): Promise<Response> {
       expiresAt: new Date(now.getTime() + PLEDGE_HOLD_SECONDS * 1000).toISOString(),
       createdAt: now.toISOString(),
     };
-    await getRepository().createPledge(pledge, randomUUID());
+    const holdCookie = holdCookieFromRequest(request);
+    const fromCheckoutHold = holdCookie?.kibbudId === item.id;
+    await getRepository().createPledge(
+      pledge,
+      fromCheckoutHold ? holdCookie.token : randomUUID(),
+      fromCheckoutHold
+    );
     await notifyOfficeOfPledge(pledge).catch((error) => console.error(error));
     return Response.json({ pledgeId: pledge.id, expiresAt: pledge.expiresAt });
   } catch (error) {
@@ -45,4 +52,3 @@ export async function POST(request: Request): Promise<Response> {
     return apiErrorResponse(error);
   }
 }
-

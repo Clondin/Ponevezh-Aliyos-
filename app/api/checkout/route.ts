@@ -1,11 +1,10 @@
-import { cookies } from "next/headers";
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
-import { decodeHoldCookie, HOLD_COOKIE } from "@/lib/api/hold-cookie";
+import { holdCookieFromRequest } from "@/lib/api/hold-cookie";
 import {
   assertBeforeCutoff,
+  cardPaymentPayload,
   readJson,
   requireKibbud,
-  sponsorPayload,
   trustedAmount,
 } from "@/lib/api/validation";
 import {
@@ -13,26 +12,27 @@ import {
   getRepository,
   HoldExpiredError,
 } from "@/lib/redis/repository";
-import { createCheckoutSession } from "@/lib/stripe/checkout";
+import {
+  BanquestApiError,
+  BanquestConfigurationError,
+} from "@/lib/banquest/client";
+import { BanquestDeclinedError, chargeBanquestCard } from "@/lib/banquest/card";
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const payload = sponsorPayload(await readJson(request), false);
+    const payload = cardPaymentPayload(await readJson(request));
     const item = requireKibbud(payload.kibbudId);
     assertBeforeCutoff(item);
-    const holdCookie = decodeHoldCookie((await cookies()).get(HOLD_COOKIE)?.value);
+    const holdCookie = holdCookieFromRequest(request);
     if (!holdCookie || holdCookie.kibbudId !== item.id) throw new HoldExpiredError();
     await getRepository().checkoutHold(item.id, holdCookie.token);
-    const preferredMethod =
-      request.headers.get("x-preferred-payment-method") === "card" ? "card" : "ach";
-    const session = await createCheckoutSession(
+    const payment = await chargeBanquestCard(
       item,
       payload,
       holdCookie.token,
-      trustedAmount(item),
-      preferredMethod
+      trustedAmount(item)
     );
-    return Response.json({ url: session.url });
+    return Response.json(payment);
   } catch (error) {
     if (error instanceof HoldExpiredError) {
       return apiErrorResponse(
@@ -42,6 +42,29 @@ export async function POST(request: Request): Promise<Response> {
     if (error instanceof AlreadyTakenError) {
       return apiErrorResponse(
         new ApiError("already_taken", "This kibbud is already reserved or sponsored.", 409)
+      );
+    }
+    if (error instanceof BanquestConfigurationError) {
+      return apiErrorResponse(
+        new ApiError(
+          "internal",
+          "Online payment setup is not complete. Please choose wire or try again later.",
+          503
+        )
+      );
+    }
+    if (error instanceof BanquestDeclinedError) {
+      return apiErrorResponse(
+        new ApiError("invalid_input", error.message, 402)
+      );
+    }
+    if (error instanceof BanquestApiError) {
+      return apiErrorResponse(
+        new ApiError(
+          "internal",
+          "The payment service could not start this payment. Please try again.",
+          502
+        )
       );
     }
     return apiErrorResponse(error);

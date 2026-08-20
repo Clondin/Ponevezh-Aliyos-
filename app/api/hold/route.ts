@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
-import { encodeHoldCookie, HOLD_COOKIE } from "@/lib/api/hold-cookie";
+import {
+  encodeHoldCookie,
+  holdCookieFromRequest,
+  HOLD_COOKIE,
+} from "@/lib/api/hold-cookie";
 import {
   assertBeforeCutoff,
   readJson,
@@ -19,8 +23,20 @@ export async function POST(request: Request): Promise<Response> {
     const kibbudId = readKibbudId(await readJson(request));
     const item = requireKibbud(kibbudId);
     assertBeforeCutoff(item);
+    const repository = getRepository();
+    const previous = holdCookieFromRequest(request);
+    if (previous?.kibbudId === kibbudId) {
+      try {
+        const existing = await repository.holdOwnedBy(kibbudId, previous.token);
+        return NextResponse.json({ kibbudId, expiresAt: existing.expiresAt });
+      } catch {
+        // The cookie outlived its Redis hold; create a fresh hold below.
+      }
+    } else if (previous) {
+      await repository.releaseHold(previous.kibbudId, previous.token);
+    }
     const token = randomUUID();
-    const hold = await getRepository().acquireHold(kibbudId, token);
+    const hold = await repository.acquireHold(kibbudId, token);
     const response = NextResponse.json({ kibbudId, expiresAt: hold.expiresAt });
     response.cookies.set(HOLD_COOKIE, encodeHoldCookie({ kibbudId, token }), {
       httpOnly: true,
@@ -39,4 +55,3 @@ export async function POST(request: Request): Promise<Response> {
     return apiErrorResponse(error);
   }
 }
-
