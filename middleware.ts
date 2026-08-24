@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { authorizationCredential } from "@/lib/api/admin-credentials";
+import { ADMIN_COOKIE, adminSessionMatches } from "@/lib/api/admin-session";
 
-export function middleware(request: NextRequest): NextResponse {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   const expected = process.env.ADMIN_TOKEN;
   if (!expected) {
     return new NextResponse("Not found", {
@@ -11,16 +11,14 @@ export function middleware(request: NextRequest): NextResponse {
     });
   }
 
-  const provided = authorizationCredential(request.headers.get("authorization"));
-  if (provided === expected) return NextResponse.next();
+  if (request.nextUrl.pathname === "/admin/login") return NextResponse.next();
+  const session = request.cookies.get(ADMIN_COOKIE)?.value;
+  if (await adminSessionMatches(session, expected)) return NextResponse.next();
 
-  return new NextResponse("Authentication required", {
-    status: 401,
-    headers: {
-      "cache-control": "no-store",
-      "www-authenticate": 'Basic realm="Ponevez Office", charset="UTF-8"',
-    },
-  });
+  const loginUrl = request.nextUrl.clone();
+  loginUrl.pathname = "/admin/login";
+  loginUrl.search = "";
+  return NextResponse.redirect(loginUrl, 307);
 }
 
 export const config = {

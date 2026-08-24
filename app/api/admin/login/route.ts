@@ -1,0 +1,36 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import {
+  ADMIN_COOKIE,
+  ADMIN_SESSION_SECONDS,
+  adminSessionValue,
+  passwordMatches,
+} from "@/lib/api/admin-session";
+
+function loginRedirect(request: NextRequest, failed = false): NextResponse {
+  const url = new URL("/admin/login", request.url);
+  if (failed) url.searchParams.set("error", "1");
+  return NextResponse.redirect(url, 303);
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  const expected = process.env.ADMIN_TOKEN;
+  if (!expected) return new NextResponse("Not found", { status: 404 });
+
+  const form = await request.formData();
+  const password = form.get("password");
+  if (typeof password !== "string" || !passwordMatches(password, expected)) {
+    return loginRedirect(request, true);
+  }
+
+  const response = NextResponse.redirect(new URL("/admin", request.url), 303);
+  response.cookies.set(ADMIN_COOKIE, await adminSessionValue(expected), {
+    httpOnly: true,
+    secure: new URL(request.url).protocol === "https:",
+    sameSite: "strict",
+    path: "/",
+    maxAge: ADMIN_SESSION_SECONDS,
+  });
+  response.headers.set("cache-control", "no-store");
+  return response;
+}

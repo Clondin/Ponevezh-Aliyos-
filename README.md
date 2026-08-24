@@ -45,8 +45,8 @@ Cloudflare, and build/deploy with `npm run deploy` from Linux or Cloudflare's
 Git integration. OpenNext recommends Linux or WSL; native Windows builds emit a
 compatibility warning even when they complete successfully.
 
-Set `ADMIN_TOKEN` before using `/admin`. Browsers use it as the password in the
-HTTP Basic login prompt (the username can be any non-empty value). If it is not
+Set `ADMIN_TOKEN` before using `/admin`. The office login asks only for this
+password and creates a secure, HTTP-only 12-hour session cookie. If it is not
 configured, the office pages return 404 and donor information remains hidden.
 
 Every completed payment creates a donor receipt and an office sale notification.
