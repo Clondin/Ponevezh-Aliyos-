@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import SectionHeading from "@/components/SectionHeading";
 import { getMinyanim, getOccasions } from "@/lib/catalog";
 import { minyanAvailability, minyanFromPrice } from "@/lib/availability";
@@ -40,19 +41,39 @@ export default async function HomePage() {
   return (
     <>
       <section className="hero">
-        <div className="eyebrow">Tishrei 5787</div>
-        <div className="hero__he" lang="he">
-          {HEADING_HE.hero}
-        </div>
-        <h1>Kibbudim of the Yomim Noraim</h1>
-        <p>Each kibbud is given once, in one minyan, on one day.</p>
-        <div className="hero__actions">
-          <a href="#minyanim" className="btn btn--fill">
-            Choose a minyan
-          </a>
-          <a href="#how" className="btn btn--outline">
-            How it works
-          </a>
+        <div className="hero__inner">
+          <div className="hero__copy">
+            <div className="eyebrow">Tishrei 5787</div>
+            <div className="hero__he" lang="he">
+              {HEADING_HE.hero}
+            </div>
+            <h1>Kibbudim of the Yomim Noraim</h1>
+            <p>Each kibbud is given once, in one minyan, on one day.</p>
+            <div className="hero__actions">
+              <a href="#minyanim" className="btn btn--fill">
+                Choose a minyan
+              </a>
+              <a href="#how" className="btn btn--outline">
+                How it works
+              </a>
+            </div>
+          </div>
+
+          <figure className="hero__visual">
+            <Image
+              src="/images/yeshiva/beis-medrash.webp"
+              alt="The Ponevez Yeshiva beis medrash filled with talmidim learning"
+              width={1920}
+              height={1078}
+              sizes="(max-width: 900px) 100vw, 56vw"
+              priority
+              unoptimized
+            />
+            <figcaption>
+              <span lang="he">בית המדרש</span>
+              Ponevez Yeshiva, Bnei Brak
+            </figcaption>
+          </figure>
         </div>
       </section>
 
@@ -78,6 +99,48 @@ export default async function HomePage() {
               </Link>
             );
           })}
+        </div>
+      </section>
+
+      <section className="yeshiva-story band band--rules">
+        <div className="container yeshiva-story__inner">
+          <div className="yeshiva-story__media">
+            <figure className="yeshiva-story__image yeshiva-story__image--learning">
+              <Image
+                src="/images/yeshiva/learning.webp"
+                alt="Talmidim learning together in the Ponevez beis medrash"
+                width={1920}
+                height={1280}
+                sizes="(max-width: 900px) 70vw, 42vw"
+                unoptimized
+              />
+            </figure>
+            <figure className="yeshiva-story__image yeshiva-story__image--tefillah">
+              <Image
+                src="/images/yeshiva/tefillah.webp"
+                alt="The Ponevez beis medrash gathered for tefillah"
+                width={1920}
+                height={936}
+                sizes="(max-width: 900px) 30vw, 18vw"
+                unoptimized
+              />
+            </figure>
+          </div>
+
+          <div className="yeshiva-story__copy">
+            <div className="eyebrow">The beis medrash</div>
+            <div className="yeshiva-story__he" lang="he">
+              קול תורה
+            </div>
+            <h2>Carry the tefillos with you</h2>
+            <p>
+              Each kibbud connects your family to the tefillos of the Yomim
+              Noraim and supports the enduring voice of Torah at Ponevez.
+            </p>
+            <a href="#how" className="yeshiva-story__link">
+              How sponsorship works <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
         </div>
       </section>
 
