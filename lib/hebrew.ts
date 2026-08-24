@@ -13,7 +13,7 @@ import type { MinyanSlug, OccasionSlug } from "@/contracts/types";
 
 export const MINYAN_HE: Record<MinyanSlug, string> = {
   "ponevez-yeshiva": "ישיבת פוניבז׳",
-  "ponevez-kollelim": "כוללי פוניבז׳",
+  "ponevez-kollelim": "כולל פוניבז'",
   grodna: "גרודנא",
   perlman: "פרלמן",
   "yeshiva-ketana": "ישיבה קטנה",

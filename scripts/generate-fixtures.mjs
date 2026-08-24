@@ -26,7 +26,7 @@ const PRICES = {
 
 const MINYANIM = [
   { slug: "ponevez-yeshiva", name: "Ponevez Yeshiva", level: 1 },
-  { slug: "ponevez-kollelim", name: "Ponevez Kollelim", level: 1 },
+  { slug: "ponevez-kollelim", name: "Kollel Ponevez", level: 1 },
   { slug: "grodna", name: "Grodna", level: 2 },
   { slug: "perlman", name: "Perlman", level: 2 },
   { slug: "yeshiva-ketana", name: "Yeshiva Ketana", level: 3 },

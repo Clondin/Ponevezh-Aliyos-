@@ -130,12 +130,13 @@ export default async function HomePage() {
           <div className="yeshiva-story__copy">
             <div className="eyebrow">The beis medrash</div>
             <div className="yeshiva-story__he" lang="he">
-              קול תורה
+              קול התורה
             </div>
             <h2>Carry the tefillos with you</h2>
             <p>
               Each kibbud connects your family to the tefillos of the Yomim
-              Noraim and supports the enduring voice of Torah at Ponevez.
+              Noraim and supports the enduring voice of Torah and Tefillah at
+              Ponevez.
             </p>
             <a href="#how" className="yeshiva-story__link">
               How sponsorship works <span aria-hidden="true">&rarr;</span>
