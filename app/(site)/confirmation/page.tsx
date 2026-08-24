@@ -1,11 +1,14 @@
 import Link from "next/link";
+import React from "react";
 import type { Metadata } from "next";
 import { getCatalog, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog";
 import { kibbudHe } from "@/lib/hebrew";
 import { usd } from "@/lib/format";
 import { getRepository } from "@/lib/storage/repository";
+import { emailRecord } from "@/lib/notifications/email";
+import PrintButton from "@/components/PrintButton";
 
-export const metadata: Metadata = { title: "Confirmation" };
+export const metadata: Metadata = { title: "Confirmation", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function ConfirmationPage({
@@ -24,11 +27,25 @@ export default async function ConfirmationPage({
   const o = item ? getOccasion(item.occasion) : undefined;
   const isWire = method === "wire";
   const repository = getRepository();
-  const [checkout, pledge, order] = await Promise.all([
+  const [checkoutCandidate, pledgeCandidate] = await Promise.all([
     key ? repository.checkout(key) : Promise.resolve(null),
     pledgeId ? repository.pledge(pledgeId) : Promise.resolve(null),
-    itemId ? repository.orderFor(itemId) : Promise.resolve(null),
   ]);
+  const checkout = checkoutCandidate?.kibbudId === itemId ? checkoutCandidate : null;
+  const pledge = pledgeCandidate?.kibbudId === itemId ? pledgeCandidate : null;
+  const orderCandidate = checkout?.status === "sold" && itemId
+    ? await repository.orderFor(itemId)
+    : null;
+  const order = orderCandidate &&
+    (orderCandidate.paymentId === key || orderCandidate.id === `ord_${key}`)
+      ? orderCandidate
+      : null;
+  const accessValid = isWire ? Boolean(pledge) : Boolean(checkout);
+  const delivery = order
+    ? await emailRecord(`order-confirmation-${order.id}`)
+    : pledge
+      ? await emailRecord(`pledge-donor-${pledge.id}`)
+      : null;
   const pending = checkout?.status === "created" || checkout?.status === "pending";
   const unsuccessful = checkout?.status === "released" || checkout?.status === "reversed";
   const donor = order?.donorName ?? checkout?.donorName ?? pledge?.donorName;
@@ -41,7 +58,9 @@ export default async function ConfirmationPage({
         ✳
       </div>
       <h1>
-        {isWire
+        {!accessValid
+          ? "Confirmation unavailable"
+          : isWire
           ? "Your kibbud is reserved"
           : unsuccessful
             ? "Payment not completed"
@@ -50,7 +69,7 @@ export default async function ConfirmationPage({
               : "Thank you"}
       </h1>
 
-      {item && m && o && (
+      {item && m && o && accessValid && (
         <div className="receipt">
           <div className="receipt__he" lang="he">
             {kibbudHe(item.slug, item.name)}
@@ -64,20 +83,37 @@ export default async function ConfirmationPage({
             <span className="receipt__price">{usd(amount)}</span>
           </div>
           {donor && <div className="receipt__donor">Sponsored by {donor}</div>}
+          {(order?.dedicationType ?? pledge?.dedicationType) &&
+          (order?.dedicationName ?? pledge?.dedicationName) ? (
+            <div className="receipt__dedication">
+              {(order?.dedicationType ?? pledge?.dedicationType) === "memory"
+                ? "In memory of "
+                : "In honor of "}
+              {order?.dedicationName ?? pledge?.dedicationName}
+            </div>
+          ) : null}
         </div>
       )}
 
       <p className="confirm__body">
-        {isWire
-          ? "The kibbud is held for you for 72 hours. The office will email wire instructions to the address you provided."
+        {!accessValid
+          ? "This confirmation link is incomplete or has expired. No donor information is shown."
+          : isWire
+          ? delivery?.status === "sent"
+            ? "The kibbud is held for you for 72 hours. Payment instructions were emailed to the address you provided."
+            : "The kibbud is held for you for 72 hours. Your payment instructions are queued for delivery; you may also contact the office directly."
           : unsuccessful
             ? "Banquest did not complete this payment. The kibbud will be available to reserve again."
             : pending
               ? "Banquest is still confirming the credit-card payment."
-              : "A receipt has been emailed to you. The names you entered will be read at the Mi Shebeirach from the bimah."}
+              : delivery?.status === "sent"
+                ? "A receipt has been emailed to you. The names you entered will be read at the Mi Shebeirach from the bimah."
+                : "Your sponsorship is confirmed. Your receipt is queued for delivery, and the names you entered will be read at the Mi Shebeirach from the bimah."}
       </p>
       <p className="confirm__note">
-        {isWire
+        {!accessValid
+          ? "Return to the kibbudim list or contact the office for assistance."
+          : isWire
           ? "If payment does not arrive within 72 hours, the kibbud is released."
           : pending
             ? "We will email the receipt after the payment is confirmed."
@@ -85,6 +121,7 @@ export default async function ConfirmationPage({
       </p>
 
       <div className="actions">
+        {accessValid && !pending && !unsuccessful ? <PrintButton label="Print receipt" /> : null}
         <Link href={m ? `/${m.slug}` : "/"} className="btn btn--fill">
           Sponsor another
         </Link>

@@ -1,8 +1,10 @@
-import type { KibbudStatus, Order, Pledge } from "@/contracts/types";
+import { randomUUID } from "node:crypto";
+import type { KibbudStatus, Order } from "@/contracts/types";
 import { getStateStore } from "@/lib/storage/client";
 import { keys } from "@/lib/storage/keys";
 import type {
   CheckoutRecord,
+  AuditRecord,
   HoldRecord,
   PendingRecord,
   StateStore,
@@ -17,6 +19,11 @@ const CHECKOUT_RECORD_SECONDS = 90 * 24 * 60 * 60;
 
 export class AlreadyTakenError extends Error {}
 export class HoldExpiredError extends Error {}
+export class CheckoutInProgressError extends Error {}
+
+function checkoutItemIds(checkout: CheckoutRecord): string[] {
+  return checkout.kibbudIds?.length ? checkout.kibbudIds : [checkout.kibbudId];
+}
 
 export class KibbudRepository {
   constructor(private readonly redis: StateStore = getStateStore()) {}
@@ -54,6 +61,7 @@ export class KibbudRepository {
       await this.releaseHold(kibbudId, token);
       throw new AlreadyTakenError();
     }
+    await this.appendAudit({ action: "hold_created", kibbudId });
     return hold;
   }
 
@@ -83,7 +91,9 @@ export class KibbudRepository {
   }
 
   async saveCheckout(record: CheckoutRecord): Promise<void> {
-    await this.checkoutHold(record.kibbudId, record.holdToken);
+    await Promise.all(
+      checkoutItemIds(record).map((kibbudId) => this.checkoutHold(kibbudId, record.holdToken))
+    );
     await Promise.all([
       this.redis.set(keys.checkout(record.paymentId), record, {
         ex: CHECKOUT_RECORD_SECONDS,
@@ -92,6 +102,34 @@ export class KibbudRepository {
         ex: CHECKOUT_RECORD_SECONDS,
       }),
     ]);
+    await this.appendAudit({
+      action: "payment_started",
+      kibbudId: record.kibbudId,
+      referenceId: record.paymentId,
+    });
+  }
+
+  async beginCheckoutAttempt(holdToken: string): Promise<boolean> {
+    const claimed = await this.redis.set(keys.checkoutAttempt(holdToken), "1", {
+      nx: true,
+      ex: 90,
+    });
+    return claimed === "OK";
+  }
+
+  async finishCheckoutAttempt(holdToken: string): Promise<void> {
+    await this.redis.del(keys.checkoutAttempt(holdToken));
+  }
+
+  async updateCheckoutGateway(
+    paymentId: string,
+    gateway: { gatewayTransactionId?: string; gatewayReference?: string }
+  ): Promise<CheckoutRecord | null> {
+    const checkout = await this.checkout(paymentId);
+    if (!checkout) return null;
+    const updated = { ...checkout, ...gateway };
+    await this.redis.set(keys.checkout(paymentId), updated, { ex: CHECKOUT_RECORD_SECONDS });
+    return updated;
   }
 
   async checkout(paymentId: string): Promise<CheckoutRecord | null> {
@@ -108,43 +146,40 @@ export class KibbudRepository {
     if (!checkout) throw new HoldExpiredError();
     if (checkout.status === "sold" || checkout.status === "reversed") return;
     const expiresAt = new Date(Date.now() + PAYMENT_PENDING_SECONDS * 1000).toISOString();
-    const pending: PendingRecord = {
-      kibbudId: checkout.kibbudId,
-      kind: "checkout",
-      referenceId: paymentId,
-      expiresAt,
-    };
-    const hold: HoldRecord = {
-      kibbudId: checkout.kibbudId,
-      token: checkout.holdToken,
-      kind: "checkout",
-      expiresAt,
-    };
+    const itemIds = checkoutItemIds(checkout);
     await Promise.all([
       this.redis.set(
         keys.checkout(paymentId),
         { ...checkout, status: "pending" },
         { ex: CHECKOUT_RECORD_SECONDS }
       ),
-      this.redis.set(keys.pending(checkout.kibbudId), pending, {
-        ex: PAYMENT_PENDING_SECONDS,
-      }),
-      this.redis.set(keys.hold(checkout.kibbudId), hold, {
-        ex: PAYMENT_PENDING_SECONDS,
+      ...itemIds.flatMap((kibbudId) => {
+        const pending: PendingRecord = { kibbudId, kind: "checkout", referenceId: paymentId, expiresAt };
+        const hold: HoldRecord = { kibbudId, token: checkout.holdToken, kind: "checkout", expiresAt };
+        return [
+          this.redis.set(keys.pending(kibbudId), pending, { ex: PAYMENT_PENDING_SECONDS }),
+          this.redis.set(keys.hold(kibbudId), hold, { ex: PAYMENT_PENDING_SECONDS }),
+        ];
       }),
     ]);
+    await this.appendAudit({
+      action: "payment_pending",
+      kibbudId: checkout.kibbudId,
+      referenceId: paymentId,
+    });
   }
 
   async releaseCheckout(paymentId: string): Promise<void> {
     const checkout = await this.checkout(paymentId);
     if (!checkout) return;
-    const pending = await this.redis.get<PendingRecord>(keys.pending(checkout.kibbudId));
-    const hold = await this.redis.get<HoldRecord>(keys.hold(checkout.kibbudId));
     const deletes = [keys.checkoutByHold(checkout.holdToken)];
-    if (pending?.kind === "checkout" && pending.referenceId === paymentId) {
-      deletes.push(keys.pending(checkout.kibbudId));
+    for (const kibbudId of checkoutItemIds(checkout)) {
+      const [pending, hold] = await this.redis.mget<[PendingRecord | null, HoldRecord | null]>(
+        keys.pending(kibbudId), keys.hold(kibbudId)
+      );
+      if (pending?.kind === "checkout" && pending.referenceId === paymentId) deletes.push(keys.pending(kibbudId));
+      if (hold?.token === checkout.holdToken) deletes.push(keys.hold(kibbudId));
     }
-    if (hold?.token === checkout.holdToken) deletes.push(keys.hold(checkout.kibbudId));
     await Promise.all([
       this.redis.set(
         keys.checkout(paymentId),
@@ -153,35 +188,58 @@ export class KibbudRepository {
       ),
       this.redis.del(...deletes),
     ]);
+    await this.appendAudit({
+      action: "payment_released",
+      kibbudId: checkout.kibbudId,
+      referenceId: paymentId,
+    });
   }
 
   async markCheckoutSold(
     paymentId: string,
     method: Order["method"]
   ): Promise<StoredOrder> {
+    const orders = await this.markCheckoutGroupSold(paymentId, method);
+    if (!orders[0]) throw new HoldExpiredError();
+    return orders[0];
+  }
+
+  async markCheckoutGroupSold(
+    paymentId: string,
+    method: Order["method"]
+  ): Promise<StoredOrder[]> {
     const checkout = await this.checkout(paymentId);
     if (!checkout) throw new HoldExpiredError();
-    const existing = await this.redis.get<StoredOrder>(keys.sold(checkout.kibbudId));
-    if (existing?.id === `ord_${paymentId}`) return existing;
     if (checkout.status === "reversed") throw new AlreadyTakenError();
-    const order: StoredOrder = {
-      id: `ord_${paymentId}`,
-      kibbudId: checkout.kibbudId,
+    const itemIds = checkoutItemIds(checkout);
+    const orders: StoredOrder[] = itemIds.map((kibbudId, index) => ({
+      id: itemIds.length === 1 ? `ord_${paymentId}` : `ord_${paymentId}_${index + 1}`,
+      kibbudId,
       donorName: checkout.donorName,
       email: checkout.email,
       misheberachNames: checkout.misheberachNames,
-      amount: checkout.amount,
+      dedicationType: checkout.dedicationType,
+      dedicationName: checkout.dedicationName,
+      dedicationMessage: checkout.dedicationMessage,
+      honoreeEmail: checkout.honoreeEmail,
+      publicRecognition: checkout.publicRecognition,
+      recognitionName: checkout.recognitionName,
+      amount: checkout.amounts?.[kibbudId] ?? checkout.amount,
       method,
       createdAt: new Date().toISOString(),
-    };
-    await this.persistOrder(order);
-    const pending = await this.redis.get<PendingRecord>(keys.pending(checkout.kibbudId));
-    const hold = await this.redis.get<HoldRecord>(keys.hold(checkout.kibbudId));
+      paymentId,
+      gatewayTransactionId: checkout.gatewayTransactionId,
+      gatewayReference: checkout.gatewayReference,
+    }));
+    const existingOrders = await Promise.all(itemIds.map((id) => this.redis.get<StoredOrder>(keys.sold(id))));
+    if (existingOrders.every((order, index) => order?.id === orders[index].id)) return existingOrders as StoredOrder[];
+    for (const order of orders) await this.persistOrder(order);
     const deletes = [keys.checkoutByHold(checkout.holdToken)];
-    if (pending?.kind === "checkout" && pending.referenceId === paymentId) {
-      deletes.push(keys.pending(checkout.kibbudId));
+    for (const kibbudId of itemIds) {
+      const [pending, hold] = await this.redis.mget<[PendingRecord | null, HoldRecord | null]>(keys.pending(kibbudId), keys.hold(kibbudId));
+      if (pending?.kind === "checkout" && pending.referenceId === paymentId) deletes.push(keys.pending(kibbudId));
+      if (hold?.token === checkout.holdToken) deletes.push(keys.hold(kibbudId));
     }
-    if (hold?.token === checkout.holdToken) deletes.push(keys.hold(checkout.kibbudId));
     await Promise.all([
       this.redis.set(
         keys.checkout(paymentId),
@@ -190,24 +248,28 @@ export class KibbudRepository {
       ),
       this.redis.del(...deletes),
     ]);
-    return order;
+    await this.appendAudit({
+      action: "payment_completed",
+      kibbudId: checkout.kibbudId,
+      referenceId: paymentId,
+    });
+    return orders;
   }
 
   async reverseCheckout(paymentId: string): Promise<void> {
     const checkout = await this.checkout(paymentId);
     if (!checkout) return;
-    const orderId = `ord_${paymentId}`;
-    const sold = await this.redis.get<StoredOrder>(keys.sold(checkout.kibbudId));
-    const pending = await this.redis.get<PendingRecord>(keys.pending(checkout.kibbudId));
-    const hold = await this.redis.get<HoldRecord>(keys.hold(checkout.kibbudId));
     const deletes = [keys.checkoutByHold(checkout.holdToken)];
-    if (sold?.id === orderId) {
-      deletes.push(keys.sold(checkout.kibbudId), keys.order(orderId));
+    const orderIds: string[] = [];
+    for (const kibbudId of checkoutItemIds(checkout)) {
+      const [sold, pending, hold] = await this.redis.mget<[StoredOrder | null, PendingRecord | null, HoldRecord | null]>(keys.sold(kibbudId), keys.pending(kibbudId), keys.hold(kibbudId));
+      if (sold?.paymentId === paymentId || sold?.id === `ord_${paymentId}` || sold?.id.startsWith(`ord_${paymentId}_`)) {
+        deletes.push(keys.sold(kibbudId), keys.order(sold.id));
+        orderIds.push(sold.id);
+      }
+      if (pending?.kind === "checkout" && pending.referenceId === paymentId) deletes.push(keys.pending(kibbudId));
+      if (hold?.token === checkout.holdToken) deletes.push(keys.hold(kibbudId));
     }
-    if (pending?.kind === "checkout" && pending.referenceId === paymentId) {
-      deletes.push(keys.pending(checkout.kibbudId));
-    }
-    if (hold?.token === checkout.holdToken) deletes.push(keys.hold(checkout.kibbudId));
     await Promise.all([
       this.redis.set(
         keys.checkout(paymentId),
@@ -215,8 +277,13 @@ export class KibbudRepository {
         { ex: CHECKOUT_RECORD_SECONDS }
       ),
       this.redis.del(...deletes),
-      this.redis.srem(keys.orders, orderId),
+      ...(orderIds.length ? [this.redis.srem(keys.orders, ...orderIds)] : []),
     ]);
+    await this.appendAudit({
+      action: "payment_reversed",
+      kibbudId: checkout.kibbudId,
+      referenceId: paymentId,
+    });
   }
 
   async createPledge(
@@ -257,6 +324,11 @@ export class KibbudRepository {
         }),
         this.redis.sadd(keys.pendingPledges, pledge.id),
       ]);
+      await this.appendAudit({
+        action: "pledge_created",
+        kibbudId: pledge.kibbudId,
+        referenceId: pledge.id,
+      });
     } catch (error) {
       if (!fromCheckoutHold) await this.releaseHold(pledge.kibbudId, token);
       throw error;
@@ -267,7 +339,7 @@ export class KibbudRepository {
     return this.redis.get<StoredPledge>(keys.pledge(pledgeId));
   }
 
-  async pendingPledges(): Promise<Pledge[]> {
+  async pendingPledges(): Promise<StoredPledge[]> {
     const ids = await this.redis.smembers<string[]>(keys.pendingPledges);
     if (!ids.length) return [];
     const records = await this.redis.mget<Array<StoredPledge | null>>(
@@ -275,7 +347,7 @@ export class KibbudRepository {
     );
     const now = Date.now();
     const stale: string[] = [];
-    const pending: Pledge[] = [];
+    const pending: StoredPledge[] = [];
     records.forEach((pledge, index) => {
       if (!pledge || pledge.status !== "pending" || Date.parse(pledge.expiresAt) <= now) {
         stale.push(ids[index]);
@@ -303,6 +375,12 @@ export class KibbudRepository {
       donorName: pledge.donorName,
       email: pledge.email,
       misheberachNames: pledge.misheberachNames,
+      dedicationType: pledge.dedicationType,
+      dedicationName: pledge.dedicationName,
+      dedicationMessage: pledge.dedicationMessage,
+      honoreeEmail: pledge.honoreeEmail,
+      publicRecognition: pledge.publicRecognition,
+      recognitionName: pledge.recognitionName,
       amount: pledge.amount,
       // The frozen Order contract models bank payments as ACH; office-settled
       // wire/check pledges use the same bank-rail value.
@@ -312,6 +390,11 @@ export class KibbudRepository {
     await this.persistOrder(order);
     await this.redis.set(keys.pledge(pledge.id), { ...pledge, status: "confirmed" });
     await this.clearPledgeReservation(pledge);
+    await this.appendAudit({
+      action: "pledge_confirmed",
+      kibbudId: pledge.kibbudId,
+      referenceId: pledge.id,
+    });
     return order;
   }
 
@@ -325,6 +408,11 @@ export class KibbudRepository {
     if (pledge.status !== "pending") throw new AlreadyTakenError();
     await this.redis.set(keys.pledge(pledge.id), { ...pledge, status: "released" });
     await this.clearPledgeReservation(pledge);
+    await this.appendAudit({
+      action: "pledge_released",
+      kibbudId: pledge.kibbudId,
+      referenceId: pledge.id,
+    });
   }
 
   private async clearPledgeReservation(pledge: StoredPledge): Promise<void> {
@@ -363,15 +451,30 @@ export class KibbudRepository {
     await this.persistOrder(order);
   }
 
-  async orderFor(kibbudId: string): Promise<Order | null> {
+  async orderFor(kibbudId: string): Promise<StoredOrder | null> {
     return this.redis.get<StoredOrder>(keys.sold(kibbudId));
   }
 
-  async allOrders(): Promise<Order[]> {
+  async order(orderId: string): Promise<StoredOrder | null> {
+    return this.redis.get<StoredOrder>(keys.order(orderId));
+  }
+
+  async allOrders(): Promise<StoredOrder[]> {
     const ids = await this.redis.smembers<string[]>(keys.orders);
     if (!ids.length) return [];
     const orders = await this.redis.mget<Array<StoredOrder | null>>(...ids.map(keys.order));
     return orders.filter((order): order is StoredOrder => Boolean(order));
+  }
+
+  async ordersForPayment(paymentId: string): Promise<StoredOrder[]> {
+    const checkout = await this.checkout(paymentId);
+    if (!checkout) return [];
+    const orders = await Promise.all(
+      checkoutItemIds(checkout).map((kibbudId) => this.redis.get<StoredOrder>(keys.sold(kibbudId)))
+    );
+    return orders.filter(
+      (order): order is StoredOrder => Boolean(order && order.paymentId === paymentId)
+    );
   }
 
   /** One MGET round trip for all sold, pending, and held values. */
@@ -419,6 +522,30 @@ export class KibbudRepository {
 
   async failPaymentEvent(eventId: string): Promise<void> {
     await this.redis.del(keys.paymentEventLock(eventId));
+  }
+
+  async appendAudit(
+    record: Omit<AuditRecord, "id" | "createdAt"> & Partial<Pick<AuditRecord, "createdAt">>
+  ): Promise<AuditRecord> {
+    const createdAt = record.createdAt ?? new Date().toISOString();
+    const audit: AuditRecord = {
+      ...record,
+      id: `audit_${createdAt}_${randomUUID()}`,
+      createdAt,
+    };
+    await Promise.all([
+      this.redis.set(keys.audit(audit.id), audit),
+      this.redis.sadd(keys.auditLog, audit.id),
+    ]);
+    return audit;
+  }
+
+  async auditRecords(limit = 200): Promise<AuditRecord[]> {
+    const ids = await this.redis.smembers<string[]>(keys.auditLog);
+    if (!ids.length) return [];
+    const newest = ids.sort().reverse().slice(0, Math.max(1, Math.min(limit, 1000)));
+    const records = await this.redis.mget<Array<AuditRecord | null>>(...newest.map(keys.audit));
+    return records.filter((record): record is AuditRecord => Boolean(record));
   }
 }
 

@@ -4,7 +4,7 @@ import {
   parseBanquestWebhook,
   verifyBanquestSignature,
 } from "@/lib/banquest/webhook";
-import { sendOrderNotifications } from "@/lib/notifications/email";
+import { sendOrderNotifications, sendReversalNotifications } from "@/lib/notifications/email";
 import {
   AlreadyTakenError,
   getRepository,
@@ -62,9 +62,14 @@ export async function POST(request: Request): Promise<Response> {
       } else {
         await repository.releaseCheckout(event.paymentId);
       }
+      if (checkout) {
+        await sendReversalNotifications(checkout).catch((error) => console.error(error));
+      }
     } else if (event.type === "succeeded" || event.status === "settled") {
-      const order = await repository.markCheckoutSold(event.paymentId, "card");
-      await sendOrderNotifications(order).catch((error) => console.error(error));
+      const orders = await repository.markCheckoutGroupSold(event.paymentId, "card");
+      await Promise.all(
+        orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
+      );
     }
 
     await repository.finishPaymentEvent(event.id);

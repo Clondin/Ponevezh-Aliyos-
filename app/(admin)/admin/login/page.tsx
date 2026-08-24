@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 export const metadata: Metadata = { title: "Office login" };
 
@@ -8,6 +9,7 @@ export default async function AdminLogin({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
   return (
     <section className="admin-section">
       <div className="container" style={{ maxWidth: 520 }}>
@@ -27,12 +29,28 @@ export default async function AdminLogin({
                 required
               />
             </div>
+            {turnstileSiteKey ? (
+              <>
+                <Script
+                  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                  strategy="afterInteractive"
+                />
+                <div
+                  className="cf-turnstile turnstile-widget"
+                  data-sitekey={turnstileSiteKey}
+                  data-action="admin_login"
+                  data-theme="light"
+                />
+              </>
+            ) : null}
             {error ? (
               <p role="alert" style={{ color: "#9f2b2b", marginBottom: 16 }}>
-                Incorrect password. Please try again.
+                {error === "security"
+                  ? "The security check failed or there were too many attempts. Please wait and try again."
+                  : "Incorrect password. Please try again."}
               </p>
             ) : null}
-            <button className="btn btn--primary" type="submit">
+            <button className="btn btn--fill" type="submit">
               Open admin
             </button>
           </form>

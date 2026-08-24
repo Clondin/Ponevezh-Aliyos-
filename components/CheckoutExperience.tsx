@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import HoldBanner from "@/components/HoldBanner";
 import Notice from "@/components/Notice";
 import SponsorForm from "@/components/SponsorForm";
+import TurnstileWidget from "@/components/TurnstileWidget";
 
 type HoldState =
   | { kind: "loading" }
@@ -16,20 +17,27 @@ export default function CheckoutExperience({
   minyanHref,
   tokenizationKey,
   banquestEnvironment,
+  turnstileSiteKey,
 }: {
   itemId: string;
   occasionHref: string;
   minyanHref: string;
   tokenizationKey: string;
   banquestEnvironment: "sandbox" | "production";
+  turnstileSiteKey: string;
 }) {
   const [state, setState] = useState<HoldState>({ kind: "loading" });
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
+    if (turnstileSiteKey && !turnstileToken) return;
     const controller = new AbortController();
     void fetch("/api/hold", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...(turnstileToken ? { "x-turnstile-token": turnstileToken } : {}),
+      },
       body: JSON.stringify({ kibbudId: itemId }),
       signal: controller.signal,
     })
@@ -51,12 +59,23 @@ export default function CheckoutExperience({
         });
       });
     return () => controller.abort();
-  }, [itemId]);
+  }, [itemId, turnstileSiteKey, turnstileToken]);
 
   if (state.kind === "loading") {
     return (
-      <div className="form-card" role="status" aria-live="polite">
-        <p>Reserving this kibbud for you…</p>
+      <div className="form-card">
+        {turnstileSiteKey && !turnstileToken ? (
+          <>
+            <p style={{ marginBottom: 16 }}>One quick security check protects the kibbudim from automated holds.</p>
+            <TurnstileWidget
+              siteKey={turnstileSiteKey}
+              action="reserve_kibbud"
+              onToken={setTurnstileToken}
+            />
+          </>
+        ) : (
+          <p role="status" aria-live="polite">Reserving this kibbud for you…</p>
+        )}
       </div>
     );
   }

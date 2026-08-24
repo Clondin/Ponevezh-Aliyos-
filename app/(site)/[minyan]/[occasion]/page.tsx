@@ -6,6 +6,7 @@ import { getMinyan, getOccasion, itemsFor, priceForKibbud } from "@/lib/catalog"
 import { availabilityFromStatuses } from "@/lib/availability";
 import { OCCASION_HE } from "@/lib/hebrew";
 import { getRepository } from "@/lib/storage/repository";
+import { isWaveOpen, waveOpensAt } from "@/lib/calendar/sales";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function OccasionPage({
   const statusList = await getRepository().statuses(items.map((item) => item.id));
   const statuses = new Map(statusList.map((status) => [status.id, status]));
   const { fraction } = availabilityFromStatuses(items.length, statusList);
+  const opensAt = isWaveOpen(o.wave) ? undefined : waveOpensAt(o.wave);
 
   return (
     <>
@@ -67,6 +69,15 @@ export default async function OccasionPage({
       </div>
 
       <section className="container" style={{ padding: "56px 40px 96px" }}>
+        {opensAt ? (
+          <div className="campaign-notice" role="status">
+            Sponsorship for these kibbudim opens {new Date(opensAt).toLocaleString("en-US", {
+              timeZone: "America/New_York",
+              dateStyle: "long",
+              timeStyle: "short",
+            })} Eastern Time. You may browse the opportunities now.
+          </div>
+        ) : null}
         {items.length === 0 ? (
           <div className="notice" style={{ padding: "40px 0 60px" }}>
             <div className="notice__glyph" aria-hidden="true">
@@ -95,6 +106,7 @@ export default async function OccasionPage({
                   item={item}
                   price={priceForKibbud(item)}
                   status={statuses.get(item.id) ?? { id: item.id, state: "available" }}
+                  opensAt={opensAt}
                 />
               ))}
             </div>

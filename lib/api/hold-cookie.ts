@@ -2,6 +2,7 @@ export const HOLD_COOKIE = "kibbud-hold";
 
 interface HoldCookieValue {
   kibbudId: string;
+  kibbudIds?: string[];
   token: string;
 }
 
@@ -21,6 +22,11 @@ export function decodeHoldCookie(raw: string | undefined): HoldCookieValue | nul
     ) {
       return null;
     }
+    if (
+      (value as HoldCookieValue).kibbudIds != null &&
+      (!Array.isArray((value as HoldCookieValue).kibbudIds) ||
+        !(value as HoldCookieValue).kibbudIds!.every((item) => typeof item === "string"))
+    ) return null;
     return value as HoldCookieValue;
   } catch {
     return null;

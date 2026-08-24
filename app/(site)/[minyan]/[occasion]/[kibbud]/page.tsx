@@ -7,6 +7,9 @@ import { getKibbud, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog
 import { TIER_LABEL, kibbudHe } from "@/lib/hebrew";
 import { getRepository } from "@/lib/storage/repository";
 import { usd } from "@/lib/format";
+import { isWaveOpen, waveOpensAt } from "@/lib/calendar/sales";
+import ShareActions from "@/components/ShareActions";
+import BasketButton from "@/components/BasketButton";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +20,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { minyan, occasion, kibbud } = await params;
   const item = getKibbud(minyan, occasion, kibbud);
-  return { title: item ? `Sponsor ${item.name}` : "Kibbud" };
+  const m = getMinyan(minyan);
+  const o = getOccasion(occasion);
+  if (!item || !m || !o) return { title: "Kibbud" };
+  const description = `Sponsor ${item.name} for ${o.name} in the ${m.name} Minyan at Ponevez Yeshiva.`;
+  return {
+    title: `Sponsor ${item.name}`,
+    description,
+    openGraph: { title: `${item.name} — ${o.name}`, description, type: "website" },
+  };
 }
 
 export default async function KibbudPage({
@@ -38,6 +49,25 @@ export default async function KibbudPage({
     process.env.BANQUEST_ENV?.trim().toLowerCase() === "production"
       ? "production"
       : "sandbox";
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
+
+  if (!isWaveOpen(o.wave)) {
+    return (
+      <Notice
+        glyph="asterisk"
+        title="This sponsorship wave has not opened yet"
+        body={`This kibbud becomes available ${new Date(waveOpensAt(o.wave)).toLocaleString("en-US", {
+          timeZone: "America/New_York",
+          dateStyle: "long",
+          timeStyle: "short",
+        })} Eastern Time.`}
+        primaryHref={`/${m.slug}/${o.slug}`}
+        primaryLabel="View this tefillah"
+        secondaryHref={`/${m.slug}`}
+        secondaryLabel="Other days"
+      />
+    );
+  }
 
   if (status && status.state !== "available" && status.state !== "held") {
     const sold = status.state === "sold";
@@ -94,12 +124,18 @@ export default async function KibbudPage({
         className="container container--narrow"
         style={{ padding: "32px 40px 96px" }}
       >
+        <ShareActions
+          title={`${item.name} — ${o.name}`}
+          text={`Sponsor ${item.name} for ${o.name} in the ${m.name} Minyan at Ponevez.`}
+        />
+        <div className="sponsorship-list-action"><BasketButton itemId={item.id} /></div>
         <CheckoutExperience
           itemId={item.id}
           occasionHref={`/${m.slug}/${o.slug}`}
           minyanHref={`/${m.slug}`}
           tokenizationKey={tokenizationKey}
           banquestEnvironment={banquestEnvironment}
+          turnstileSiteKey={turnstileSiteKey}
         />
       </section>
     </>

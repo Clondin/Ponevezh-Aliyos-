@@ -8,7 +8,7 @@ import type {
   OccasionSlug,
   Tier,
 } from "@/contracts/types";
-import catalogJson from "@/contracts/fixtures/catalog-5787.json";
+import catalogJson from "@/lib/calendar/generated/catalog-5787.json";
 
 const catalog = catalogJson as unknown as Catalog;
 

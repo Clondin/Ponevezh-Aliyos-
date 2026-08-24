@@ -53,6 +53,20 @@ Every completed payment creates a donor receipt and an office sale notification.
 Set `OFFICE_NOTIFY_EMAIL`, `RESEND_API_KEY`, and `EMAIL_FROM` (on a verified
 sender domain) to deliver them. Without a configured transport, the messages are
 kept in the D1 email outbox so a payment notification is not silently lost.
+The office can inspect and retry queued messages at `/admin/email`, search
+orders and Banquest references at `/admin/orders`, and run a manual Banquest
+reconciliation from the overview.
+
+Optional Cloudflare Turnstile protection uses
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`; configure both or
+neither. `WAVE_1_OPENS_AT` and `WAVE_2_OPENS_AT` control when each catalog wave
+can be reserved. `NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN` enables the
+privacy-first Web Analytics beacon. See `.env.example` for the complete list.
+
+Donors can search all kibbudim at `/find`, build a sponsorship list of up to
+ten available kibbudim, and submit one combined card payment. Dedications and
+public recognition are opt-in; donor emails and Mi Shebeirach names are never
+shown publicly.
 
 ## Structure
 

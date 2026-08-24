@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getMinyanim, occasionsForMinyan } from "@/lib/catalog";
 import { usd } from "@/lib/format";
 import { getRepository } from "@/lib/storage/repository";
+import ReconcileButton from "@/components/ReconcileButton";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export default async function AdminHome() {
       <div className="container">
         <h1 className="admin-title">Season overview &mdash; 5787</h1>
         <p className="admin-sub">Tishrei 5787 &middot; 348 kibbudim across six minyanim.</p>
+        <div style={{ marginBottom: 28 }}><ReconcileButton /></div>
 
         <div className="admin-grid" style={{ marginBottom: 48 }}>
           <div className="stat-card">

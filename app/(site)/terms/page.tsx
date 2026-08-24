@@ -1,0 +1,5 @@
+import type { Metadata } from "next";
+import InfoPage from "@/components/InfoPage";
+
+export const metadata: Metadata = { title: "Terms" };
+export default function TermsPage() { return <InfoPage eyebrow="Legal" title="Sponsorship terms" hebrew="תנאי החסות"><p>A kibbud is confirmed only after the payment provider approves the transaction or the office confirms receipt of an arranged payment. A temporary hold or pledge is not a completed sponsorship.</p><p>Kibbud availability, tefillah details, and assignments may need to be corrected by the office or gabbaim if circumstances require. If a listed kibbud cannot be provided as described, the office will contact the sponsor to arrange an appropriate resolution.</p><p>Mi Shebeirach and dedication information is read and reproduced as submitted. Please review spelling carefully and contact the office promptly if a correction is needed.</p><p>Contributions are made to American Friends of Ponevez Yeshiva in Israel, Inc., EIN 13-5600414. No goods or services are provided in exchange for a contribution.</p></InfoPage>; }

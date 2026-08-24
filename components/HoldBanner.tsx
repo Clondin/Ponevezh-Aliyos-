@@ -11,18 +11,20 @@ import { formatSecs, useCountdown } from "@/components/Countdown";
 export default function HoldBanner({
   expiresAt,
   itemId,
+  expiredHref,
 }: {
   expiresAt: string;
   itemId: string;
+  expiredHref?: string;
 }) {
   const secs = useCountdown(expiresAt);
   const router = useRouter();
 
   useEffect(() => {
     if (secs !== null && secs <= 0) {
-      router.replace(`/expired?item=${encodeURIComponent(itemId)}`);
+      router.replace(expiredHref ?? `/expired?item=${encodeURIComponent(itemId)}`);
     }
-  }, [secs, router, itemId]);
+  }, [expiredHref, secs, router, itemId]);
 
   return (
     <div className="hold-banner" role="status">
@@ -34,7 +36,7 @@ export default function HoldBanner({
           If the time runs out, it is released for others.
         </div>
       </div>
-      <div className="hold-banner__clock" aria-live="polite">
+      <div className="hold-banner__clock" aria-label={secs === null ? "12 minutes remaining" : `${Math.ceil(secs / 60)} minutes remaining`}>
         {secs === null ? "12:00" : formatSecs(secs)}
       </div>
     </div>

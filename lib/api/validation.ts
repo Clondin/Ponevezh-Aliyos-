@@ -5,6 +5,7 @@ import {
   currentOccasion,
   currentPrice,
 } from "@/lib/calendar/current";
+import { waveOpensAt } from "@/lib/calendar/sales";
 
 export interface SponsorPayload {
   kibbudId: string;
@@ -12,6 +13,12 @@ export interface SponsorPayload {
   email: string;
   phone?: string;
   misheberachNames: string[];
+  dedicationType?: "honor" | "memory";
+  dedicationName?: string;
+  dedicationMessage?: string;
+  honoreeEmail?: string;
+  publicRecognition?: boolean;
+  recognitionName?: string;
 }
 
 export interface CardPaymentPayload extends SponsorPayload {
@@ -21,6 +28,10 @@ export interface CardPaymentPayload extends SponsorPayload {
     expiryYear: number;
     avsZip?: string;
   };
+}
+
+export interface CartPaymentPayload extends Omit<CardPaymentPayload, "kibbudId"> {
+  kibbudIds: string[];
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -66,6 +77,12 @@ export function sponsorPayload(
     "donorName",
     "email",
     "misheberachNames",
+    "dedicationType",
+    "dedicationName",
+    "dedicationMessage",
+    "honoreeEmail",
+    "publicRecognition",
+    "recognitionName",
     ...(allowPhone ? ["phone"] : []),
   ]);
   if (Object.keys(body).some((key) => !allowed.has(key))) {
@@ -89,7 +106,51 @@ export function sponsorPayload(
     allowPhone && body.phone != null && body.phone !== ""
       ? cleanString(body.phone, "phone", 40)
       : undefined;
-  return { kibbudId, donorName, email, phone, misheberachNames };
+  const dedicationType =
+    body.dedicationType === "honor" || body.dedicationType === "memory"
+      ? body.dedicationType
+      : undefined;
+  if (body.dedicationType != null && body.dedicationType !== "" && !dedicationType) {
+    invalidInput("dedicationType must be honor or memory.");
+  }
+  const dedicationName =
+    dedicationType && body.dedicationName != null
+      ? cleanString(body.dedicationName, "dedicationName", 160)
+      : undefined;
+  if (dedicationType && !dedicationName) {
+    invalidInput("dedicationName is required when adding a dedication.");
+  }
+  const dedicationMessage =
+    body.dedicationMessage == null || body.dedicationMessage === ""
+      ? undefined
+      : cleanString(body.dedicationMessage, "dedicationMessage", 500);
+  const honoreeEmail =
+    body.honoreeEmail == null || body.honoreeEmail === ""
+      ? undefined
+      : cleanString(body.honoreeEmail, "honoreeEmail", 254).toLowerCase();
+  if (honoreeEmail && !EMAIL.test(honoreeEmail)) {
+    invalidInput("honoreeEmail must be a valid email address.");
+  }
+  if (body.publicRecognition != null && typeof body.publicRecognition !== "boolean") {
+    invalidInput("publicRecognition must be true or false.");
+  }
+  const publicRecognition = body.publicRecognition === true;
+  const recognitionName = publicRecognition
+    ? cleanString(body.recognitionName ?? donorName, "recognitionName", 160)
+    : undefined;
+  return {
+    kibbudId,
+    donorName,
+    email,
+    phone,
+    misheberachNames,
+    dedicationType,
+    dedicationName,
+    dedicationMessage,
+    honoreeEmail,
+    publicRecognition,
+    recognitionName,
+  };
 }
 
 export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPayload {
@@ -98,6 +159,12 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
     "donorName",
     "email",
     "misheberachNames",
+    "dedicationType",
+    "dedicationName",
+    "dedicationMessage",
+    "honoreeEmail",
+    "publicRecognition",
+    "recognitionName",
     "payment",
   ]);
   if (Object.keys(body).some((key) => !allowed.has(key)) || !isRecord(body.payment)) {
@@ -109,6 +176,12 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
       donorName: body.donorName,
       email: body.email,
       misheberachNames: body.misheberachNames,
+      dedicationType: body.dedicationType,
+      dedicationName: body.dedicationName,
+      dedicationMessage: body.dedicationMessage,
+      honoreeEmail: body.honoreeEmail,
+      publicRecognition: body.publicRecognition,
+      recognitionName: body.recognitionName,
     },
     false
   );
@@ -148,6 +221,37 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
   };
 }
 
+export function cartPaymentPayload(body: Record<string, unknown>): CartPaymentPayload {
+  const allowed = new Set([
+    "kibbudIds", "donorName", "email", "misheberachNames", "payment",
+    "dedicationType", "dedicationName", "dedicationMessage", "honoreeEmail",
+    "publicRecognition", "recognitionName",
+  ]);
+  if (Object.keys(body).some((key) => !allowed.has(key)) || !Array.isArray(body.kibbudIds)) {
+    invalidInput("Request contains an unsupported or missing kibbudIds field.");
+  }
+  if (body.kibbudIds.length < 2 || body.kibbudIds.length > 10) {
+    invalidInput("A combined sponsorship must contain between 2 and 10 kibbudim.");
+  }
+  const kibbudIds = body.kibbudIds.map((value) => cleanString(value, "kibbudIds entry", 160));
+  if (new Set(kibbudIds).size !== kibbudIds.length) invalidInput("kibbudIds contains a duplicate.");
+  const parsed = cardPaymentPayload({
+    kibbudId: kibbudIds[0],
+    donorName: body.donorName,
+    email: body.email,
+    misheberachNames: body.misheberachNames,
+    payment: body.payment,
+    dedicationType: body.dedicationType,
+    dedicationName: body.dedicationName,
+    dedicationMessage: body.dedicationMessage,
+    honoreeEmail: body.honoreeEmail,
+    publicRecognition: body.publicRecognition,
+    recognitionName: body.recognitionName,
+  });
+  const { kibbudId: _ignored, ...rest } = parsed;
+  return { ...rest, kibbudIds };
+}
+
 export function requireKibbud(kibbudId: string): Kibbud {
   const item = currentKibbud(kibbudId);
   if (!item) throw new ApiError("not_found", "Kibbud not found.", 404);
@@ -160,6 +264,24 @@ export function assertBeforeCutoff(item: Kibbud, now = Date.now()): void {
   if (now >= Date.parse(occasion.cutoffISO)) {
     throw new ApiError("cutoff_passed", "Sponsorship for this occasion has closed.", 410);
   }
+}
+
+export function assertSaleOpen(item: Kibbud, now = Date.now()): void {
+  const occasion = currentOccasion(item.occasion);
+  if (!occasion) throw new ApiError("not_found", "Occasion not found.", 404);
+  const opensAt = waveOpensAt(occasion.wave);
+  if (now < Date.parse(opensAt)) {
+    throw new ApiError(
+      "cutoff_passed",
+      `This sponsorship wave opens ${new Date(opensAt).toLocaleString("en-US", {
+        timeZone: "America/New_York",
+        dateStyle: "long",
+        timeStyle: "short",
+      })} Eastern Time.`,
+      425
+    );
+  }
+  assertBeforeCutoff(item, now);
 }
 
 export function trustedAmount(item: Kibbud): number {

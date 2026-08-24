@@ -18,13 +18,15 @@ export default function KibbudCard({
   item,
   price,
   status,
+  opensAt,
 }: {
   item: Kibbud;
   price: number;
   status: KibbudStatus;
+  opensAt?: string;
 }) {
   const he = kibbudHe(item.slug, item.name);
-  const dim = status.state !== "available";
+  const dim = status.state !== "available" || Boolean(opensAt);
   const className = `kibbud-card${TIER_CLASS[item.tier]}${dim ? " kibbud-card--dim" : ""}`;
 
   const face = (
@@ -39,7 +41,12 @@ export default function KibbudCard({
       <div className="kibbud-card__strip">
         <span className="kibbud-card__price">{usd(price)}</span>
         <span className="kibbud-card__action">
-          {status.state === "available" && "Sponsor"}
+          {status.state === "available" && !opensAt && "Sponsor"}
+          {status.state === "available" && opensAt &&
+            `Opens ${new Date(opensAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}`}
           {status.state === "sold" && "Sponsored"}
           {(status.state === "pending" || status.state === "held") && "Reserved"}
         </span>

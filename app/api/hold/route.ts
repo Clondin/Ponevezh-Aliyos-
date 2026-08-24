@@ -7,11 +7,13 @@ import {
   HOLD_COOKIE,
 } from "@/lib/api/hold-cookie";
 import {
-  assertBeforeCutoff,
+  assertSaleOpen,
   readJson,
   readKibbudId,
   requireKibbud,
 } from "@/lib/api/validation";
+import { enforceRateLimit } from "@/lib/api/rate-limit";
+import { verifyTurnstile } from "@/lib/api/turnstile";
 import {
   AlreadyTakenError,
   CHECKOUT_HOLD_SECONDS,
@@ -20,9 +22,11 @@ import {
 
 export async function POST(request: Request): Promise<Response> {
   try {
+    await enforceRateLimit(request, "hold", 20, 10 * 60);
+    await verifyTurnstile(request, request.headers.get("x-turnstile-token"), "reserve_kibbud");
     const kibbudId = readKibbudId(await readJson(request));
     const item = requireKibbud(kibbudId);
-    assertBeforeCutoff(item);
+    assertSaleOpen(item);
     const repository = getRepository();
     const previous = holdCookieFromRequest(request);
     if (previous?.kibbudId === kibbudId) {
@@ -33,7 +37,11 @@ export async function POST(request: Request): Promise<Response> {
         // The cookie outlived its persisted hold; create a fresh hold below.
       }
     } else if (previous) {
-      await repository.releaseHold(previous.kibbudId, previous.token);
+      await Promise.all(
+        (previous.kibbudIds ?? [previous.kibbudId]).map((id) =>
+          repository.releaseHold(id, previous.token)
+        )
+      );
     }
     const token = randomUUID();
     const hold = await repository.acquireHold(kibbudId, token);

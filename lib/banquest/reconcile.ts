@@ -1,5 +1,5 @@
 import { listBanquestTransactions } from "@/lib/banquest/transactions";
-import { sendOrderNotifications } from "@/lib/notifications/email";
+import { sendOrderNotifications, sendReversalNotifications } from "@/lib/notifications/email";
 import { getRepository } from "@/lib/storage/repository";
 
 const FAILED = new Set([
@@ -32,17 +32,28 @@ export async function reconcileBanquestTransactions(): Promise<ReconciliationRes
       checked += 1;
       const status = transaction.status_details?.status;
       if (status && FAILED.has(status)) {
+        const checkout = await repository.checkout(paymentId);
         await repository.reverseCheckout(paymentId);
+        if (checkout) {
+          await sendReversalNotifications(checkout).catch((error) => console.error(error));
+        }
         updated += 1;
       } else if (status === "settled" || status === "captured" || status === "approved") {
-        const order = await repository.markCheckoutSold(paymentId, "card");
-        await sendOrderNotifications(order).catch((error) => console.error(error));
+        const orders = await repository.markCheckoutGroupSold(paymentId, "card");
+        await Promise.all(
+          orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
+        );
         updated += 1;
       }
     }
     if (transactions.length < 100) break;
     offset += transactions.length;
   }
+
+  await repository.appendAudit({
+    action: "reconciliation_run",
+    detail: `${checked} Banquest transactions checked; ${updated} local records updated`,
+  });
 
   return { checked, updated };
 }

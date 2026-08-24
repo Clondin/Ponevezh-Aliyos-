@@ -6,6 +6,8 @@ import {
   adminSessionValue,
   passwordMatches,
 } from "@/lib/api/admin-session";
+import { enforceRateLimit } from "@/lib/api/rate-limit";
+import { verifyTurnstile } from "@/lib/api/turnstile";
 
 function loginRedirect(request: NextRequest, failed = false): NextResponse {
   const url = new URL("/admin/login", request.url);
@@ -18,6 +20,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!expected) return new NextResponse("Not found", { status: 404 });
 
   const form = await request.formData();
+  try {
+    await enforceRateLimit(request, "admin-login", 8, 15 * 60);
+    await verifyTurnstile(
+      request,
+      typeof form.get("cf-turnstile-response") === "string"
+        ? String(form.get("cf-turnstile-response"))
+        : null,
+      "admin_login"
+    );
+  } catch {
+    const url = new URL("/admin/login", request.url);
+    url.searchParams.set("error", "security");
+    return NextResponse.redirect(url, 303);
+  }
   const password = form.get("password");
   if (typeof password !== "string" || !passwordMatches(password, expected)) {
     return loginRedirect(request, true);

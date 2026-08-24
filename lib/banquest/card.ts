@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Kibbud } from "@/contracts/types";
-import type { CardPaymentPayload } from "@/lib/api/validation";
+import type { CardPaymentPayload, CartPaymentPayload } from "@/lib/api/validation";
 import {
   banquestEnvironment,
   banquestRequest,
@@ -9,6 +9,7 @@ import {
 } from "@/lib/banquest/client";
 import { sendOrderNotifications } from "@/lib/notifications/email";
 import { getRepository } from "@/lib/storage/repository";
+import { CheckoutInProgressError } from "@/lib/storage/repository";
 import type { CheckoutRecord } from "@/lib/storage/types";
 
 interface CardChargeResponse {
@@ -37,36 +38,68 @@ function amountForEnvironment(trustedAmount: number): number {
 }
 
 export async function chargeBanquestCard(
-  item: Kibbud,
-  payload: CardPaymentPayload,
+  itemOrItems: Kibbud | Kibbud[],
+  payload: CardPaymentPayload | CartPaymentPayload,
   holdToken: string,
-  trustedAmount: number
+  trustedAmount: number | Record<string, number>
 ): Promise<{ paymentId: string; status: "sold" | "pending" }> {
+  const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
+  const item = items[0];
+  if (!item) throw new BanquestConfigurationError("At least one kibbud is required");
+  const trustedAmounts = typeof trustedAmount === "number"
+    ? { [item.id]: trustedAmount }
+    : trustedAmount;
+  const trustedTotal = Object.values(trustedAmounts).reduce((sum, value) => sum + value, 0);
   const repository = getRepository();
   const existing = await repository.checkoutForHold(holdToken);
-  if (existing?.status === "sold" || existing?.status === "pending") {
-    return { paymentId: existing.paymentId, status: existing.status };
+  if (existing) {
+    if (existing.status === "sold") return { paymentId: existing.paymentId, status: "sold" };
+    if (existing.status === "created" || existing.status === "pending") {
+      if (existing.status === "created") await repository.markCheckoutPending(existing.paymentId);
+      return { paymentId: existing.paymentId, status: "pending" };
+    }
+  }
+
+  const claimed = await repository.beginCheckoutAttempt(holdToken);
+  if (!claimed) {
+    const inFlight = await repository.checkoutForHold(holdToken);
+    if (inFlight) {
+      return {
+        paymentId: inFlight.paymentId,
+        status: inFlight.status === "sold" ? "sold" : "pending",
+      };
+    }
+    throw new CheckoutInProgressError("A payment is already being submitted for this hold.");
   }
 
   const paymentId = `bq_${randomUUID()}`;
-  const amount = amountForEnvironment(trustedAmount);
+  const amount = amountForEnvironment(trustedTotal);
   const record: CheckoutRecord = {
     paymentId,
     kibbudId: item.id,
+    kibbudIds: items.length > 1 ? items.map((candidate) => candidate.id) : undefined,
+    amounts: items.length > 1 ? trustedAmounts : undefined,
     holdToken,
     donorName: payload.donorName,
     email: payload.email,
     misheberachNames: payload.misheberachNames,
+    dedicationType: payload.dedicationType,
+    dedicationName: payload.dedicationName,
+    dedicationMessage: payload.dedicationMessage,
+    honoreeEmail: payload.honoreeEmail,
+    publicRecognition: payload.publicRecognition,
+    recognitionName: payload.recognitionName,
     amount,
     preferredMethod: "card",
     status: "created",
     createdAt: new Date().toISOString(),
   };
-  await repository.saveCheckout(record);
-
-  let response: CardChargeResponse;
   try {
-    response = await banquestRequest<CardChargeResponse>("/transactions/charge", {
+    await repository.saveCheckout(record);
+
+    let response: CardChargeResponse;
+    try {
+      response = await banquestRequest<CardChargeResponse>("/transactions/charge", {
       method: "POST",
       body: JSON.stringify({
         source: `nonce-${payload.payment.nonce}`,
@@ -78,13 +111,13 @@ export async function chargeBanquestCard(
         capture: true,
         ignore_duplicates: banquestEnvironment() === "sandbox",
         transaction_details: {
-          description: `Sponsor ${item.name}`,
-          invoice_number: item.id,
+          description: items.length === 1 ? `Sponsor ${item.name}` : `Sponsor ${items.length} Ponevez kibbudim`,
+          invoice_number: items.length === 1 ? item.id : `PONEVEZ-${paymentId.slice(-12)}`,
           order_number: paymentId,
         },
         custom_fields: {
           custom1: paymentId,
-          custom2: item.id,
+          custom2: items.length === 1 ? item.id : `${items.length} kibbudim`,
         },
         customer: {
           identifier: payload.donorName,
@@ -92,26 +125,40 @@ export async function chargeBanquestCard(
           send_receipt: false,
         },
       }),
-    });
-  } catch (error) {
-    if (error instanceof BanquestApiError && error.status < 500) {
-      await repository.releaseCheckout(paymentId);
+      });
+    } catch (error) {
+      if (error instanceof BanquestApiError && error.status < 500) {
+        await repository.releaseCheckout(paymentId);
+      } else {
+        // A timeout or gateway error is ambiguous: the charge may have reached
+        // Banquest. Keep the item reserved and let webhook/reconciliation settle it.
+        await repository.markCheckoutPending(paymentId);
+      }
+      throw error;
     }
-    throw error;
-  }
 
-  if (response.status === "Approved" || response.status === "Partially Approved") {
-    const order = await repository.markCheckoutSold(paymentId, "card");
-    await sendOrderNotifications(order).catch((error) => console.error(error));
-    return { paymentId, status: "sold" };
-  }
-  if (response.status === "Submitted") {
-    await repository.markCheckoutPending(paymentId);
-    return { paymentId, status: "pending" };
-  }
+    await repository.updateCheckoutGateway(paymentId, {
+      gatewayTransactionId: response.transaction?.id?.toString(),
+      gatewayReference: response.reference_number?.toString(),
+    });
 
-  await repository.releaseCheckout(paymentId);
-  throw new BanquestDeclinedError(
-    response.error_message || "The card was not approved. Please try another card."
-  );
+    if (response.status === "Approved" || response.status === "Partially Approved") {
+      const orders = await repository.markCheckoutGroupSold(paymentId, "card");
+      await Promise.all(
+        orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
+      );
+      return { paymentId, status: "sold" };
+    }
+    if (response.status === "Submitted") {
+      await repository.markCheckoutPending(paymentId);
+      return { paymentId, status: "pending" };
+    }
+
+    await repository.releaseCheckout(paymentId);
+    throw new BanquestDeclinedError(
+      response.error_message || "The card was not approved. Please try another card."
+    );
+  } finally {
+    await repository.finishCheckoutAttempt(holdToken);
+  }
 }

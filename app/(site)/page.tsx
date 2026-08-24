@@ -22,7 +22,7 @@ const STEPS = [
   {
     num: "03",
     title: "Complete your sponsorship",
-    body: "Card, bank transfer, or a wire arranged with the office.",
+    body: "Credit card, or reserve and arrange payment with the office.",
   },
 ];
 

@@ -22,8 +22,9 @@ export default function SiteFooter() {
           <span className="micro">Quick links</span>
           <div className="site-footer__links">
             <Link href="/">Kibbudim</Link>
-            <Link href="/">Sponsor a Day</Link>
-            <Link href="/">About the Yeshiva</Link>
+            <Link href="/find">Find a kibbud</Link>
+            <Link href="/sponsors">With gratitude</Link>
+            <Link href="/about">About the Yeshiva</Link>
             <Link href="/admin">Office</Link>
           </div>
         </div>
@@ -31,18 +32,18 @@ export default function SiteFooter() {
         <div>
           <span className="micro">Contact</span>
           <div>
-            office@ponevez.org
+            <a href="mailto:office@ponevez.com">office@ponevez.com</a>
             <br />
-            +1 (212) 555&ndash;0140
+            <a href="tel:+12126759260">+1 (212) 675&ndash;9260</a>
           </div>
-          <Link href="/" className="site-footer__cta">
+          <Link href="/find" className="site-footer__cta">
             Sponsor a kibbud
           </Link>
         </div>
       </div>
 
       <div className="site-footer__legal">
-        <div>&copy; 5787 / 2026 Ponevez Yeshiva. All rights reserved.</div>
+        <div className="site-footer__legal-row"><span>&copy; 5787 / 2026 Ponevez Yeshiva. All rights reserved.</span><span><Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link> · <Link href="/refunds">Refunds</Link></span></div>
       </div>
     </footer>
   );

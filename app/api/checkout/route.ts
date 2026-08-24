@@ -1,16 +1,18 @@
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { holdCookieFromRequest } from "@/lib/api/hold-cookie";
 import {
-  assertBeforeCutoff,
+  assertSaleOpen,
   cardPaymentPayload,
   readJson,
   requireKibbud,
   trustedAmount,
 } from "@/lib/api/validation";
+import { enforceRateLimit } from "@/lib/api/rate-limit";
 import {
   AlreadyTakenError,
   getRepository,
   HoldExpiredError,
+  CheckoutInProgressError,
 } from "@/lib/storage/repository";
 import {
   BanquestApiError,
@@ -20,9 +22,10 @@ import { BanquestDeclinedError, chargeBanquestCard } from "@/lib/banquest/card";
 
 export async function POST(request: Request): Promise<Response> {
   try {
+    await enforceRateLimit(request, "checkout", 10, 15 * 60);
     const payload = cardPaymentPayload(await readJson(request));
     const item = requireKibbud(payload.kibbudId);
-    assertBeforeCutoff(item);
+    assertSaleOpen(item);
     const holdCookie = holdCookieFromRequest(request);
     if (!holdCookie || holdCookie.kibbudId !== item.id) throw new HoldExpiredError();
     await getRepository().checkoutHold(item.id, holdCookie.token);
@@ -42,6 +45,15 @@ export async function POST(request: Request): Promise<Response> {
     if (error instanceof AlreadyTakenError) {
       return apiErrorResponse(
         new ApiError("already_taken", "This kibbud is already reserved or sponsored.", 409)
+      );
+    }
+    if (error instanceof CheckoutInProgressError) {
+      return apiErrorResponse(
+        new ApiError(
+          "already_taken",
+          "This payment is already being submitted. Please do not submit it again.",
+          409
+        )
       );
     }
     if (error instanceof BanquestConfigurationError) {
