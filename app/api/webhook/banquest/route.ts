@@ -4,7 +4,7 @@ import {
   parseBanquestWebhook,
   verifyBanquestSignature,
 } from "@/lib/banquest/webhook";
-import { sendDonorConfirmation } from "@/lib/notifications/email";
+import { sendOrderNotifications } from "@/lib/notifications/email";
 import {
   AlreadyTakenError,
   getRepository,
@@ -64,7 +64,7 @@ export async function POST(request: Request): Promise<Response> {
       }
     } else if (event.type === "succeeded" || event.status === "settled") {
       const order = await repository.markCheckoutSold(event.paymentId, "card");
-      await sendDonorConfirmation(order).catch((error) => console.error(error));
+      await sendOrderNotifications(order).catch((error) => console.error(error));
     }
 
     await repository.finishPaymentEvent(event.id);

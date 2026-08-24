@@ -7,7 +7,7 @@ import {
   BanquestApiError,
   BanquestConfigurationError,
 } from "@/lib/banquest/client";
-import { sendDonorConfirmation } from "@/lib/notifications/email";
+import { sendOrderNotifications } from "@/lib/notifications/email";
 import { getRepository } from "@/lib/storage/repository";
 import type { CheckoutRecord } from "@/lib/storage/types";
 
@@ -102,7 +102,7 @@ export async function chargeBanquestCard(
 
   if (response.status === "Approved" || response.status === "Partially Approved") {
     const order = await repository.markCheckoutSold(paymentId, "card");
-    await sendDonorConfirmation(order).catch((error) => console.error(error));
+    await sendOrderNotifications(order).catch((error) => console.error(error));
     return { paymentId, status: "sold" };
   }
   if (response.status === "Submitted") {

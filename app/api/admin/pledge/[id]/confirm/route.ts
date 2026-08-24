@@ -1,6 +1,6 @@
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { requireAdmin } from "@/lib/api/auth";
-import { sendDonorConfirmation } from "@/lib/notifications/email";
+import { sendOrderNotifications } from "@/lib/notifications/email";
 import { getRepository, HoldExpiredError } from "@/lib/storage/repository";
 
 export async function POST(
@@ -11,7 +11,7 @@ export async function POST(
     await requireAdmin(request);
     const { id } = await params;
     const order = await getRepository().confirmPledge(id);
-    await sendDonorConfirmation(order).catch((error) => console.error(error));
+    await sendOrderNotifications(order).catch((error) => console.error(error));
     return Response.json({ ok: true });
   } catch (error) {
     if (error instanceof HoldExpiredError) {

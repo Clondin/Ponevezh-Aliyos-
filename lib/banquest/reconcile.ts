@@ -1,5 +1,5 @@
 import { listBanquestTransactions } from "@/lib/banquest/transactions";
-import { sendDonorConfirmation } from "@/lib/notifications/email";
+import { sendOrderNotifications } from "@/lib/notifications/email";
 import { getRepository } from "@/lib/storage/repository";
 
 const FAILED = new Set([
@@ -36,7 +36,7 @@ export async function reconcileBanquestTransactions(): Promise<ReconciliationRes
         updated += 1;
       } else if (status === "settled" || status === "captured" || status === "approved") {
         const order = await repository.markCheckoutSold(paymentId, "card");
-        await sendDonorConfirmation(order).catch((error) => console.error(error));
+        await sendOrderNotifications(order).catch((error) => console.error(error));
         updated += 1;
       }
     }

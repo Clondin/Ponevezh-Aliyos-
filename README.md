@@ -49,6 +49,11 @@ Set `ADMIN_TOKEN` before using `/admin`. Browsers use it as the password in the
 HTTP Basic login prompt (the username can be any non-empty value). If it is not
 configured, the office pages return 404 and donor information remains hidden.
 
+Every completed payment creates a donor receipt and an office sale notification.
+Set `OFFICE_NOTIFY_EMAIL`, `RESEND_API_KEY`, and `EMAIL_FROM` (on a verified
+sender domain) to deliver them. Without a configured transport, the messages are
+kept in the D1 email outbox so a payment notification is not silently lost.
+
 ## Structure
 
 - `app/(site)/` — donor catalog, live availability, reservation, payment, and

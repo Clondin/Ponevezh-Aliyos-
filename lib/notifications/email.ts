@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 import type { Order, Pledge } from "@/contracts/types";
-import { currentKibbud, currentOccasion } from "@/lib/calendar/current";
+import {
+  currentKibbud,
+  currentMinyan,
+  currentOccasion,
+} from "@/lib/calendar/current";
 import { getStateStore } from "@/lib/storage/client";
 import { keys } from "@/lib/storage/keys";
 
@@ -25,6 +29,8 @@ function escapeHtml(value: string): string {
 }
 
 function sender(): string {
+  const configured = process.env.EMAIL_FROM?.trim();
+  if (configured) return configured;
   try {
     const host = new URL(process.env.SITE_URL ?? "http://localhost").hostname;
     if (host !== "localhost") {
@@ -118,4 +124,48 @@ export async function sendDonorConfirmation(order: Order): Promise<void> {
     createdAt: new Date().toISOString(),
   };
   await deliver(record);
+}
+
+export async function notifyOfficeOfOrder(order: Order): Promise<void> {
+  const officeEmail = process.env.OFFICE_NOTIFY_EMAIL;
+  if (!officeEmail) throw new Error("OFFICE_NOTIFY_EMAIL is required");
+  const item = currentKibbud(order.kibbudId);
+  const minyan = item ? currentMinyan(item.minyan) : undefined;
+  const occasion = item ? currentOccasion(item.occasion) : undefined;
+  const record: EmailRecord = {
+    id: `order-office-${order.id}`,
+    to: officeEmail,
+    subject: `Payment received: ${item?.name ?? order.kibbudId}`,
+    html: `<h1>Kibbud payment received</h1>
+      <p><strong>Kibbud:</strong> ${escapeHtml(item?.name ?? order.kibbudId)}</p>
+      <p><strong>Minyan:</strong> ${escapeHtml(minyan?.name ?? "Unknown")}</p>
+      <p><strong>Occasion:</strong> ${escapeHtml(occasion?.name ?? "Unknown")}</p>
+      <p><strong>Donor:</strong> ${escapeHtml(order.donorName)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(order.email)}</p>
+      <p><strong>Amount:</strong> $${order.amount.toLocaleString("en-US")}</p>
+      <p><strong>Payment method:</strong> ${order.method === "card" ? "Credit card" : "Office-confirmed payment"}</p>
+      <p><strong>Mi Shebeirach:</strong> ${escapeHtml(order.misheberachNames.join("; ") || "None provided")}</p>
+      <p><strong>Order ID:</strong> ${escapeHtml(order.id)}</p>
+      <p><strong>Received:</strong> ${escapeHtml(order.createdAt)}</p>`,
+    status: "queued",
+    createdAt: new Date().toISOString(),
+  };
+  await deliver(record);
+}
+
+/** Sends both sides of a completed sale. Stable record IDs make retries safe. */
+export async function sendOrderNotifications(order: Order): Promise<void> {
+  const results = await Promise.allSettled([
+    sendDonorConfirmation(order),
+    notifyOfficeOfOrder(order),
+  ]);
+  const failures = results.filter(
+    (result): result is PromiseRejectedResult => result.status === "rejected"
+  );
+  if (failures.length) {
+    throw new AggregateError(
+      failures.map((failure) => failure.reason),
+      "One or more order emails could not be processed"
+    );
+  }
 }

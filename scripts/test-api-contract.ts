@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { setStateStoreForTests } from "../lib/storage/client";
 import { MemoryStateStore } from "../lib/storage/memory";
+import { keys } from "../lib/storage/keys";
 import { getRepository } from "../lib/storage/repository";
 import { setBanquestFetchForTests } from "../lib/banquest/client";
 import { POST as holdPost } from "../app/api/hold/route";
@@ -20,7 +21,8 @@ process.env.OFFICE_NOTIFY_EMAIL = "office@example.com";
 process.env.ADMIN_TOKEN = "test-admin-token";
 process.env.SITE_URL = "http://localhost:3110";
 
-setStateStoreForTests(new MemoryStateStore());
+const stateStore = new MemoryStateStore();
+setStateStoreForTests(stateStore);
 
 const jsonRequest = (url: string, body: unknown, headers: HeadersInit = {}) =>
   new Request(url, {
@@ -88,6 +90,10 @@ const checkout = (await checkoutResponse.json()) as {
 };
 assert.match(checkout.paymentId, /^bq_/);
 assert.equal(checkout.status, "sold");
+const checkoutOrderId = `ord_${checkout.paymentId}`;
+const queuedEmailIds = await stateStore.smembers<string[]>(keys.emailOutbox);
+assert.ok(queuedEmailIds.includes(`order-confirmation-${checkoutOrderId}`));
+assert.ok(queuedEmailIds.includes(`order-office-${checkoutOrderId}`));
 setBanquestFetchForTests(undefined);
 
 const stateResponse = await stateGet(
