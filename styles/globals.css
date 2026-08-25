@@ -20,9 +20,9 @@
   --bronze-tint: #fdf8f3;
   --bronze-ftr: #d6a377;
 
-  --display: "Marcellus", Georgia, serif;
-  --hebrew: "David Libre", "Frank Ruhl Libre", serif;
-  --ui: "Public Sans", system-ui, sans-serif;
+  --display: var(--font-display, "Marcellus"), Georgia, serif;
+  --hebrew: var(--font-hebrew, "David Libre"), "Frank Ruhl Libre", serif;
+  --ui: var(--font-ui, "Public Sans"), system-ui, sans-serif;
   --mono: ui-monospace, Menlo, monospace;
 
   --max-width: 1120px;
@@ -496,7 +496,8 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 55% center;
+  /* Keep the aron kodesh in frame as the column narrows. */
+  object-position: 48% 30%;
   display: block;
 }
 .hero__visual figcaption {
@@ -602,10 +603,10 @@ img {
   object-fit: cover;
 }
 .yeshiva-story__image--learning img {
-  object-position: 52% center;
+  object-position: 60% center;
 }
-.yeshiva-story__image--tefillah img {
-  object-position: 54% center;
+.yeshiva-story__image--aron img {
+  object-position: center 32%;
 }
 .yeshiva-story__copy .eyebrow {
   margin-bottom: 24px;
@@ -651,6 +652,8 @@ img {
   gap: 0;
 }
 .tishrei-col {
+  display: flex;
+  flex-direction: column;
   border-left: 1px solid var(--hairline);
   padding: 0 14px;
   text-align: center;
@@ -676,7 +679,9 @@ img {
   font-size: 10px;
   letter-spacing: 0.1em;
   color: var(--faint);
-  margin-top: 8px;
+  /* Pin dates to a shared baseline even when the Hebrew wraps deeper. */
+  margin-top: auto;
+  padding-top: 8px;
 }
 
 /* ---- home: how it works ---- */
@@ -703,6 +708,63 @@ img {
   font-size: 15px;
   color: var(--muted);
   line-height: 1.65;
+}
+
+/* ---- home: facade band ---- */
+
+.facade__figure {
+  position: relative;
+  overflow: hidden;
+}
+.facade__figure img {
+  width: 100%;
+  height: clamp(240px, 34vw, 560px);
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+}
+.facade__figure figcaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(26, 24, 21, 0.9);
+  color: rgba(247, 245, 240, 0.7);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.facade__figure figcaption span {
+  color: var(--bronze-ftr);
+  font-family: var(--hebrew);
+  font-size: 18px;
+  letter-spacing: 0;
+}
+.facade__strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+.facade__strip p {
+  font-size: 14.5px;
+  color: var(--muted);
+}
+.facade__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 /* ---- minyan: day rows ---- */

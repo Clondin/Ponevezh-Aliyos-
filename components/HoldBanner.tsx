@@ -36,8 +36,15 @@ export default function HoldBanner({
           If the time runs out, it is released for others.
         </div>
       </div>
-      <div className="hold-banner__clock" aria-label={secs === null ? "12 minutes remaining" : `${Math.ceil(secs / 60)} minutes remaining`}>
-        {secs === null ? "12:00" : formatSecs(secs)}
+      <div
+        className="hold-banner__clock"
+        aria-label={
+          secs === null
+            ? "Hold time remaining"
+            : `${Math.ceil(secs / 60)} minutes remaining`
+        }
+      >
+        {secs === null ? "–:––" : formatSecs(secs)}
       </div>
     </div>
   );
