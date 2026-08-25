@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { withBasePath } from "@/lib/site-paths";
 import Script from "next/script";
 
 export const metadata: Metadata = { title: "Office login" };
@@ -16,7 +17,7 @@ export default async function AdminLogin({
         <div className="form-card">
           <p className="eyebrow">Ponevez office</p>
           <h1 className="admin-title">Enter the admin password</h1>
-          <form action="/api/admin/login" method="post">
+          <form action={withBasePath("/api/admin/login")} method="post">
             <div className="field">
               <label htmlFor="password">Password</label>
               <input

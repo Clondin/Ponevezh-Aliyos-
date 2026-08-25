@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBasePath } from "@/lib/site-paths";
 
 export default function EmailRetryButton({ id }: { id: string }) {
   const [status, setStatus] = useState<"idle" | "busy" | "sent" | "queued" | "error">("idle");
@@ -8,7 +9,7 @@ export default function EmailRetryButton({ id }: { id: string }) {
   async function retry() {
     setStatus("busy");
     try {
-      const response = await fetch(`/api/admin/email/${encodeURIComponent(id)}/retry`, {
+      const response = await fetch(withBasePath(`/api/admin/email/${encodeURIComponent(id)}/retry`), {
         method: "POST",
       });
       const body = (await response.json()) as { status?: "sent" | "queued" };

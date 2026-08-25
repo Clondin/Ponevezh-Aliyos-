@@ -4,6 +4,7 @@ import { getMinyanim, getOccasions } from "@/lib/catalog";
 import { minyanAvailability, minyanFromPrice } from "@/lib/availability";
 import { HEADING_HE, MINYAN_HE, OCCASION_HE } from "@/lib/hebrew";
 import { shortDate, usd } from "@/lib/format";
+import { withBasePath } from "@/lib/site-paths";
 
 export const dynamic = "force-dynamic";
 
@@ -60,8 +61,8 @@ export default async function HomePage() {
 
           <figure className="hero__visual">
             <img
-              src="/images/yeshiva/davening-1600.webp"
-              srcSet="/images/yeshiva/davening-800.webp 800w, /images/yeshiva/davening-1600.webp 1600w"
+              src={withBasePath("/images/yeshiva/davening-1600.webp")}
+              srcSet={`${withBasePath("/images/yeshiva/davening-800.webp")} 800w, ${withBasePath("/images/yeshiva/davening-1600.webp")} 1600w`}
               sizes="(max-width: 900px) 100vw, 56vw"
               width={1600}
               height={1283}
@@ -106,8 +107,8 @@ export default async function HomePage() {
           <div className="yeshiva-story__media">
             <figure className="yeshiva-story__image yeshiva-story__image--learning">
               <img
-                src="/images/yeshiva/chavrusa-1400.webp"
-                srcSet="/images/yeshiva/chavrusa-700.webp 700w, /images/yeshiva/chavrusa-1400.webp 1400w"
+                src={withBasePath("/images/yeshiva/chavrusa-1400.webp")}
+                srcSet={`${withBasePath("/images/yeshiva/chavrusa-700.webp")} 700w, ${withBasePath("/images/yeshiva/chavrusa-1400.webp")} 1400w`}
                 sizes="(max-width: 900px) 70vw, 42vw"
                 width={1400}
                 height={933}
@@ -118,7 +119,7 @@ export default async function HomePage() {
             </figure>
             <figure className="yeshiva-story__image yeshiva-story__image--aron">
               <img
-                src="/images/yeshiva/aron-700.webp"
+                src={withBasePath("/images/yeshiva/aron-700.webp")}
                 sizes="(max-width: 900px) 30vw, 18vw"
                 width={700}
                 height={1400}
@@ -181,8 +182,8 @@ export default async function HomePage() {
       <section className="facade band band--rules" aria-label="The yeshiva building">
         <figure className="facade__figure">
           <img
-            src="/images/yeshiva/facade-1920.webp"
-            srcSet="/images/yeshiva/facade-960.webp 960w, /images/yeshiva/facade-1920.webp 1920w"
+            src={withBasePath("/images/yeshiva/facade-1920.webp")}
+            srcSet={`${withBasePath("/images/yeshiva/facade-960.webp")} 960w, ${withBasePath("/images/yeshiva/facade-1920.webp")} 1920w`}
             sizes="100vw"
             width={1920}
             height={738}

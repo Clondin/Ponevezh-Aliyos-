@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Pledge } from "@/contracts/types";
 import { usd, formatDateTime } from "@/lib/format";
+import { withBasePath } from "@/lib/site-paths";
 
 export default function PledgeQueue({
   pledges,
@@ -20,7 +21,7 @@ export default function PledgeQueue({
     setBusy(id);
     setError(undefined);
     try {
-      const response = await fetch(`/api/admin/pledge/${id}/${action}`, {
+      const response = await fetch(withBasePath(`/api/admin/pledge/${id}/${action}`), {
         method: "POST",
       });
       if (!response.ok) throw new Error("The office action could not be saved.");

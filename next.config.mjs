@@ -19,7 +19,16 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig = {
+  basePath: "/kibbudim",
   poweredByHeader: false,
+  async redirects() {
+    return [{
+      source: "/",
+      destination: "/kibbudim",
+      permanent: false,
+      basePath: false,
+    }];
+  },
   async headers() {
     return [{
       source: "/:path*",

@@ -14,6 +14,7 @@ import {
 } from "@/lib/api/validation";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
 import { verifyTurnstile } from "@/lib/api/turnstile";
+import { withBasePath } from "@/lib/site-paths";
 import {
   AlreadyTakenError,
   CHECKOUT_HOLD_SECONDS,
@@ -50,7 +51,7 @@ export async function POST(request: Request): Promise<Response> {
       httpOnly: true,
       maxAge: CHECKOUT_HOLD_SECONDS,
       sameSite: "lax",
-      path: "/",
+      path: withBasePath("/"),
       secure: process.env.NODE_ENV === "production",
     });
     return response;

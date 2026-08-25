@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBasePath } from "@/lib/site-paths";
 
 export default function ReconcileButton() {
   const [message, setMessage] = useState("");
@@ -9,7 +10,7 @@ export default function ReconcileButton() {
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch("/api/admin/reconcile-banquest", { method: "POST" });
+      const response = await fetch(withBasePath("/api/admin/reconcile-banquest"), { method: "POST" });
       const body = (await response.json()) as { checked?: number; updated?: number };
       if (!response.ok) throw new Error();
       setMessage(`Checked ${body.checked ?? 0}; updated ${body.updated ?? 0}.`);

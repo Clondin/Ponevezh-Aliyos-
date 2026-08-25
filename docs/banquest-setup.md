@@ -31,7 +31,7 @@ source key or PIN to browser code. `.env.local` is ignored by Git.
 After the site has a public HTTPS address:
 
 1. Create an active Banquest webhook for
-   `https://YOUR_DOMAIN/api/webhook/banquest`.
+   `https://ponevez.com/kibbudim/api/webhook/banquest`.
 2. Subscribe it to transaction events, including succeeded, declined/error,
    status, void, and refund/reversal events.
 3. Copy the webhook signing value to `BANQUEST_WEBHOOK_SIGNATURE`.

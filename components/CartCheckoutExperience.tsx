@@ -7,6 +7,7 @@ import HoldBanner from "@/components/HoldBanner";
 import SponsorForm from "@/components/SponsorForm";
 import TurnstileWidget from "@/components/TurnstileWidget";
 import { usd } from "@/lib/format";
+import { withBasePath } from "@/lib/site-paths";
 
 export interface CartItem {
   id: string;
@@ -56,7 +57,7 @@ export default function CartCheckoutExperience({
   async function reserve() {
     setState({ kind: "holding" });
     try {
-      const response = await fetch("/api/cart/hold", {
+      const response = await fetch(withBasePath("/api/cart/hold"), {
         method: "POST",
         headers: {
           "content-type": "application/json",

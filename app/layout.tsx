@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { David_Libre, Marcellus, Public_Sans } from "next/font/google";
 import "@/styles/globals.css";
+import { withBasePath } from "@/lib/site-paths";
+import { publicSiteUrl } from "@/lib/site-url";
 
 const display = Marcellus({
   weight: "400",
@@ -20,7 +22,7 @@ const hebrew = David_Libre({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL || "https://ponevez-kibbudim.pages.dev"),
+  metadataBase: new URL(publicSiteUrl()),
   title: {
     default: "Yomim Noraim Kibbudim 5787 — Ponevez Yeshiva",
     template: "%s — Ponevez Yeshiva Kibbudim",
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
     title: "Yomim Noraim Kibbudim 5787 — Ponevez Yeshiva",
     description: "Choose and sponsor a kibbud across the six minyanim of Ponevez Yeshiva.",
     type: "website",
-    images: [{ url: "/images/social-card.jpg", width: 1200, height: 630 }],
+    images: [{ url: withBasePath("/images/social-card.jpg"), width: 1200, height: 630 }],
   },
   twitter: { card: "summary_large_image" },
 };

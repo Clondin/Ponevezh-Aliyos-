@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getCatalog } from "@/lib/catalog";
+import { publicSiteUrl } from "@/lib/site-url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = (process.env.SITE_URL || "https://ponevez-kibbudim.pages.dev").replace(/\/$/, "");
+  const base = publicSiteUrl();
   const catalog = getCatalog();
   const staticPaths = ["", "/find", "/about", "/contact", "/privacy", "/terms", "/refunds", "/sponsors"];
   const minyanPaths = catalog.minyanim.map((minyan) => `/${minyan.slug}`);

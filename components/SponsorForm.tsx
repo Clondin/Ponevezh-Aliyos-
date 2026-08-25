@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearBasket } from "@/lib/basket";
+import { withBasePath } from "@/lib/site-paths";
 
 type Method = "card" | "wire";
 
@@ -182,7 +183,7 @@ export default function SponsorForm({
 
     try {
       if (method === "wire" && !isCombined) {
-        const response = await fetch("/api/pledge", {
+        const response = await fetch(withBasePath("/api/pledge"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(payload),
@@ -213,7 +214,7 @@ export default function SponsorForm({
         throw new Error(token.error || "Please check the credit-card details and try again.");
       }
 
-      const response = await fetch(isCombined ? "/api/cart/checkout" : "/api/checkout", {
+      const response = await fetch(withBasePath(isCombined ? "/api/cart/checkout" : "/api/checkout"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

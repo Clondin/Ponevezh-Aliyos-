@@ -1,9 +1,19 @@
 import type { MetadataRoute } from "next";
+import { withBasePath } from "@/lib/site-paths";
+import { publicSiteUrl } from "@/lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.SITE_URL || "https://ponevez-kibbudim.pages.dev";
+  const base = publicSiteUrl();
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/admin/", "/confirmation", "/basket/confirmation"] }],
-    sitemap: `${base.replace(/\/$/, "")}/sitemap.xml`,
+    rules: [{
+      userAgent: "*",
+      allow: `${withBasePath("/")}/`,
+      disallow: [
+        `${withBasePath("/admin")}/`,
+        withBasePath("/confirmation"),
+        withBasePath("/basket/confirmation"),
+      ],
+    }],
+    sitemap: `${base}/sitemap.xml`,
   };
 }

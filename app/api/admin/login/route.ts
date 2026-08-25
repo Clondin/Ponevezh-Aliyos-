@@ -8,9 +8,10 @@ import {
 } from "@/lib/api/admin-session";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
 import { verifyTurnstile } from "@/lib/api/turnstile";
+import { withBasePath } from "@/lib/site-paths";
 
 function loginRedirect(request: NextRequest, failed = false): NextResponse {
-  const url = new URL("/admin/login", request.url);
+  const url = new URL(withBasePath("/admin/login"), request.url);
   if (failed) url.searchParams.set("error", "1");
   return NextResponse.redirect(url, 303);
 }
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       "admin_login"
     );
   } catch {
-    const url = new URL("/admin/login", request.url);
+    const url = new URL(withBasePath("/admin/login"), request.url);
     url.searchParams.set("error", "security");
     return NextResponse.redirect(url, 303);
   }
@@ -39,12 +40,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return loginRedirect(request, true);
   }
 
-  const response = NextResponse.redirect(new URL("/admin", request.url), 303);
+  const response = NextResponse.redirect(new URL(withBasePath("/admin"), request.url), 303);
   response.cookies.set(ADMIN_COOKIE, await adminSessionValue(expected), {
     httpOnly: true,
     secure: new URL(request.url).protocol === "https:",
     sameSite: "strict",
-    path: "/",
+    path: withBasePath("/"),
     maxAge: ADMIN_SESSION_SECONDS,
   });
   response.headers.set("cache-control", "no-store");

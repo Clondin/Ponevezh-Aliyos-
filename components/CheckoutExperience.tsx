@@ -5,6 +5,7 @@ import HoldBanner from "@/components/HoldBanner";
 import Notice from "@/components/Notice";
 import SponsorForm from "@/components/SponsorForm";
 import TurnstileWidget from "@/components/TurnstileWidget";
+import { withBasePath } from "@/lib/site-paths";
 
 type HoldState =
   | { kind: "loading" }
@@ -32,7 +33,7 @@ export default function CheckoutExperience({
   useEffect(() => {
     if (turnstileSiteKey && !turnstileToken) return;
     const controller = new AbortController();
-    void fetch("/api/hold", {
+    void fetch(withBasePath("/api/hold"), {
       method: "POST",
       headers: {
         "content-type": "application/json",

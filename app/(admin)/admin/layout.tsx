@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { withBasePath } from "@/lib/site-paths";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default function AdminLayout({
           <span style={{ marginLeft: "auto" }}>
             <Link href="/">&larr; Donor site</Link>
           </span>
-          <form action="/api/admin/logout" method="post">
+          <form action={withBasePath("/api/admin/logout")} method="post">
             <button className="admin-logout" type="submit">Log out</button>
           </form>
         </div>
