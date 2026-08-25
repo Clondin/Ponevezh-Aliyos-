@@ -224,6 +224,7 @@ export class KibbudRepository {
       honoreeEmail: checkout.honoreeEmail,
       publicRecognition: checkout.publicRecognition,
       recognitionName: checkout.recognitionName,
+      assignmentAcceptedAt: checkout.assignmentAcceptedAt,
       amount: checkout.amounts?.[kibbudId] ?? checkout.amount,
       method,
       createdAt: new Date().toISOString(),
@@ -381,6 +382,7 @@ export class KibbudRepository {
       honoreeEmail: pledge.honoreeEmail,
       publicRecognition: pledge.publicRecognition,
       recognitionName: pledge.recognitionName,
+      assignmentAcceptedAt: pledge.assignmentAcceptedAt,
       amount: pledge.amount,
       // The frozen Order contract models bank payments as ACH; office-settled
       // wire/check pledges use the same bank-rail value.

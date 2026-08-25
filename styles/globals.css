@@ -1311,6 +1311,34 @@ a.kibbud-card--very-special:hover {
 .recognition-option .field {
   margin: 16px 0 0 29px;
 }
+
+.assignment-disclosure {
+  margin: 24px 0;
+  padding: 18px 20px;
+  border: 1px solid var(--bronze-light);
+  background: var(--bronze-tint);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.assignment-disclosure p {
+  margin-bottom: 14px;
+}
+.assignment-disclosure strong {
+  color: var(--ink);
+}
+.assignment-disclosure label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.assignment-disclosure input {
+  flex: 0 0 auto;
+  margin-top: 3px;
+}
 .receipt__dedication {
   border-top: 1px solid var(--hairline);
   margin-top: 12px;

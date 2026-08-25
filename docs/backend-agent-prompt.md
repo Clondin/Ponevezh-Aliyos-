@@ -1,5 +1,10 @@
 # Backend build prompt — Ponevez Yomim Noraim Kibbudim 5787
 
+> Historical specification: the Israeli office corrections approved on
+> 25 August 2026 supersede the catalog totals and occasion rules in this file.
+> See `docs/office-corrections-5787.md` and the generated catalogs for the
+> current authoritative inventory.
+
 You are the backend agent for a kibbudim-sales platform. The UI is **complete
 and verified** — it renders every screen from fixtures with zero network
 calls. Your job is to build the entire backend and then perform the one

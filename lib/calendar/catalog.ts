@@ -31,10 +31,22 @@ export const PRICES: PriceTable = {
 export const MINYANIM: Minyan[] = [
   { slug: "ponevez-yeshiva", name: "Ponevez Yeshiva", level: 1 },
   { slug: "ponevez-kollelim", name: "Kollel Ponevez", level: 1 },
-  { slug: "grodna", name: "Grodna", level: 2 },
-  { slug: "perlman", name: "Perlman", level: 2 },
+  { slug: "grodna", name: "Grodna Yeshiva", level: 2 },
+  { slug: "perlman", name: "Perlman Avreichim Minyan", level: 2 },
   { slug: "yeshiva-ketana", name: "Yeshiva Ketana", level: 3 },
-  { slug: "chayei-avraham", name: "Chayei Avraham", level: 3 },
+  {
+    slug: "chayei-avraham",
+    name: "Chayei Avraham — Edot HaMizrach",
+    level: 3,
+  },
+];
+
+const NUSACH_ASHKENAZ_MINYANIM: MinyanSlug[] = [
+  "ponevez-yeshiva",
+  "ponevez-kollelim",
+  "grodna",
+  "perlman",
+  "yeshiva-ketana",
 ];
 
 const BNEI_BRAK = new Location(
@@ -56,7 +68,12 @@ const ALIYOS = [
   ["shevii", "Shevi'i"],
 ] as const;
 
-type ItemTemplate = { slug: string; name: string; tier: Tier };
+type ItemTemplate = {
+  slug: string;
+  name: string;
+  tier: Tier;
+  minyanim?: MinyanSlug[];
+};
 
 const HOTZAAH: ItemTemplate = {
   slug: "hotzaah",
@@ -70,6 +87,32 @@ const HAGBAH: ItemTemplate = {
   tier: "regular",
 };
 
+const TWO_SEFER_HOTZAAH: ItemTemplate[] = [
+  {
+    slug: "hotzaah-1",
+    name: "Hotza'ah VeHachnasah — Sefer I",
+    tier: "regular",
+  },
+  {
+    slug: "hotzaah-2",
+    name: "Hotza'ah VeHachnasah — Sefer II",
+    tier: "regular",
+  },
+];
+
+const TWO_SEFER_HAGBAH: ItemTemplate[] = [
+  {
+    slug: "hagbah-1",
+    name: "Hagbah VeGelilah — Sefer I",
+    tier: "regular",
+  },
+  {
+    slug: "hagbah-2",
+    name: "Hagbah VeGelilah — Sefer II",
+    tier: "regular",
+  },
+];
+
 function aliyahCount(reading: Leyning | undefined, label: string): number {
   if (!reading?.fullkriyah) {
     throw new Error(`No full kriyah found for ${label}`);
@@ -77,13 +120,17 @@ function aliyahCount(reading: Leyning | undefined, label: string): number {
   return Object.keys(reading.fullkriyah).filter((key) => /^\d+$/.test(key)).length;
 }
 
-function standard(reading: Leyning | undefined, label: string): ItemTemplate[] {
+function standard(
+  reading: Leyning | undefined,
+  label: string,
+  options: { twoSefarim?: boolean } = {}
+): ItemTemplate[] {
   const count = aliyahCount(reading, label);
   if (count > ALIYOS.length) {
     throw new Error(`${label} has ${count} ordinary aliyos; an override is required`);
   }
   const items: ItemTemplate[] = [
-    HOTZAAH,
+    ...(options.twoSefarim ? TWO_SEFER_HOTZAAH : [HOTZAAH]),
     ...ALIYOS.slice(0, count).map(([slug, name]) => ({
       slug,
       name,
@@ -93,8 +140,18 @@ function standard(reading: Leyning | undefined, label: string): ItemTemplate[] {
   if (reading?.fullkriyah?.M) {
     items.push({ slug: "maftir", name: "Maftir", tier: "regular" });
   }
-  items.push(HAGBAH);
+  items.push(...(options.twoSefarim ? TWO_SEFER_HAGBAH : [HAGBAH]));
   return items;
+}
+
+function shabbosMinchaItems(): ItemTemplate[] {
+  return [
+    { slug: "mincha-hotzaah", name: "Mincha — Hotza'ah VeHachnasah", tier: "regular" },
+    { slug: "mincha-kohen", name: "Mincha — Kohen", tier: "regular" },
+    { slug: "mincha-levi", name: "Mincha — Levi", tier: "regular" },
+    { slug: "mincha-yisrael", name: "Mincha — Yisrael", tier: "regular" },
+    { slug: "mincha-hagbah", name: "Mincha — Hagbah VeGelilah", tier: "regular" },
+  ];
 }
 
 function localDateISO(hdate: HDate): string {
@@ -181,7 +238,6 @@ export function generateCatalog(hebrewYear: number): Catalog {
   const rh1 = readingOnDay(events, 1);
   const rh2 = readingOnDay(events, 2);
   const yomKippur = readingOnDay(events, 10);
-  const sukkos1 = readingOnDay(events, 15);
   const hoshanaRabbah = readingOnDay(events, 21);
   const simchasTorah = readingOnDay(events, 22);
   const ykMincha = getLeyningForHolidayKey("Yom Kippur (Mincha)", undefined, true);
@@ -205,7 +261,12 @@ export function generateCatalog(hebrewYear: number): Catalog {
         shortName: "Rosh Hashanah I",
         wave: 1,
       }),
-      items: standard(rh1, "Rosh Hashanah I"),
+      items: [
+        ...standard(rh1, "Rosh Hashanah I", { twoSefarim: true }),
+        ...(new HDate(1, months.TISHREI, hebrewYear).greg().getDay() === 6
+          ? shabbosMinchaItems()
+          : []),
+      ],
     },
     {
       occasion: occasion(hebrewYear, 2, {
@@ -214,7 +275,7 @@ export function generateCatalog(hebrewYear: number): Catalog {
         shortName: "Rosh Hashanah II",
         wave: 1,
       }),
-      items: standard(rh2, "Rosh Hashanah II"),
+      items: standard(rh2, "Rosh Hashanah II", { twoSefarim: true }),
     },
     {
       occasion: occasion(hebrewYear, 10, {
@@ -223,7 +284,7 @@ export function generateCatalog(hebrewYear: number): Catalog {
         shortName: "Yom Kippur Shacharis",
         wave: 1,
       }),
-      items: standard(yomKippur, "Yom Kippur Shacharis"),
+      items: standard(yomKippur, "Yom Kippur Shacharis", { twoSefarim: true }),
     },
     {
       occasion: occasion(hebrewYear, 10, {
@@ -248,23 +309,12 @@ export function generateCatalog(hebrewYear: number): Catalog {
         wave: 1,
       }),
       items: [
-        { slug: "pesicha-1", name: "Pesichas HaAron — First", tier: "very-special" },
-        { slug: "pesicha-2", name: "Pesichas HaAron — Second", tier: "very-special" },
         {
-          slug: "pesicha-3",
-          name: "Pesichas HaAron — Neilas HaShaar",
+          slug: "pesicha-1",
+          name: "Pesichas HaAron — Neilah",
           tier: "very-special",
         },
       ],
-    },
-    {
-      occasion: occasion(hebrewYear, 15, {
-        slug: "sukkos-1",
-        name: "Sukkos — First Day",
-        shortName: "Sukkos I",
-        wave: 2,
-      }),
-      items: standard(sukkos1, "Sukkos I"),
     },
     {
       occasion: occasion(hebrewYear, 21, {
@@ -274,7 +324,14 @@ export function generateCatalog(hebrewYear: number): Catalog {
         wave: 2,
         minyanim: ["ponevez-yeshiva"],
       }),
-      items: standard(hoshanaRabbah, "Hoshana Rabbah"),
+      items: [
+        {
+          slug: "pesicha-hoshanos",
+          name: "Pesichas HaAron for Hoshanos",
+          tier: "very-special",
+        },
+        ...standard(hoshanaRabbah, "Hoshana Rabbah"),
+      ],
     },
     {
       occasion: occasion(hebrewYear, 22, {
@@ -286,6 +343,24 @@ export function generateCatalog(hebrewYear: number): Catalog {
       // Ponevez fixture decision: six distinct aliyos, with Kol HaNearim
       // absorbing the seventh. Chasan Torah/Bereishis are separate kibbudim.
       items: [
+        {
+          slug: "night-kohen",
+          name: "Simchas Torah Night — Kohen",
+          tier: "regular",
+          minyanim: NUSACH_ASHKENAZ_MINYANIM,
+        },
+        {
+          slug: "night-levi",
+          name: "Simchas Torah Night — Levi",
+          tier: "regular",
+          minyanim: NUSACH_ASHKENAZ_MINYANIM,
+        },
+        {
+          slug: "night-yisrael",
+          name: "Simchas Torah Night — Yisrael",
+          tier: "regular",
+          minyanim: NUSACH_ASHKENAZ_MINYANIM,
+        },
         HOTZAAH,
         ...ALIYOS.slice(0, 6).map(([slug, name]) => ({
           slug,
@@ -310,7 +385,10 @@ export function generateCatalog(hebrewYear: number): Catalog {
       ) {
         continue;
       }
-      definition.items.forEach((item, index) => {
+      const eligibleItems = definition.items.filter(
+        (item) => !item.minyanim || item.minyanim.includes(minyan.slug)
+      );
+      eligibleItems.forEach((item, index) => {
         items.push({
           id: `${minyan.slug}/${definition.occasion.slug}/${item.slug}`,
           minyan: minyan.slug as MinyanSlug,

@@ -14,10 +14,10 @@ import type { MinyanSlug, OccasionSlug } from "@/contracts/types";
 export const MINYAN_HE: Record<MinyanSlug, string> = {
   "ponevez-yeshiva": "ישיבת פוניבז׳",
   "ponevez-kollelim": "כולל פוניבז'",
-  grodna: "גרודנא",
-  perlman: "פרלמן",
+  grodna: "ישיבת גרודנא",
+  perlman: "מנין אברכים פרלמן",
   "yeshiva-ketana": "ישיבה קטנה",
-  "chayei-avraham": "חיי אברהם",
+  "chayei-avraham": "חיי אברהם — עדות מזרח",
 };
 
 /** The minyan name prefixed with מניין, for the minyan page title. */
@@ -51,6 +51,8 @@ export const OCCASION_HE_DAY: Record<OccasionSlug, string> = {
 /** Keyed by kibbud slug — the last segment of the item id. */
 export const KIBBUD_HE: Record<string, string> = {
   hotzaah: "הוצאה והכנסה",
+  "hotzaah-1": "הוצאה והכנסה — ספר ראשון",
+  "hotzaah-2": "הוצאה והכנסה — ספר שני",
   kohen: "כהן",
   levi: "לוי",
   shlishi: "שלישי",
@@ -60,10 +62,21 @@ export const KIBBUD_HE: Record<string, string> = {
   shevii: "שביעי",
   maftir: "מפטיר",
   hagbah: "הגבהה וגלילה",
+  "hagbah-1": "הגבהה וגלילה — ספר ראשון",
+  "hagbah-2": "הגבהה וגלילה — ספר שני",
   "maftir-yonah": "מפטיר יונה",
-  "pesicha-1": "פתיחת הארון — ראשונה",
+  "pesicha-1": "פתיחת הארון — נעילה",
   "pesicha-2": "פתיחת הארון — שנייה",
   "pesicha-3": "פתיחת הארון — נעילת השער",
+  "pesicha-hoshanos": "פתיחת הארון להושענות",
+  "night-kohen": "ליל שמחת תורה — כהן",
+  "night-levi": "ליל שמחת תורה — לוי",
+  "night-yisrael": "ליל שמחת תורה — ישראל",
+  "mincha-hotzaah": "מנחה — הוצאה והכנסה",
+  "mincha-kohen": "מנחה — כהן",
+  "mincha-levi": "מנחה — לוי",
+  "mincha-yisrael": "מנחה — ישראל",
+  "mincha-hagbah": "מנחה — הגבהה וגלילה",
   "kol-hanearim": "כל הנערים",
   "chasan-torah": "חתן תורה",
   "chasan-bereishis": "חתן בראשית",

@@ -21,6 +21,7 @@ export interface AdminOrderRow {
   gatewayReference?: string;
   emailStatus: "sent" | "queued" | "missing";
   receiptEmailId: string;
+  assignmentAcceptedAt?: string;
 }
 
 export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
@@ -60,7 +61,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
               <tr key={row.id}>
                 <td><strong>{row.id}</strong><div className="muted">{formatDateTime(row.createdAt)}</div></td>
                 <td><strong>{row.itemName}</strong><div className="muted">{row.occasionName} · {row.minyanName}</div>{row.dedication ? <div>{row.dedication}</div> : null}</td>
-                <td><strong>{row.donorName}</strong><div><a href={`mailto:${row.email}`}>{row.email}</a></div></td>
+                <td><strong>{row.donorName}</strong><div><a href={`mailto:${row.email}`}>{row.email}</a></div><div className="muted">{row.assignmentAcceptedAt ? `Terms accepted ${formatDateTime(row.assignmentAcceptedAt)}` : "Legacy order — no terms record"}</div></td>
                 <td><strong>{usd(row.amount)}</strong><div className="muted">{row.method === "card" ? "Credit card" : "Office confirmed"}</div><div className="muted">Banquest: {row.gatewayTransactionId ?? row.gatewayReference ?? "not returned"}</div></td>
                 <td><span className={`badge${row.emailStatus === "queued" ? " badge--pending" : ""}`}>{row.emailStatus}</span>{row.emailStatus !== "sent" ? <div style={{ marginTop: 8 }}><EmailRetryButton id={row.receiptEmailId} /></div> : null}</td>
               </tr>

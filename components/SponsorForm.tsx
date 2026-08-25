@@ -83,6 +83,7 @@ export default function SponsorForm({
   const [honoreeEmail, setHonoreeEmail] = useState("");
   const [publicRecognition, setPublicRecognition] = useState(false);
   const [recognitionName, setRecognitionName] = useState("");
+  const [assignmentAccepted, setAssignmentAccepted] = useState(false);
   const cardConfigured = Boolean(tokenizationKey);
   const [method, setMethod] = useState<Method>(cardConfigured ? "card" : "wire");
   const [cardReady, setCardReady] = useState(false);
@@ -173,6 +174,7 @@ export default function SponsorForm({
           }
         : {}),
       publicRecognition,
+      assignmentAccepted,
       ...(publicRecognition
         ? { recognitionName: recognitionName.trim() || donorName.trim() }
         : {}),
@@ -412,6 +414,25 @@ export default function SponsorForm({
             />
           </div>
         ) : null}
+      </div>
+
+      <div className="assignment-disclosure">
+        <p>
+          <strong>Aliyah assignment:</strong> All aliyos are assigned to Roshei
+          Yeshiva, Rabbanim, and congregants at the Yeshiva&rsquo;s discretion.
+          Purchasing this sponsorship does not guarantee that you will personally
+          receive the aliyah. What is guaranteed is that a Mi Shebeirach will be
+          recited for the person or persons you name.
+        </p>
+        <label>
+          <input
+            type="checkbox"
+            required
+            checked={assignmentAccepted}
+            onChange={(event) => setAssignmentAccepted(event.target.checked)}
+          />
+          <span>I understand and agree.</span>
+        </label>
       </div>
 
       <span className="field-label" style={{ marginBottom: 10 }}>

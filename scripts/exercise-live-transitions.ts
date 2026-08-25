@@ -59,6 +59,7 @@ const checkout = await jsonPost(
     donorName: "Banquest Transition Test",
     email: "transition-test@example.com",
     misheberachNames: ["Transition Test"],
+    assignmentAccepted: true,
     payment: {
       nonce: testNonce,
       expiryMonth: testExpiryMonth,
@@ -77,6 +78,7 @@ const pledgeBody = (kibbudId: string) => ({
   donorName: "Pledge Transition Test",
   email: "transition-test@example.com",
   misheberachNames: ["Transition Test"],
+  assignmentAccepted: true,
 });
 
 const confirmPledge = await jsonPost("/api/pledge", pledgeBody(confirmItem));

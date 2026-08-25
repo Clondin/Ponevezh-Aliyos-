@@ -74,6 +74,7 @@ export async function chargeBanquestCard(
 
   const paymentId = `bq_${randomUUID()}`;
   const amount = amountForEnvironment(trustedTotal);
+  const createdAt = new Date().toISOString();
   const record: CheckoutRecord = {
     paymentId,
     kibbudId: item.id,
@@ -89,10 +90,11 @@ export async function chargeBanquestCard(
     honoreeEmail: payload.honoreeEmail,
     publicRecognition: payload.publicRecognition,
     recognitionName: payload.recognitionName,
+    assignmentAcceptedAt: createdAt,
     amount,
     preferredMethod: "card",
     status: "created",
-    createdAt: new Date().toISOString(),
+    createdAt,
   };
   try {
     await repository.saveCheckout(record);

@@ -37,6 +37,7 @@ export async function POST(request: Request): Promise<Response> {
       honoreeEmail: payload.honoreeEmail,
       publicRecognition: payload.publicRecognition,
       recognitionName: payload.recognitionName,
+      assignmentAcceptedAt: now.toISOString(),
       amount: trustedAmount(item),
       status: "pending",
       expiresAt: new Date(now.getTime() + PLEDGE_HOLD_SECONDS * 1000).toISOString(),

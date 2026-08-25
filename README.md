@@ -84,3 +84,7 @@ shown publicly.
 The original backend build prompt and frozen contract still describe the former
 Stripe/ACH plan for historical reference. Runtime payment code now uses Banquest
 credit cards only.
+
+The current 5787 inventory includes the Israeli office corrections recorded in
+`docs/office-corrections-5787.md`; generated catalogs are the runtime source of
+truth.

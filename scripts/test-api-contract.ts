@@ -15,6 +15,7 @@ import { GET as stateGet } from "../app/api/state/[minyan]/[occasion]/route";
 import { POST as webhookPost } from "../app/api/webhook/banquest/route";
 import { POST as pledgeConfirmPost } from "../app/api/admin/pledge/[id]/confirm/route";
 import ConfirmationPage from "../app/(site)/confirmation/page";
+import { cardPaymentPayload } from "../lib/api/validation";
 
 process.env.BANQUEST_WEBHOOK_SIGNATURE = "banquest-contract-signature";
 process.env.BANQUEST_SOURCE_KEY = "sandbox-source-key";
@@ -29,6 +30,18 @@ process.env.WAVE_2_OPENS_AT = "2026-01-01T00:00:00-05:00";
 
 const stateStore = new MemoryStateStore();
 setStateStoreForTests(stateStore);
+
+assert.throws(
+  () =>
+    cardPaymentPayload({
+      kibbudId: "grodna/rh-1/kohen",
+      donorName: "Terms Test",
+      email: "terms@example.com",
+      misheberachNames: [],
+      payment: { nonce: "termsNonce123", expiryMonth: 12, expiryYear: 2030 },
+    }),
+  /acknowledge the aliyah assignment terms/
+);
 
 const jsonRequest = (url: string, body: unknown, headers: HeadersInit = {}) =>
   new Request(url, {
@@ -79,6 +92,7 @@ const checkoutResponse = await checkoutPost(
       donorName: "Checkout Donor",
       email: "checkout@example.com",
       misheberachNames: ["Checkout Name"],
+      assignmentAccepted: true,
       payment: {
         nonce: "contractTestNonce123",
         expiryMonth: 12,
@@ -97,6 +111,10 @@ const checkout = (await checkoutResponse.json()) as {
 assert.match(checkout.paymentId, /^bq_/);
 assert.equal(checkout.status, "sold");
 const checkoutOrderId = `ord_${checkout.paymentId}`;
+const checkoutOrder = (await getRepository().allOrders()).find(
+  (order) => order.id === checkoutOrderId
+);
+assert.ok(checkoutOrder?.assignmentAcceptedAt);
 const queuedEmailIds = await stateStore.smembers<string[]>(keys.emailOutbox);
 assert.ok(queuedEmailIds.includes(`order-confirmation-${checkoutOrderId}`));
 assert.ok(queuedEmailIds.includes(`order-office-${checkoutOrderId}`));
@@ -132,6 +150,7 @@ const concurrentPayload = {
   donorName: "Concurrent Donor",
   email: "concurrent@example.com",
   misheberachNames: [],
+  assignmentAccepted: true,
   payment: { nonce: "concurrentNonce123", expiryMonth: 12, expiryYear: 2030 },
 };
 const concurrentResponses = await Promise.all([
@@ -162,6 +181,7 @@ const cartCheckoutResponse = await cartCheckoutPost(
     donorName: "Combined Donor",
     email: "combined@example.com",
     misheberachNames: ["Combined Name"],
+    assignmentAccepted: true,
     dedicationType: "honor",
     dedicationName: "The Combined Family",
     publicRecognition: true,
@@ -210,6 +230,7 @@ const pledgeResponse = await pledgePost(
     email: "pledge@example.com",
     phone: "+1 212 555 0100",
     misheberachNames: ["Pledge Name"],
+    assignmentAccepted: true,
   })
 );
 assert.equal(pledgeResponse.status, 200);

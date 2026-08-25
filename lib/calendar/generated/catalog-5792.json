@@ -1,6 +1,6 @@
 {
   "hebrewYear": 5792,
-  "generatedAt": "2026-08-24T22:45:07.310Z",
+  "generatedAt": "2026-08-25T21:23:48.563Z",
   "prices": {
     "1": {
       "regular": 3600,
@@ -31,12 +31,12 @@
     },
     {
       "slug": "grodna",
-      "name": "Grodna",
+      "name": "Grodna Yeshiva",
       "level": 2
     },
     {
       "slug": "perlman",
-      "name": "Perlman",
+      "name": "Perlman Avreichim Minyan",
       "level": 2
     },
     {
@@ -46,7 +46,7 @@
     },
     {
       "slug": "chayei-avraham",
-      "name": "Chayei Avraham",
+      "name": "Chayei Avraham — Edot HaMizrach",
       "level": 3
     }
   ],
@@ -102,16 +102,6 @@
       "cutoffISO": "2031-09-26T18:12:00+03:00"
     },
     {
-      "slug": "sukkos-1",
-      "name": "Sukkos — First Day",
-      "shortName": "Sukkos I",
-      "wave": 2,
-      "dateISO": "2031-10-02",
-      "dateLabel": "Thursday, 2 October 2031",
-      "hebrewDateLabel": "15 Tishrei 5792",
-      "cutoffISO": "2031-10-01T18:06:00+03:00"
-    },
-    {
       "slug": "hoshana-rabbah",
       "name": "Hoshana Rabbah",
       "shortName": "Hoshana Rabbah",
@@ -137,13 +127,22 @@
   ],
   "items": [
     {
-      "id": "ponevez-yeshiva/rh-1/hotzaah",
+      "id": "ponevez-yeshiva/rh-1/hotzaah-1",
       "minyan": "ponevez-yeshiva",
       "occasion": "rh-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "ponevez-yeshiva/rh-1/hotzaah-2",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "rh-1",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "ponevez-yeshiva/rh-1/kohen",
@@ -152,7 +151,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "ponevez-yeshiva/rh-1/levi",
@@ -161,7 +160,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "ponevez-yeshiva/rh-1/shlishi",
@@ -170,7 +169,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "ponevez-yeshiva/rh-1/revii",
@@ -179,7 +178,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "ponevez-yeshiva/rh-1/chamishi",
@@ -188,7 +187,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "ponevez-yeshiva/rh-1/maftir",
@@ -197,25 +196,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "ponevez-yeshiva/rh-1/hagbah",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "rh-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "ponevez-yeshiva/rh-2/hotzaah",
+      "id": "ponevez-yeshiva/rh-1/hagbah-1",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "rh-1",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "ponevez-yeshiva/rh-1/hagbah-2",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "rh-1",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "ponevez-yeshiva/rh-2/hotzaah-1",
       "minyan": "ponevez-yeshiva",
       "occasion": "rh-2",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "ponevez-yeshiva/rh-2/hotzaah-2",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "rh-2",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "ponevez-yeshiva/rh-2/kohen",
@@ -224,7 +241,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "ponevez-yeshiva/rh-2/levi",
@@ -233,7 +250,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "ponevez-yeshiva/rh-2/shlishi",
@@ -242,7 +259,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "ponevez-yeshiva/rh-2/revii",
@@ -251,7 +268,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "ponevez-yeshiva/rh-2/chamishi",
@@ -260,7 +277,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "ponevez-yeshiva/rh-2/maftir",
@@ -269,25 +286,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "ponevez-yeshiva/rh-2/hagbah",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "rh-2",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "ponevez-yeshiva/yk-shacharis/hotzaah",
+      "id": "ponevez-yeshiva/rh-2/hagbah-1",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "rh-2",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "ponevez-yeshiva/rh-2/hagbah-2",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "rh-2",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "ponevez-yeshiva/yk-shacharis/hotzaah-1",
       "minyan": "ponevez-yeshiva",
       "occasion": "yk-shacharis",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "ponevez-yeshiva/yk-shacharis/hotzaah-2",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "yk-shacharis",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/kohen",
@@ -296,7 +331,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/levi",
@@ -305,7 +340,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/shlishi",
@@ -314,7 +349,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/revii",
@@ -323,7 +358,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/chamishi",
@@ -332,7 +367,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/shishi",
@@ -341,7 +376,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 8
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/shevii",
@@ -350,7 +385,7 @@
       "slug": "shevii",
       "name": "Shevi'i",
       "tier": "regular",
-      "order": 8
+      "order": 9
     },
     {
       "id": "ponevez-yeshiva/yk-shacharis/maftir",
@@ -359,16 +394,25 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 9
+      "order": 10
     },
     {
-      "id": "ponevez-yeshiva/yk-shacharis/hagbah",
+      "id": "ponevez-yeshiva/yk-shacharis/hagbah-1",
       "minyan": "ponevez-yeshiva",
       "occasion": "yk-shacharis",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
       "tier": "regular",
-      "order": 10
+      "order": 11
+    },
+    {
+      "id": "ponevez-yeshiva/yk-shacharis/hagbah-2",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "yk-shacharis",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 12
     },
     {
       "id": "ponevez-yeshiva/yk-mincha/hotzaah",
@@ -420,99 +464,18 @@
       "minyan": "ponevez-yeshiva",
       "occasion": "neilah",
       "slug": "pesicha-1",
-      "name": "Pesichas HaAron — First",
+      "name": "Pesichas HaAron — Neilah",
       "tier": "very-special",
       "order": 1
     },
     {
-      "id": "ponevez-yeshiva/neilah/pesicha-2",
+      "id": "ponevez-yeshiva/hoshana-rabbah/pesicha-hoshanos",
       "minyan": "ponevez-yeshiva",
-      "occasion": "neilah",
-      "slug": "pesicha-2",
-      "name": "Pesichas HaAron — Second",
+      "occasion": "hoshana-rabbah",
+      "slug": "pesicha-hoshanos",
+      "name": "Pesichas HaAron for Hoshanos",
       "tier": "very-special",
-      "order": 2
-    },
-    {
-      "id": "ponevez-yeshiva/neilah/pesicha-3",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "neilah",
-      "slug": "pesicha-3",
-      "name": "Pesichas HaAron — Neilas HaShaar",
-      "tier": "very-special",
-      "order": 3
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/hotzaah",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
-      "tier": "regular",
       "order": 1
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/kohen",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "kohen",
-      "name": "Kohen",
-      "tier": "regular",
-      "order": 2
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/levi",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "levi",
-      "name": "Levi",
-      "tier": "regular",
-      "order": 3
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/shlishi",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "shlishi",
-      "name": "Shlishi",
-      "tier": "regular",
-      "order": 4
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/revii",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "revii",
-      "name": "Revi'i",
-      "tier": "regular",
-      "order": 5
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/chamishi",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "chamishi",
-      "name": "Chamishi",
-      "tier": "regular",
-      "order": 6
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/maftir",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "maftir",
-      "name": "Maftir",
-      "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "ponevez-yeshiva/sukkos-1/hagbah",
-      "minyan": "ponevez-yeshiva",
-      "occasion": "sukkos-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
-      "order": 8
     },
     {
       "id": "ponevez-yeshiva/hoshana-rabbah/hotzaah",
@@ -521,7 +484,7 @@
       "slug": "hotzaah",
       "name": "Hotza'ah VeHachnasah",
       "tier": "regular",
-      "order": 1
+      "order": 2
     },
     {
       "id": "ponevez-yeshiva/hoshana-rabbah/kohen",
@@ -530,7 +493,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "ponevez-yeshiva/hoshana-rabbah/levi",
@@ -539,7 +502,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "ponevez-yeshiva/hoshana-rabbah/shlishi",
@@ -548,7 +511,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "ponevez-yeshiva/hoshana-rabbah/revii",
@@ -557,7 +520,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "ponevez-yeshiva/hoshana-rabbah/hagbah",
@@ -566,7 +529,34 @@
       "slug": "hagbah",
       "name": "Hagbah VeGelilah",
       "tier": "regular",
-      "order": 6
+      "order": 7
+    },
+    {
+      "id": "ponevez-yeshiva/simchas-torah/night-kohen",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "simchas-torah",
+      "slug": "night-kohen",
+      "name": "Simchas Torah Night — Kohen",
+      "tier": "regular",
+      "order": 1
+    },
+    {
+      "id": "ponevez-yeshiva/simchas-torah/night-levi",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "simchas-torah",
+      "slug": "night-levi",
+      "name": "Simchas Torah Night — Levi",
+      "tier": "regular",
+      "order": 2
+    },
+    {
+      "id": "ponevez-yeshiva/simchas-torah/night-yisrael",
+      "minyan": "ponevez-yeshiva",
+      "occasion": "simchas-torah",
+      "slug": "night-yisrael",
+      "name": "Simchas Torah Night — Yisrael",
+      "tier": "regular",
+      "order": 3
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/hotzaah",
@@ -575,7 +565,7 @@
       "slug": "hotzaah",
       "name": "Hotza'ah VeHachnasah",
       "tier": "regular",
-      "order": 1
+      "order": 4
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/kohen",
@@ -584,7 +574,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 5
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/levi",
@@ -593,7 +583,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 6
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/shlishi",
@@ -602,7 +592,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 7
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/revii",
@@ -611,7 +601,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 8
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/chamishi",
@@ -620,7 +610,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 9
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/shishi",
@@ -629,7 +619,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 10
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/kol-hanearim",
@@ -638,7 +628,7 @@
       "slug": "kol-hanearim",
       "name": "Kol HaNearim",
       "tier": "special",
-      "order": 8
+      "order": 11
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/chasan-torah",
@@ -647,7 +637,7 @@
       "slug": "chasan-torah",
       "name": "Chasan Torah",
       "tier": "special",
-      "order": 9
+      "order": 12
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/chasan-bereishis",
@@ -656,7 +646,7 @@
       "slug": "chasan-bereishis",
       "name": "Chasan Bereishis",
       "tier": "special",
-      "order": 10
+      "order": 13
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/maftir",
@@ -665,7 +655,7 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 11
+      "order": 14
     },
     {
       "id": "ponevez-yeshiva/simchas-torah/hagbah",
@@ -674,16 +664,25 @@
       "slug": "hagbah",
       "name": "Hagbah VeGelilah",
       "tier": "regular",
-      "order": 12
+      "order": 15
     },
     {
-      "id": "ponevez-kollelim/rh-1/hotzaah",
+      "id": "ponevez-kollelim/rh-1/hotzaah-1",
       "minyan": "ponevez-kollelim",
       "occasion": "rh-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "ponevez-kollelim/rh-1/hotzaah-2",
+      "minyan": "ponevez-kollelim",
+      "occasion": "rh-1",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "ponevez-kollelim/rh-1/kohen",
@@ -692,7 +691,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "ponevez-kollelim/rh-1/levi",
@@ -701,7 +700,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "ponevez-kollelim/rh-1/shlishi",
@@ -710,7 +709,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "ponevez-kollelim/rh-1/revii",
@@ -719,7 +718,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "ponevez-kollelim/rh-1/chamishi",
@@ -728,7 +727,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "ponevez-kollelim/rh-1/maftir",
@@ -737,25 +736,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "ponevez-kollelim/rh-1/hagbah",
-      "minyan": "ponevez-kollelim",
-      "occasion": "rh-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "ponevez-kollelim/rh-2/hotzaah",
+      "id": "ponevez-kollelim/rh-1/hagbah-1",
+      "minyan": "ponevez-kollelim",
+      "occasion": "rh-1",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "ponevez-kollelim/rh-1/hagbah-2",
+      "minyan": "ponevez-kollelim",
+      "occasion": "rh-1",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "ponevez-kollelim/rh-2/hotzaah-1",
       "minyan": "ponevez-kollelim",
       "occasion": "rh-2",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "ponevez-kollelim/rh-2/hotzaah-2",
+      "minyan": "ponevez-kollelim",
+      "occasion": "rh-2",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "ponevez-kollelim/rh-2/kohen",
@@ -764,7 +781,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "ponevez-kollelim/rh-2/levi",
@@ -773,7 +790,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "ponevez-kollelim/rh-2/shlishi",
@@ -782,7 +799,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "ponevez-kollelim/rh-2/revii",
@@ -791,7 +808,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "ponevez-kollelim/rh-2/chamishi",
@@ -800,7 +817,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "ponevez-kollelim/rh-2/maftir",
@@ -809,25 +826,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "ponevez-kollelim/rh-2/hagbah",
-      "minyan": "ponevez-kollelim",
-      "occasion": "rh-2",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "ponevez-kollelim/yk-shacharis/hotzaah",
+      "id": "ponevez-kollelim/rh-2/hagbah-1",
+      "minyan": "ponevez-kollelim",
+      "occasion": "rh-2",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "ponevez-kollelim/rh-2/hagbah-2",
+      "minyan": "ponevez-kollelim",
+      "occasion": "rh-2",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "ponevez-kollelim/yk-shacharis/hotzaah-1",
       "minyan": "ponevez-kollelim",
       "occasion": "yk-shacharis",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "ponevez-kollelim/yk-shacharis/hotzaah-2",
+      "minyan": "ponevez-kollelim",
+      "occasion": "yk-shacharis",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/kohen",
@@ -836,7 +871,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/levi",
@@ -845,7 +880,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/shlishi",
@@ -854,7 +889,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/revii",
@@ -863,7 +898,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/chamishi",
@@ -872,7 +907,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/shishi",
@@ -881,7 +916,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 8
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/shevii",
@@ -890,7 +925,7 @@
       "slug": "shevii",
       "name": "Shevi'i",
       "tier": "regular",
-      "order": 8
+      "order": 9
     },
     {
       "id": "ponevez-kollelim/yk-shacharis/maftir",
@@ -899,16 +934,25 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 9
+      "order": 10
     },
     {
-      "id": "ponevez-kollelim/yk-shacharis/hagbah",
+      "id": "ponevez-kollelim/yk-shacharis/hagbah-1",
       "minyan": "ponevez-kollelim",
       "occasion": "yk-shacharis",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
       "tier": "regular",
-      "order": 10
+      "order": 11
+    },
+    {
+      "id": "ponevez-kollelim/yk-shacharis/hagbah-2",
+      "minyan": "ponevez-kollelim",
+      "occasion": "yk-shacharis",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 12
     },
     {
       "id": "ponevez-kollelim/yk-mincha/hotzaah",
@@ -960,99 +1004,36 @@
       "minyan": "ponevez-kollelim",
       "occasion": "neilah",
       "slug": "pesicha-1",
-      "name": "Pesichas HaAron — First",
+      "name": "Pesichas HaAron — Neilah",
       "tier": "very-special",
       "order": 1
     },
     {
-      "id": "ponevez-kollelim/neilah/pesicha-2",
+      "id": "ponevez-kollelim/simchas-torah/night-kohen",
       "minyan": "ponevez-kollelim",
-      "occasion": "neilah",
-      "slug": "pesicha-2",
-      "name": "Pesichas HaAron — Second",
-      "tier": "very-special",
-      "order": 2
-    },
-    {
-      "id": "ponevez-kollelim/neilah/pesicha-3",
-      "minyan": "ponevez-kollelim",
-      "occasion": "neilah",
-      "slug": "pesicha-3",
-      "name": "Pesichas HaAron — Neilas HaShaar",
-      "tier": "very-special",
-      "order": 3
-    },
-    {
-      "id": "ponevez-kollelim/sukkos-1/hotzaah",
-      "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "occasion": "simchas-torah",
+      "slug": "night-kohen",
+      "name": "Simchas Torah Night — Kohen",
       "tier": "regular",
       "order": 1
     },
     {
-      "id": "ponevez-kollelim/sukkos-1/kohen",
+      "id": "ponevez-kollelim/simchas-torah/night-levi",
       "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "kohen",
-      "name": "Kohen",
+      "occasion": "simchas-torah",
+      "slug": "night-levi",
+      "name": "Simchas Torah Night — Levi",
       "tier": "regular",
       "order": 2
     },
     {
-      "id": "ponevez-kollelim/sukkos-1/levi",
+      "id": "ponevez-kollelim/simchas-torah/night-yisrael",
       "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "levi",
-      "name": "Levi",
+      "occasion": "simchas-torah",
+      "slug": "night-yisrael",
+      "name": "Simchas Torah Night — Yisrael",
       "tier": "regular",
       "order": 3
-    },
-    {
-      "id": "ponevez-kollelim/sukkos-1/shlishi",
-      "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "shlishi",
-      "name": "Shlishi",
-      "tier": "regular",
-      "order": 4
-    },
-    {
-      "id": "ponevez-kollelim/sukkos-1/revii",
-      "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "revii",
-      "name": "Revi'i",
-      "tier": "regular",
-      "order": 5
-    },
-    {
-      "id": "ponevez-kollelim/sukkos-1/chamishi",
-      "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "chamishi",
-      "name": "Chamishi",
-      "tier": "regular",
-      "order": 6
-    },
-    {
-      "id": "ponevez-kollelim/sukkos-1/maftir",
-      "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "maftir",
-      "name": "Maftir",
-      "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "ponevez-kollelim/sukkos-1/hagbah",
-      "minyan": "ponevez-kollelim",
-      "occasion": "sukkos-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
-      "order": 8
     },
     {
       "id": "ponevez-kollelim/simchas-torah/hotzaah",
@@ -1061,7 +1042,7 @@
       "slug": "hotzaah",
       "name": "Hotza'ah VeHachnasah",
       "tier": "regular",
-      "order": 1
+      "order": 4
     },
     {
       "id": "ponevez-kollelim/simchas-torah/kohen",
@@ -1070,7 +1051,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 5
     },
     {
       "id": "ponevez-kollelim/simchas-torah/levi",
@@ -1079,7 +1060,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 6
     },
     {
       "id": "ponevez-kollelim/simchas-torah/shlishi",
@@ -1088,7 +1069,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 7
     },
     {
       "id": "ponevez-kollelim/simchas-torah/revii",
@@ -1097,7 +1078,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 8
     },
     {
       "id": "ponevez-kollelim/simchas-torah/chamishi",
@@ -1106,7 +1087,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 9
     },
     {
       "id": "ponevez-kollelim/simchas-torah/shishi",
@@ -1115,7 +1096,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 10
     },
     {
       "id": "ponevez-kollelim/simchas-torah/kol-hanearim",
@@ -1124,7 +1105,7 @@
       "slug": "kol-hanearim",
       "name": "Kol HaNearim",
       "tier": "special",
-      "order": 8
+      "order": 11
     },
     {
       "id": "ponevez-kollelim/simchas-torah/chasan-torah",
@@ -1133,7 +1114,7 @@
       "slug": "chasan-torah",
       "name": "Chasan Torah",
       "tier": "special",
-      "order": 9
+      "order": 12
     },
     {
       "id": "ponevez-kollelim/simchas-torah/chasan-bereishis",
@@ -1142,7 +1123,7 @@
       "slug": "chasan-bereishis",
       "name": "Chasan Bereishis",
       "tier": "special",
-      "order": 10
+      "order": 13
     },
     {
       "id": "ponevez-kollelim/simchas-torah/maftir",
@@ -1151,7 +1132,7 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 11
+      "order": 14
     },
     {
       "id": "ponevez-kollelim/simchas-torah/hagbah",
@@ -1160,16 +1141,25 @@
       "slug": "hagbah",
       "name": "Hagbah VeGelilah",
       "tier": "regular",
-      "order": 12
+      "order": 15
     },
     {
-      "id": "grodna/rh-1/hotzaah",
+      "id": "grodna/rh-1/hotzaah-1",
       "minyan": "grodna",
       "occasion": "rh-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "grodna/rh-1/hotzaah-2",
+      "minyan": "grodna",
+      "occasion": "rh-1",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "grodna/rh-1/kohen",
@@ -1178,7 +1168,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "grodna/rh-1/levi",
@@ -1187,7 +1177,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "grodna/rh-1/shlishi",
@@ -1196,7 +1186,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "grodna/rh-1/revii",
@@ -1205,7 +1195,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "grodna/rh-1/chamishi",
@@ -1214,7 +1204,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "grodna/rh-1/maftir",
@@ -1223,25 +1213,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "grodna/rh-1/hagbah",
-      "minyan": "grodna",
-      "occasion": "rh-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "grodna/rh-2/hotzaah",
+      "id": "grodna/rh-1/hagbah-1",
+      "minyan": "grodna",
+      "occasion": "rh-1",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "grodna/rh-1/hagbah-2",
+      "minyan": "grodna",
+      "occasion": "rh-1",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "grodna/rh-2/hotzaah-1",
       "minyan": "grodna",
       "occasion": "rh-2",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "grodna/rh-2/hotzaah-2",
+      "minyan": "grodna",
+      "occasion": "rh-2",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "grodna/rh-2/kohen",
@@ -1250,7 +1258,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "grodna/rh-2/levi",
@@ -1259,7 +1267,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "grodna/rh-2/shlishi",
@@ -1268,7 +1276,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "grodna/rh-2/revii",
@@ -1277,7 +1285,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "grodna/rh-2/chamishi",
@@ -1286,7 +1294,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "grodna/rh-2/maftir",
@@ -1295,25 +1303,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "grodna/rh-2/hagbah",
-      "minyan": "grodna",
-      "occasion": "rh-2",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "grodna/yk-shacharis/hotzaah",
+      "id": "grodna/rh-2/hagbah-1",
+      "minyan": "grodna",
+      "occasion": "rh-2",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "grodna/rh-2/hagbah-2",
+      "minyan": "grodna",
+      "occasion": "rh-2",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "grodna/yk-shacharis/hotzaah-1",
       "minyan": "grodna",
       "occasion": "yk-shacharis",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "grodna/yk-shacharis/hotzaah-2",
+      "minyan": "grodna",
+      "occasion": "yk-shacharis",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "grodna/yk-shacharis/kohen",
@@ -1322,7 +1348,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "grodna/yk-shacharis/levi",
@@ -1331,7 +1357,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "grodna/yk-shacharis/shlishi",
@@ -1340,7 +1366,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "grodna/yk-shacharis/revii",
@@ -1349,7 +1375,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "grodna/yk-shacharis/chamishi",
@@ -1358,7 +1384,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "grodna/yk-shacharis/shishi",
@@ -1367,7 +1393,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 8
     },
     {
       "id": "grodna/yk-shacharis/shevii",
@@ -1376,7 +1402,7 @@
       "slug": "shevii",
       "name": "Shevi'i",
       "tier": "regular",
-      "order": 8
+      "order": 9
     },
     {
       "id": "grodna/yk-shacharis/maftir",
@@ -1385,16 +1411,25 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 9
+      "order": 10
     },
     {
-      "id": "grodna/yk-shacharis/hagbah",
+      "id": "grodna/yk-shacharis/hagbah-1",
       "minyan": "grodna",
       "occasion": "yk-shacharis",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
       "tier": "regular",
-      "order": 10
+      "order": 11
+    },
+    {
+      "id": "grodna/yk-shacharis/hagbah-2",
+      "minyan": "grodna",
+      "occasion": "yk-shacharis",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 12
     },
     {
       "id": "grodna/yk-mincha/hotzaah",
@@ -1446,99 +1481,36 @@
       "minyan": "grodna",
       "occasion": "neilah",
       "slug": "pesicha-1",
-      "name": "Pesichas HaAron — First",
+      "name": "Pesichas HaAron — Neilah",
       "tier": "very-special",
       "order": 1
     },
     {
-      "id": "grodna/neilah/pesicha-2",
+      "id": "grodna/simchas-torah/night-kohen",
       "minyan": "grodna",
-      "occasion": "neilah",
-      "slug": "pesicha-2",
-      "name": "Pesichas HaAron — Second",
-      "tier": "very-special",
-      "order": 2
-    },
-    {
-      "id": "grodna/neilah/pesicha-3",
-      "minyan": "grodna",
-      "occasion": "neilah",
-      "slug": "pesicha-3",
-      "name": "Pesichas HaAron — Neilas HaShaar",
-      "tier": "very-special",
-      "order": 3
-    },
-    {
-      "id": "grodna/sukkos-1/hotzaah",
-      "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "occasion": "simchas-torah",
+      "slug": "night-kohen",
+      "name": "Simchas Torah Night — Kohen",
       "tier": "regular",
       "order": 1
     },
     {
-      "id": "grodna/sukkos-1/kohen",
+      "id": "grodna/simchas-torah/night-levi",
       "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "kohen",
-      "name": "Kohen",
+      "occasion": "simchas-torah",
+      "slug": "night-levi",
+      "name": "Simchas Torah Night — Levi",
       "tier": "regular",
       "order": 2
     },
     {
-      "id": "grodna/sukkos-1/levi",
+      "id": "grodna/simchas-torah/night-yisrael",
       "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "levi",
-      "name": "Levi",
+      "occasion": "simchas-torah",
+      "slug": "night-yisrael",
+      "name": "Simchas Torah Night — Yisrael",
       "tier": "regular",
       "order": 3
-    },
-    {
-      "id": "grodna/sukkos-1/shlishi",
-      "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "shlishi",
-      "name": "Shlishi",
-      "tier": "regular",
-      "order": 4
-    },
-    {
-      "id": "grodna/sukkos-1/revii",
-      "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "revii",
-      "name": "Revi'i",
-      "tier": "regular",
-      "order": 5
-    },
-    {
-      "id": "grodna/sukkos-1/chamishi",
-      "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "chamishi",
-      "name": "Chamishi",
-      "tier": "regular",
-      "order": 6
-    },
-    {
-      "id": "grodna/sukkos-1/maftir",
-      "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "maftir",
-      "name": "Maftir",
-      "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "grodna/sukkos-1/hagbah",
-      "minyan": "grodna",
-      "occasion": "sukkos-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
-      "order": 8
     },
     {
       "id": "grodna/simchas-torah/hotzaah",
@@ -1547,7 +1519,7 @@
       "slug": "hotzaah",
       "name": "Hotza'ah VeHachnasah",
       "tier": "regular",
-      "order": 1
+      "order": 4
     },
     {
       "id": "grodna/simchas-torah/kohen",
@@ -1556,7 +1528,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 5
     },
     {
       "id": "grodna/simchas-torah/levi",
@@ -1565,7 +1537,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 6
     },
     {
       "id": "grodna/simchas-torah/shlishi",
@@ -1574,7 +1546,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 7
     },
     {
       "id": "grodna/simchas-torah/revii",
@@ -1583,7 +1555,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 8
     },
     {
       "id": "grodna/simchas-torah/chamishi",
@@ -1592,7 +1564,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 9
     },
     {
       "id": "grodna/simchas-torah/shishi",
@@ -1601,7 +1573,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 10
     },
     {
       "id": "grodna/simchas-torah/kol-hanearim",
@@ -1610,7 +1582,7 @@
       "slug": "kol-hanearim",
       "name": "Kol HaNearim",
       "tier": "special",
-      "order": 8
+      "order": 11
     },
     {
       "id": "grodna/simchas-torah/chasan-torah",
@@ -1619,7 +1591,7 @@
       "slug": "chasan-torah",
       "name": "Chasan Torah",
       "tier": "special",
-      "order": 9
+      "order": 12
     },
     {
       "id": "grodna/simchas-torah/chasan-bereishis",
@@ -1628,7 +1600,7 @@
       "slug": "chasan-bereishis",
       "name": "Chasan Bereishis",
       "tier": "special",
-      "order": 10
+      "order": 13
     },
     {
       "id": "grodna/simchas-torah/maftir",
@@ -1637,7 +1609,7 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 11
+      "order": 14
     },
     {
       "id": "grodna/simchas-torah/hagbah",
@@ -1646,16 +1618,25 @@
       "slug": "hagbah",
       "name": "Hagbah VeGelilah",
       "tier": "regular",
-      "order": 12
+      "order": 15
     },
     {
-      "id": "perlman/rh-1/hotzaah",
+      "id": "perlman/rh-1/hotzaah-1",
       "minyan": "perlman",
       "occasion": "rh-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "perlman/rh-1/hotzaah-2",
+      "minyan": "perlman",
+      "occasion": "rh-1",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "perlman/rh-1/kohen",
@@ -1664,7 +1645,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "perlman/rh-1/levi",
@@ -1673,7 +1654,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "perlman/rh-1/shlishi",
@@ -1682,7 +1663,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "perlman/rh-1/revii",
@@ -1691,7 +1672,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "perlman/rh-1/chamishi",
@@ -1700,7 +1681,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "perlman/rh-1/maftir",
@@ -1709,25 +1690,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "perlman/rh-1/hagbah",
-      "minyan": "perlman",
-      "occasion": "rh-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "perlman/rh-2/hotzaah",
+      "id": "perlman/rh-1/hagbah-1",
+      "minyan": "perlman",
+      "occasion": "rh-1",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "perlman/rh-1/hagbah-2",
+      "minyan": "perlman",
+      "occasion": "rh-1",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "perlman/rh-2/hotzaah-1",
       "minyan": "perlman",
       "occasion": "rh-2",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "perlman/rh-2/hotzaah-2",
+      "minyan": "perlman",
+      "occasion": "rh-2",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "perlman/rh-2/kohen",
@@ -1736,7 +1735,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "perlman/rh-2/levi",
@@ -1745,7 +1744,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "perlman/rh-2/shlishi",
@@ -1754,7 +1753,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "perlman/rh-2/revii",
@@ -1763,7 +1762,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "perlman/rh-2/chamishi",
@@ -1772,7 +1771,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "perlman/rh-2/maftir",
@@ -1781,25 +1780,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "perlman/rh-2/hagbah",
-      "minyan": "perlman",
-      "occasion": "rh-2",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "perlman/yk-shacharis/hotzaah",
+      "id": "perlman/rh-2/hagbah-1",
+      "minyan": "perlman",
+      "occasion": "rh-2",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "perlman/rh-2/hagbah-2",
+      "minyan": "perlman",
+      "occasion": "rh-2",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "perlman/yk-shacharis/hotzaah-1",
       "minyan": "perlman",
       "occasion": "yk-shacharis",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "perlman/yk-shacharis/hotzaah-2",
+      "minyan": "perlman",
+      "occasion": "yk-shacharis",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "perlman/yk-shacharis/kohen",
@@ -1808,7 +1825,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "perlman/yk-shacharis/levi",
@@ -1817,7 +1834,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "perlman/yk-shacharis/shlishi",
@@ -1826,7 +1843,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "perlman/yk-shacharis/revii",
@@ -1835,7 +1852,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "perlman/yk-shacharis/chamishi",
@@ -1844,7 +1861,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "perlman/yk-shacharis/shishi",
@@ -1853,7 +1870,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 8
     },
     {
       "id": "perlman/yk-shacharis/shevii",
@@ -1862,7 +1879,7 @@
       "slug": "shevii",
       "name": "Shevi'i",
       "tier": "regular",
-      "order": 8
+      "order": 9
     },
     {
       "id": "perlman/yk-shacharis/maftir",
@@ -1871,16 +1888,25 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 9
+      "order": 10
     },
     {
-      "id": "perlman/yk-shacharis/hagbah",
+      "id": "perlman/yk-shacharis/hagbah-1",
       "minyan": "perlman",
       "occasion": "yk-shacharis",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
       "tier": "regular",
-      "order": 10
+      "order": 11
+    },
+    {
+      "id": "perlman/yk-shacharis/hagbah-2",
+      "minyan": "perlman",
+      "occasion": "yk-shacharis",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 12
     },
     {
       "id": "perlman/yk-mincha/hotzaah",
@@ -1932,99 +1958,36 @@
       "minyan": "perlman",
       "occasion": "neilah",
       "slug": "pesicha-1",
-      "name": "Pesichas HaAron — First",
+      "name": "Pesichas HaAron — Neilah",
       "tier": "very-special",
       "order": 1
     },
     {
-      "id": "perlman/neilah/pesicha-2",
+      "id": "perlman/simchas-torah/night-kohen",
       "minyan": "perlman",
-      "occasion": "neilah",
-      "slug": "pesicha-2",
-      "name": "Pesichas HaAron — Second",
-      "tier": "very-special",
-      "order": 2
-    },
-    {
-      "id": "perlman/neilah/pesicha-3",
-      "minyan": "perlman",
-      "occasion": "neilah",
-      "slug": "pesicha-3",
-      "name": "Pesichas HaAron — Neilas HaShaar",
-      "tier": "very-special",
-      "order": 3
-    },
-    {
-      "id": "perlman/sukkos-1/hotzaah",
-      "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "occasion": "simchas-torah",
+      "slug": "night-kohen",
+      "name": "Simchas Torah Night — Kohen",
       "tier": "regular",
       "order": 1
     },
     {
-      "id": "perlman/sukkos-1/kohen",
+      "id": "perlman/simchas-torah/night-levi",
       "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "kohen",
-      "name": "Kohen",
+      "occasion": "simchas-torah",
+      "slug": "night-levi",
+      "name": "Simchas Torah Night — Levi",
       "tier": "regular",
       "order": 2
     },
     {
-      "id": "perlman/sukkos-1/levi",
+      "id": "perlman/simchas-torah/night-yisrael",
       "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "levi",
-      "name": "Levi",
+      "occasion": "simchas-torah",
+      "slug": "night-yisrael",
+      "name": "Simchas Torah Night — Yisrael",
       "tier": "regular",
       "order": 3
-    },
-    {
-      "id": "perlman/sukkos-1/shlishi",
-      "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "shlishi",
-      "name": "Shlishi",
-      "tier": "regular",
-      "order": 4
-    },
-    {
-      "id": "perlman/sukkos-1/revii",
-      "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "revii",
-      "name": "Revi'i",
-      "tier": "regular",
-      "order": 5
-    },
-    {
-      "id": "perlman/sukkos-1/chamishi",
-      "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "chamishi",
-      "name": "Chamishi",
-      "tier": "regular",
-      "order": 6
-    },
-    {
-      "id": "perlman/sukkos-1/maftir",
-      "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "maftir",
-      "name": "Maftir",
-      "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "perlman/sukkos-1/hagbah",
-      "minyan": "perlman",
-      "occasion": "sukkos-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
-      "order": 8
     },
     {
       "id": "perlman/simchas-torah/hotzaah",
@@ -2033,7 +1996,7 @@
       "slug": "hotzaah",
       "name": "Hotza'ah VeHachnasah",
       "tier": "regular",
-      "order": 1
+      "order": 4
     },
     {
       "id": "perlman/simchas-torah/kohen",
@@ -2042,7 +2005,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 5
     },
     {
       "id": "perlman/simchas-torah/levi",
@@ -2051,7 +2014,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 6
     },
     {
       "id": "perlman/simchas-torah/shlishi",
@@ -2060,7 +2023,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 7
     },
     {
       "id": "perlman/simchas-torah/revii",
@@ -2069,7 +2032,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 8
     },
     {
       "id": "perlman/simchas-torah/chamishi",
@@ -2078,7 +2041,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 9
     },
     {
       "id": "perlman/simchas-torah/shishi",
@@ -2087,7 +2050,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 10
     },
     {
       "id": "perlman/simchas-torah/kol-hanearim",
@@ -2096,7 +2059,7 @@
       "slug": "kol-hanearim",
       "name": "Kol HaNearim",
       "tier": "special",
-      "order": 8
+      "order": 11
     },
     {
       "id": "perlman/simchas-torah/chasan-torah",
@@ -2105,7 +2068,7 @@
       "slug": "chasan-torah",
       "name": "Chasan Torah",
       "tier": "special",
-      "order": 9
+      "order": 12
     },
     {
       "id": "perlman/simchas-torah/chasan-bereishis",
@@ -2114,7 +2077,7 @@
       "slug": "chasan-bereishis",
       "name": "Chasan Bereishis",
       "tier": "special",
-      "order": 10
+      "order": 13
     },
     {
       "id": "perlman/simchas-torah/maftir",
@@ -2123,7 +2086,7 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 11
+      "order": 14
     },
     {
       "id": "perlman/simchas-torah/hagbah",
@@ -2132,16 +2095,25 @@
       "slug": "hagbah",
       "name": "Hagbah VeGelilah",
       "tier": "regular",
-      "order": 12
+      "order": 15
     },
     {
-      "id": "yeshiva-ketana/rh-1/hotzaah",
+      "id": "yeshiva-ketana/rh-1/hotzaah-1",
       "minyan": "yeshiva-ketana",
       "occasion": "rh-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "yeshiva-ketana/rh-1/hotzaah-2",
+      "minyan": "yeshiva-ketana",
+      "occasion": "rh-1",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "yeshiva-ketana/rh-1/kohen",
@@ -2150,7 +2122,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "yeshiva-ketana/rh-1/levi",
@@ -2159,7 +2131,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "yeshiva-ketana/rh-1/shlishi",
@@ -2168,7 +2140,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "yeshiva-ketana/rh-1/revii",
@@ -2177,7 +2149,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "yeshiva-ketana/rh-1/chamishi",
@@ -2186,7 +2158,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "yeshiva-ketana/rh-1/maftir",
@@ -2195,25 +2167,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "yeshiva-ketana/rh-1/hagbah",
-      "minyan": "yeshiva-ketana",
-      "occasion": "rh-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "yeshiva-ketana/rh-2/hotzaah",
+      "id": "yeshiva-ketana/rh-1/hagbah-1",
+      "minyan": "yeshiva-ketana",
+      "occasion": "rh-1",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "yeshiva-ketana/rh-1/hagbah-2",
+      "minyan": "yeshiva-ketana",
+      "occasion": "rh-1",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "yeshiva-ketana/rh-2/hotzaah-1",
       "minyan": "yeshiva-ketana",
       "occasion": "rh-2",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "yeshiva-ketana/rh-2/hotzaah-2",
+      "minyan": "yeshiva-ketana",
+      "occasion": "rh-2",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "yeshiva-ketana/rh-2/kohen",
@@ -2222,7 +2212,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "yeshiva-ketana/rh-2/levi",
@@ -2231,7 +2221,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "yeshiva-ketana/rh-2/shlishi",
@@ -2240,7 +2230,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "yeshiva-ketana/rh-2/revii",
@@ -2249,7 +2239,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "yeshiva-ketana/rh-2/chamishi",
@@ -2258,7 +2248,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "yeshiva-ketana/rh-2/maftir",
@@ -2267,25 +2257,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "yeshiva-ketana/rh-2/hagbah",
-      "minyan": "yeshiva-ketana",
-      "occasion": "rh-2",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "yeshiva-ketana/yk-shacharis/hotzaah",
+      "id": "yeshiva-ketana/rh-2/hagbah-1",
+      "minyan": "yeshiva-ketana",
+      "occasion": "rh-2",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "yeshiva-ketana/rh-2/hagbah-2",
+      "minyan": "yeshiva-ketana",
+      "occasion": "rh-2",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "yeshiva-ketana/yk-shacharis/hotzaah-1",
       "minyan": "yeshiva-ketana",
       "occasion": "yk-shacharis",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "yeshiva-ketana/yk-shacharis/hotzaah-2",
+      "minyan": "yeshiva-ketana",
+      "occasion": "yk-shacharis",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/kohen",
@@ -2294,7 +2302,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/levi",
@@ -2303,7 +2311,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/shlishi",
@@ -2312,7 +2320,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/revii",
@@ -2321,7 +2329,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/chamishi",
@@ -2330,7 +2338,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/shishi",
@@ -2339,7 +2347,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 8
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/shevii",
@@ -2348,7 +2356,7 @@
       "slug": "shevii",
       "name": "Shevi'i",
       "tier": "regular",
-      "order": 8
+      "order": 9
     },
     {
       "id": "yeshiva-ketana/yk-shacharis/maftir",
@@ -2357,16 +2365,25 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 9
+      "order": 10
     },
     {
-      "id": "yeshiva-ketana/yk-shacharis/hagbah",
+      "id": "yeshiva-ketana/yk-shacharis/hagbah-1",
       "minyan": "yeshiva-ketana",
       "occasion": "yk-shacharis",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
       "tier": "regular",
-      "order": 10
+      "order": 11
+    },
+    {
+      "id": "yeshiva-ketana/yk-shacharis/hagbah-2",
+      "minyan": "yeshiva-ketana",
+      "occasion": "yk-shacharis",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 12
     },
     {
       "id": "yeshiva-ketana/yk-mincha/hotzaah",
@@ -2418,99 +2435,36 @@
       "minyan": "yeshiva-ketana",
       "occasion": "neilah",
       "slug": "pesicha-1",
-      "name": "Pesichas HaAron — First",
+      "name": "Pesichas HaAron — Neilah",
       "tier": "very-special",
       "order": 1
     },
     {
-      "id": "yeshiva-ketana/neilah/pesicha-2",
+      "id": "yeshiva-ketana/simchas-torah/night-kohen",
       "minyan": "yeshiva-ketana",
-      "occasion": "neilah",
-      "slug": "pesicha-2",
-      "name": "Pesichas HaAron — Second",
-      "tier": "very-special",
-      "order": 2
-    },
-    {
-      "id": "yeshiva-ketana/neilah/pesicha-3",
-      "minyan": "yeshiva-ketana",
-      "occasion": "neilah",
-      "slug": "pesicha-3",
-      "name": "Pesichas HaAron — Neilas HaShaar",
-      "tier": "very-special",
-      "order": 3
-    },
-    {
-      "id": "yeshiva-ketana/sukkos-1/hotzaah",
-      "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "occasion": "simchas-torah",
+      "slug": "night-kohen",
+      "name": "Simchas Torah Night — Kohen",
       "tier": "regular",
       "order": 1
     },
     {
-      "id": "yeshiva-ketana/sukkos-1/kohen",
+      "id": "yeshiva-ketana/simchas-torah/night-levi",
       "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "kohen",
-      "name": "Kohen",
+      "occasion": "simchas-torah",
+      "slug": "night-levi",
+      "name": "Simchas Torah Night — Levi",
       "tier": "regular",
       "order": 2
     },
     {
-      "id": "yeshiva-ketana/sukkos-1/levi",
+      "id": "yeshiva-ketana/simchas-torah/night-yisrael",
       "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "levi",
-      "name": "Levi",
+      "occasion": "simchas-torah",
+      "slug": "night-yisrael",
+      "name": "Simchas Torah Night — Yisrael",
       "tier": "regular",
       "order": 3
-    },
-    {
-      "id": "yeshiva-ketana/sukkos-1/shlishi",
-      "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "shlishi",
-      "name": "Shlishi",
-      "tier": "regular",
-      "order": 4
-    },
-    {
-      "id": "yeshiva-ketana/sukkos-1/revii",
-      "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "revii",
-      "name": "Revi'i",
-      "tier": "regular",
-      "order": 5
-    },
-    {
-      "id": "yeshiva-ketana/sukkos-1/chamishi",
-      "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "chamishi",
-      "name": "Chamishi",
-      "tier": "regular",
-      "order": 6
-    },
-    {
-      "id": "yeshiva-ketana/sukkos-1/maftir",
-      "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "maftir",
-      "name": "Maftir",
-      "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "yeshiva-ketana/sukkos-1/hagbah",
-      "minyan": "yeshiva-ketana",
-      "occasion": "sukkos-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
-      "order": 8
     },
     {
       "id": "yeshiva-ketana/simchas-torah/hotzaah",
@@ -2519,7 +2473,7 @@
       "slug": "hotzaah",
       "name": "Hotza'ah VeHachnasah",
       "tier": "regular",
-      "order": 1
+      "order": 4
     },
     {
       "id": "yeshiva-ketana/simchas-torah/kohen",
@@ -2528,7 +2482,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 5
     },
     {
       "id": "yeshiva-ketana/simchas-torah/levi",
@@ -2537,7 +2491,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 6
     },
     {
       "id": "yeshiva-ketana/simchas-torah/shlishi",
@@ -2546,7 +2500,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 7
     },
     {
       "id": "yeshiva-ketana/simchas-torah/revii",
@@ -2555,7 +2509,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 8
     },
     {
       "id": "yeshiva-ketana/simchas-torah/chamishi",
@@ -2564,7 +2518,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 9
     },
     {
       "id": "yeshiva-ketana/simchas-torah/shishi",
@@ -2573,7 +2527,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 10
     },
     {
       "id": "yeshiva-ketana/simchas-torah/kol-hanearim",
@@ -2582,7 +2536,7 @@
       "slug": "kol-hanearim",
       "name": "Kol HaNearim",
       "tier": "special",
-      "order": 8
+      "order": 11
     },
     {
       "id": "yeshiva-ketana/simchas-torah/chasan-torah",
@@ -2591,7 +2545,7 @@
       "slug": "chasan-torah",
       "name": "Chasan Torah",
       "tier": "special",
-      "order": 9
+      "order": 12
     },
     {
       "id": "yeshiva-ketana/simchas-torah/chasan-bereishis",
@@ -2600,7 +2554,7 @@
       "slug": "chasan-bereishis",
       "name": "Chasan Bereishis",
       "tier": "special",
-      "order": 10
+      "order": 13
     },
     {
       "id": "yeshiva-ketana/simchas-torah/maftir",
@@ -2609,7 +2563,7 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 11
+      "order": 14
     },
     {
       "id": "yeshiva-ketana/simchas-torah/hagbah",
@@ -2618,16 +2572,25 @@
       "slug": "hagbah",
       "name": "Hagbah VeGelilah",
       "tier": "regular",
-      "order": 12
+      "order": 15
     },
     {
-      "id": "chayei-avraham/rh-1/hotzaah",
+      "id": "chayei-avraham/rh-1/hotzaah-1",
       "minyan": "chayei-avraham",
       "occasion": "rh-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "chayei-avraham/rh-1/hotzaah-2",
+      "minyan": "chayei-avraham",
+      "occasion": "rh-1",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "chayei-avraham/rh-1/kohen",
@@ -2636,7 +2599,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "chayei-avraham/rh-1/levi",
@@ -2645,7 +2608,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "chayei-avraham/rh-1/shlishi",
@@ -2654,7 +2617,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "chayei-avraham/rh-1/revii",
@@ -2663,7 +2626,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "chayei-avraham/rh-1/chamishi",
@@ -2672,7 +2635,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "chayei-avraham/rh-1/maftir",
@@ -2681,25 +2644,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "chayei-avraham/rh-1/hagbah",
-      "minyan": "chayei-avraham",
-      "occasion": "rh-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "chayei-avraham/rh-2/hotzaah",
+      "id": "chayei-avraham/rh-1/hagbah-1",
+      "minyan": "chayei-avraham",
+      "occasion": "rh-1",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "chayei-avraham/rh-1/hagbah-2",
+      "minyan": "chayei-avraham",
+      "occasion": "rh-1",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "chayei-avraham/rh-2/hotzaah-1",
       "minyan": "chayei-avraham",
       "occasion": "rh-2",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "chayei-avraham/rh-2/hotzaah-2",
+      "minyan": "chayei-avraham",
+      "occasion": "rh-2",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "chayei-avraham/rh-2/kohen",
@@ -2708,7 +2689,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "chayei-avraham/rh-2/levi",
@@ -2717,7 +2698,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "chayei-avraham/rh-2/shlishi",
@@ -2726,7 +2707,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "chayei-avraham/rh-2/revii",
@@ -2735,7 +2716,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "chayei-avraham/rh-2/chamishi",
@@ -2744,7 +2725,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "chayei-avraham/rh-2/maftir",
@@ -2753,25 +2734,43 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "chayei-avraham/rh-2/hagbah",
-      "minyan": "chayei-avraham",
-      "occasion": "rh-2",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
       "order": 8
     },
     {
-      "id": "chayei-avraham/yk-shacharis/hotzaah",
+      "id": "chayei-avraham/rh-2/hagbah-1",
+      "minyan": "chayei-avraham",
+      "occasion": "rh-2",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
+      "tier": "regular",
+      "order": 9
+    },
+    {
+      "id": "chayei-avraham/rh-2/hagbah-2",
+      "minyan": "chayei-avraham",
+      "occasion": "rh-2",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 10
+    },
+    {
+      "id": "chayei-avraham/yk-shacharis/hotzaah-1",
       "minyan": "chayei-avraham",
       "occasion": "yk-shacharis",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
+      "slug": "hotzaah-1",
+      "name": "Hotza'ah VeHachnasah — Sefer I",
       "tier": "regular",
       "order": 1
+    },
+    {
+      "id": "chayei-avraham/yk-shacharis/hotzaah-2",
+      "minyan": "chayei-avraham",
+      "occasion": "yk-shacharis",
+      "slug": "hotzaah-2",
+      "name": "Hotza'ah VeHachnasah — Sefer II",
+      "tier": "regular",
+      "order": 2
     },
     {
       "id": "chayei-avraham/yk-shacharis/kohen",
@@ -2780,7 +2779,7 @@
       "slug": "kohen",
       "name": "Kohen",
       "tier": "regular",
-      "order": 2
+      "order": 3
     },
     {
       "id": "chayei-avraham/yk-shacharis/levi",
@@ -2789,7 +2788,7 @@
       "slug": "levi",
       "name": "Levi",
       "tier": "regular",
-      "order": 3
+      "order": 4
     },
     {
       "id": "chayei-avraham/yk-shacharis/shlishi",
@@ -2798,7 +2797,7 @@
       "slug": "shlishi",
       "name": "Shlishi",
       "tier": "regular",
-      "order": 4
+      "order": 5
     },
     {
       "id": "chayei-avraham/yk-shacharis/revii",
@@ -2807,7 +2806,7 @@
       "slug": "revii",
       "name": "Revi'i",
       "tier": "regular",
-      "order": 5
+      "order": 6
     },
     {
       "id": "chayei-avraham/yk-shacharis/chamishi",
@@ -2816,7 +2815,7 @@
       "slug": "chamishi",
       "name": "Chamishi",
       "tier": "regular",
-      "order": 6
+      "order": 7
     },
     {
       "id": "chayei-avraham/yk-shacharis/shishi",
@@ -2825,7 +2824,7 @@
       "slug": "shishi",
       "name": "Shishi",
       "tier": "regular",
-      "order": 7
+      "order": 8
     },
     {
       "id": "chayei-avraham/yk-shacharis/shevii",
@@ -2834,7 +2833,7 @@
       "slug": "shevii",
       "name": "Shevi'i",
       "tier": "regular",
-      "order": 8
+      "order": 9
     },
     {
       "id": "chayei-avraham/yk-shacharis/maftir",
@@ -2843,16 +2842,25 @@
       "slug": "maftir",
       "name": "Maftir",
       "tier": "regular",
-      "order": 9
+      "order": 10
     },
     {
-      "id": "chayei-avraham/yk-shacharis/hagbah",
+      "id": "chayei-avraham/yk-shacharis/hagbah-1",
       "minyan": "chayei-avraham",
       "occasion": "yk-shacharis",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
+      "slug": "hagbah-1",
+      "name": "Hagbah VeGelilah — Sefer I",
       "tier": "regular",
-      "order": 10
+      "order": 11
+    },
+    {
+      "id": "chayei-avraham/yk-shacharis/hagbah-2",
+      "minyan": "chayei-avraham",
+      "occasion": "yk-shacharis",
+      "slug": "hagbah-2",
+      "name": "Hagbah VeGelilah — Sefer II",
+      "tier": "regular",
+      "order": 12
     },
     {
       "id": "chayei-avraham/yk-mincha/hotzaah",
@@ -2904,99 +2912,9 @@
       "minyan": "chayei-avraham",
       "occasion": "neilah",
       "slug": "pesicha-1",
-      "name": "Pesichas HaAron — First",
+      "name": "Pesichas HaAron — Neilah",
       "tier": "very-special",
       "order": 1
-    },
-    {
-      "id": "chayei-avraham/neilah/pesicha-2",
-      "minyan": "chayei-avraham",
-      "occasion": "neilah",
-      "slug": "pesicha-2",
-      "name": "Pesichas HaAron — Second",
-      "tier": "very-special",
-      "order": 2
-    },
-    {
-      "id": "chayei-avraham/neilah/pesicha-3",
-      "minyan": "chayei-avraham",
-      "occasion": "neilah",
-      "slug": "pesicha-3",
-      "name": "Pesichas HaAron — Neilas HaShaar",
-      "tier": "very-special",
-      "order": 3
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/hotzaah",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "hotzaah",
-      "name": "Hotza'ah VeHachnasah",
-      "tier": "regular",
-      "order": 1
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/kohen",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "kohen",
-      "name": "Kohen",
-      "tier": "regular",
-      "order": 2
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/levi",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "levi",
-      "name": "Levi",
-      "tier": "regular",
-      "order": 3
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/shlishi",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "shlishi",
-      "name": "Shlishi",
-      "tier": "regular",
-      "order": 4
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/revii",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "revii",
-      "name": "Revi'i",
-      "tier": "regular",
-      "order": 5
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/chamishi",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "chamishi",
-      "name": "Chamishi",
-      "tier": "regular",
-      "order": 6
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/maftir",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "maftir",
-      "name": "Maftir",
-      "tier": "regular",
-      "order": 7
-    },
-    {
-      "id": "chayei-avraham/sukkos-1/hagbah",
-      "minyan": "chayei-avraham",
-      "occasion": "sukkos-1",
-      "slug": "hagbah",
-      "name": "Hagbah VeGelilah",
-      "tier": "regular",
-      "order": 8
     },
     {
       "id": "chayei-avraham/simchas-torah/hotzaah",

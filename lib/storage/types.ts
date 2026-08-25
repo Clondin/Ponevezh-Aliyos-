@@ -29,6 +29,7 @@ export interface CheckoutRecord {
   honoreeEmail?: string;
   publicRecognition?: boolean;
   recognitionName?: string;
+  assignmentAcceptedAt?: string;
   amount: number;
   preferredMethod: "card";
   status: "created" | "pending" | "sold" | "released" | "reversed";
@@ -44,6 +45,7 @@ export interface StoredPledge extends Pledge {
   honoreeEmail?: string;
   publicRecognition?: boolean;
   recognitionName?: string;
+  assignmentAcceptedAt?: string;
 }
 
 export interface StoredOrder extends Order {
@@ -56,6 +58,7 @@ export interface StoredOrder extends Order {
   honoreeEmail?: string;
   publicRecognition?: boolean;
   recognitionName?: string;
+  assignmentAcceptedAt?: string;
 }
 
 export interface AuditRecord {

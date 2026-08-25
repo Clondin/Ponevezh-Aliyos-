@@ -33,6 +33,7 @@ export default async function OrdersPage() {
       gatewayReference: order.gatewayReference,
       emailStatus: delivery?.status ?? "missing",
       receiptEmailId: `order-confirmation-${order.id}`,
+      assignmentAcceptedAt: order.assignmentAcceptedAt,
     };
   }));
   return <section className="admin-section"><div className="container"><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, see Banquest references, and recover queued receipts.</p><AdminOrdersTable rows={rows} /></div></section>;

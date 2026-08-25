@@ -19,6 +19,7 @@ export interface SponsorPayload {
   honoreeEmail?: string;
   publicRecognition?: boolean;
   recognitionName?: string;
+  assignmentAccepted: true;
 }
 
 export interface CardPaymentPayload extends SponsorPayload {
@@ -83,6 +84,7 @@ export function sponsorPayload(
     "honoreeEmail",
     "publicRecognition",
     "recognitionName",
+    "assignmentAccepted",
     ...(allowPhone ? ["phone"] : []),
   ]);
   if (Object.keys(body).some((key) => !allowed.has(key))) {
@@ -138,6 +140,9 @@ export function sponsorPayload(
   const recognitionName = publicRecognition
     ? cleanString(body.recognitionName ?? donorName, "recognitionName", 160)
     : undefined;
+  if (body.assignmentAccepted !== true) {
+    invalidInput("You must acknowledge the aliyah assignment terms.");
+  }
   return {
     kibbudId,
     donorName,
@@ -150,6 +155,7 @@ export function sponsorPayload(
     honoreeEmail,
     publicRecognition,
     recognitionName,
+    assignmentAccepted: true,
   };
 }
 
@@ -165,6 +171,7 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
     "honoreeEmail",
     "publicRecognition",
     "recognitionName",
+    "assignmentAccepted",
     "payment",
   ]);
   if (Object.keys(body).some((key) => !allowed.has(key)) || !isRecord(body.payment)) {
@@ -182,6 +189,7 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
       honoreeEmail: body.honoreeEmail,
       publicRecognition: body.publicRecognition,
       recognitionName: body.recognitionName,
+      assignmentAccepted: body.assignmentAccepted,
     },
     false
   );
@@ -225,7 +233,7 @@ export function cartPaymentPayload(body: Record<string, unknown>): CartPaymentPa
   const allowed = new Set([
     "kibbudIds", "donorName", "email", "misheberachNames", "payment",
     "dedicationType", "dedicationName", "dedicationMessage", "honoreeEmail",
-    "publicRecognition", "recognitionName",
+    "publicRecognition", "recognitionName", "assignmentAccepted",
   ]);
   if (Object.keys(body).some((key) => !allowed.has(key)) || !Array.isArray(body.kibbudIds)) {
     invalidInput("Request contains an unsupported or missing kibbudIds field.");
@@ -247,6 +255,7 @@ export function cartPaymentPayload(body: Record<string, unknown>): CartPaymentPa
     honoreeEmail: body.honoreeEmail,
     publicRecognition: body.publicRecognition,
     recognitionName: body.recognitionName,
+    assignmentAccepted: body.assignmentAccepted,
   });
   const { kibbudId: _ignored, ...rest } = parsed;
   return { ...rest, kibbudIds };

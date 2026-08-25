@@ -13,7 +13,7 @@
     "cf-typegen": "wrangler types cloudflare-env.d.ts --env-interface CloudflareEnv --include-runtime=false --env-file .dev.vars.example",
     "d1:migrate:local": "wrangler d1 migrations apply ponevez-kibbudim --local",
     "d1:migrate:remote": "wrangler d1 migrations apply ponevez-kibbudim --remote",
-    "fixtures": "node scripts/generate-fixtures.mjs",
+    "fixtures": "npm run catalogs && node scripts/generate-fixtures.mjs",
     "catalogs": "tsx scripts/generate-catalogs.ts",
     "test:calendar": "tsx scripts/calendar-snapshot.ts",
     "test:transitions": "tsx scripts/exercise-transitions.ts",
