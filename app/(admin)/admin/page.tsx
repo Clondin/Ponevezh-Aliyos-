@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getMinyanim, occasionsForMinyan } from "@/lib/catalog";
+import { getCatalog, getMinyanim, occasionsForMinyan, priceForKibbud } from "@/lib/catalog";
 import { usd } from "@/lib/format";
 import { getRepository } from "@/lib/storage/repository";
 import ReconcileButton from "@/components/ReconcileButton";
@@ -13,24 +13,28 @@ export default async function AdminHome() {
     getRepository().pendingPledges(),
   ]);
   const raised = orders.reduce((s, o) => s + o.amount, 0);
+  const items = getCatalog().items;
+  const faceValue = items.reduce((s, item) => s + priceForKibbud(item), 0);
 
   return (
     <section className="admin-section">
       <div className="container">
         <h1 className="admin-title">Season overview &mdash; 5787</h1>
-        <p className="admin-sub">Tishrei 5787 &middot; 348 kibbudim across six minyanim.</p>
+        <p className="admin-sub">
+          Tishrei 5787 &middot; {items.length} kibbudim across {minyanim.length} minyanim.
+        </p>
         <div style={{ marginBottom: 28 }}><ReconcileButton /></div>
 
         <div className="admin-grid" style={{ marginBottom: 48 }}>
           <div className="stat-card">
             <div className="micro">Sponsored</div>
             <div className="stat-card__value">{orders.length}</div>
-            <div className="stat-card__note">of 348 kibbudim</div>
+            <div className="stat-card__note">of {items.length} kibbudim</div>
           </div>
           <div className="stat-card">
             <div className="micro">Raised</div>
             <div className="stat-card__value">{usd(raised)}</div>
-            <div className="stat-card__note">of $773,600 face value</div>
+            <div className="stat-card__note">of {usd(faceValue)} face value</div>
           </div>
           <div className="stat-card">
             <div className="micro">Pending pledges</div>

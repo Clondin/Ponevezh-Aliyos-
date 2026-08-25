@@ -83,17 +83,15 @@ export default function SponsorForm({
   const [honoreeEmail, setHonoreeEmail] = useState("");
   const [publicRecognition, setPublicRecognition] = useState(false);
   const [recognitionName, setRecognitionName] = useState("");
-  const [method, setMethod] = useState<Method>("card");
+  const cardConfigured = Boolean(tokenizationKey);
+  const [method, setMethod] = useState<Method>(cardConfigured ? "card" : "wire");
   const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isCombined = Boolean(itemIds && itemIds.length > 1);
 
   useEffect(() => {
-    if (!tokenizationKey) {
-      setError("Online card payments are not configured yet. Please choose wire.");
-      return;
-    }
+    if (!tokenizationKey) return;
 
     let cancelled = false;
     const initialize = () => {
@@ -420,7 +418,11 @@ export default function SponsorForm({
         Payment
       </span>
       <div className="pay-options" role="radiogroup" aria-label="Payment method">
-        {PAY_OPTIONS.filter((option) => !isCombined || option.id === "card").map((option) => (
+        {PAY_OPTIONS.filter(
+          (option) =>
+            (cardConfigured || option.id !== "card") &&
+            (!isCombined || option.id === "card")
+        ).map((option) => (
           <label
             key={option.id}
             className={`pay-option${method === option.id ? " pay-option--selected" : ""}`}
@@ -441,19 +443,32 @@ export default function SponsorForm({
         ))}
       </div>
 
-      <div className={method === "card" ? "card-fields" : "card-fields card-fields--hidden"}>
-        <div id="banquest-card-fields" />
-        {!cardReady && tokenizationKey && (
-          <p className="card-fields__loading" role="status">
-            Loading secure credit-card fields…
-          </p>
-        )}
-      </div>
+      {isCombined && !cardConfigured ? (
+        <p className="hint" role="status">
+          Online card payments are not configured yet. Please sponsor each
+          kibbud individually and reserve it by wire, or contact the office.
+        </p>
+      ) : null}
+
+      {cardConfigured ? (
+        <div className={method === "card" ? "card-fields" : "card-fields card-fields--hidden"}>
+          <div id="banquest-card-fields" />
+          {!cardReady && (
+            <p className="card-fields__loading" role="status">
+              Loading secure credit-card fields…
+            </p>
+          )}
+        </div>
+      ) : null}
 
       <button
         type="submit"
         className="btn btn--fill btn--block"
-        disabled={submitting || (method === "card" && !cardReady)}
+        disabled={
+          submitting ||
+          (method === "card" && !cardReady) ||
+          (isCombined && !cardConfigured)
+        }
       >
         {submitting
           ? "Please wait…"

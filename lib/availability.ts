@@ -14,7 +14,9 @@ export interface Availability {
 }
 
 function fraction(available: number, total: number): string {
-  return `${String(available).padStart(2, "0")} / ${total}`;
+  // Pad both sides alike so "08 / 08" never sits beside "10 / 10".
+  const width = Math.max(2, String(total).length);
+  return `${String(available).padStart(width, "0")} / ${String(total).padStart(width, "0")}`;
 }
 
 export function availabilityFromStatuses(

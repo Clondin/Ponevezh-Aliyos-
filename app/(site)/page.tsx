@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import SectionHeading from "@/components/SectionHeading";
 import { getMinyanim, getOccasions } from "@/lib/catalog";
 import { minyanAvailability, minyanFromPrice } from "@/lib/availability";
@@ -60,14 +59,14 @@ export default async function HomePage() {
           </div>
 
           <figure className="hero__visual">
-            <Image
-              src="/images/yeshiva/beis-medrash.webp"
-              alt="The Ponevez Yeshiva beis medrash filled with talmidim learning"
-              width={1920}
-              height={1078}
+            <img
+              src="/images/yeshiva/davening-1600.webp"
+              srcSet="/images/yeshiva/davening-800.webp 800w, /images/yeshiva/davening-1600.webp 1600w"
               sizes="(max-width: 900px) 100vw, 56vw"
-              priority
-              unoptimized
+              width={1600}
+              height={1283}
+              alt="The Ponevez beis medrash standing in tefillah before the aron kodesh"
+              fetchPriority="high"
             />
             <figcaption>
               <span lang="he">בית המדרש</span>
@@ -106,23 +105,26 @@ export default async function HomePage() {
         <div className="container yeshiva-story__inner">
           <div className="yeshiva-story__media">
             <figure className="yeshiva-story__image yeshiva-story__image--learning">
-              <Image
-                src="/images/yeshiva/learning.webp"
-                alt="Talmidim learning together in the Ponevez beis medrash"
-                width={1920}
-                height={1280}
+              <img
+                src="/images/yeshiva/chavrusa-1400.webp"
+                srcSet="/images/yeshiva/chavrusa-700.webp 700w, /images/yeshiva/chavrusa-1400.webp 1400w"
                 sizes="(max-width: 900px) 70vw, 42vw"
-                unoptimized
+                width={1400}
+                height={933}
+                alt="Two talmidei chachamim learning together over a gemara in the Ponevez beis medrash"
+                loading="lazy"
+                decoding="async"
               />
             </figure>
-            <figure className="yeshiva-story__image yeshiva-story__image--tefillah">
-              <Image
-                src="/images/yeshiva/tefillah.webp"
-                alt="The Ponevez beis medrash gathered for tefillah"
-                width={1920}
-                height={936}
+            <figure className="yeshiva-story__image yeshiva-story__image--aron">
+              <img
+                src="/images/yeshiva/aron-700.webp"
                 sizes="(max-width: 900px) 30vw, 18vw"
-                unoptimized
+                width={700}
+                height={1400}
+                alt="A talmid explaining a sugya before the carved golden aron kodesh of Ponevez"
+                loading="lazy"
+                decoding="async"
               />
             </figure>
           </div>
@@ -173,6 +175,31 @@ export default async function HomePage() {
               <div className="step__body">{s.body}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="facade band band--rules" aria-label="The yeshiva building">
+        <figure className="facade__figure">
+          <img
+            src="/images/yeshiva/facade-1920.webp"
+            srcSet="/images/yeshiva/facade-960.webp 960w, /images/yeshiva/facade-1920.webp 1920w"
+            sizes="100vw"
+            width={1920}
+            height={738}
+            alt="Talmidim climbing the front steps of Ponevez Yeshiva in Bnei Brak"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>
+            <span lang="he">ישיבת פוניבז׳</span>
+            Ponevez Yeshiva, Bnei Brak
+          </figcaption>
+        </figure>
+        <div className="container facade__strip">
+          <p>The tefillos of Tishrei rise from this building.</p>
+          <Link href="/about" className="facade__link">
+            About the Yeshiva <span aria-hidden="true">&rarr;</span>
+          </Link>
         </div>
       </section>
     </>

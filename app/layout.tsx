@@ -1,6 +1,23 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { David_Libre, Marcellus, Public_Sans } from "next/font/google";
 import "@/styles/globals.css";
+
+const display = Marcellus({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-display",
+});
+const ui = Public_Sans({
+  weight: ["300", "400", "500", "600"],
+  subsets: ["latin"],
+  variable: "--font-ui",
+});
+const hebrew = David_Libre({
+  weight: ["400", "500", "700"],
+  subsets: ["hebrew", "latin"],
+  variable: "--font-hebrew",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || "https://ponevez-kibbudim.pages.dev"),
@@ -14,7 +31,7 @@ export const metadata: Metadata = {
     title: "Yomim Noraim Kibbudim 5787 — Ponevez Yeshiva",
     description: "Choose and sponsor a kibbud across the six minyanim of Ponevez Yeshiva.",
     type: "website",
-    images: [{ url: "/images/yeshiva/beis-medrash.webp", width: 1920, height: 1078 }],
+    images: [{ url: "/images/social-card.jpg", width: 1200, height: 630 }],
   },
   twitter: { card: "summary_large_image" },
 };
@@ -26,19 +43,10 @@ export default function RootLayout({
 }) {
   const analyticsToken = process.env.NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN?.trim();
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Marcellus&family=Public+Sans:wght@300;400;500;600&family=David+Libre:wght@400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="en"
+      className={`${display.variable} ${ui.variable} ${hebrew.variable}`}
+    >
       <body>
         {children}
         {analyticsToken ? (
