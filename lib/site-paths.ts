@@ -1,4 +1,4 @@
-export const APP_BASE_PATH = "/kibbudim";
+export const APP_BASE_PATH = "/high-holidays";
 
 /** Prefix a root-relative URL that is handled directly by the browser. */
 export function withBasePath(path: string): string {

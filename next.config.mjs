@@ -19,15 +19,29 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig = {
-  basePath: "/kibbudim",
+  basePath: "/high-holidays",
   poweredByHeader: false,
   async redirects() {
-    return [{
-      source: "/",
-      destination: "/kibbudim",
-      permanent: false,
-      basePath: false,
-    }];
+    return [
+      {
+        source: "/",
+        destination: "/high-holidays",
+        permanent: false,
+        basePath: false,
+      },
+      {
+        source: "/kibbudim",
+        destination: "/high-holidays",
+        permanent: true,
+        basePath: false,
+      },
+      {
+        source: "/kibbudim/:path*",
+        destination: "/high-holidays/:path*",
+        permanent: true,
+        basePath: false,
+      },
+    ];
   },
   async headers() {
     return [{

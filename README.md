@@ -19,7 +19,7 @@ npm run d1:migrate:local
 npm run dev
 ```
 
-Open `http://localhost:3110/kibbudim`. The Admire form needs no payment secret in
+Open `http://localhost:3110/high-holidays`. The Admire form needs no payment secret in
 this repository. The local D1 database is created under the ignored `.wrangler/`
 directory. `ADMIRE_CAMPAIGN_ID` is optional if Admire assigns a dedicated
 kibbudim campaign.

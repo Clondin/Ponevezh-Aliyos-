@@ -5,9 +5,17 @@
   "compatibility_date": "2026-08-20",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
-    "SITE_URL": "https://ponevez.com/kibbudim"
+    "SITE_URL": "https://ponevez.com/high-holidays"
   },
   "routes": [
+    {
+      "pattern": "ponevez.com/high-holidays*",
+      "zone_name": "ponevez.com"
+    },
+    {
+      "pattern": "www.ponevez.com/high-holidays*",
+      "zone_name": "ponevez.com"
+    },
     {
       "pattern": "ponevez.com/kibbudim*",
       "zone_name": "ponevez.com"

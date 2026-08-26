@@ -1,7 +1,8 @@
-# `ponevez.com/kibbudim` production cutover
+# `ponevez.com/high-holidays` production cutover
 
 This checklist preserves the existing IONOS website and mail services while
-Cloudflare routes only `/kibbudim*` to the kibbudim Worker.
+Cloudflare routes `/high-holidays*` to the kibbudim Worker and keeps
+`/kibbudim*` only as a redirect for older links.
 
 ## Safety rule
 
@@ -50,16 +51,16 @@ against the authoritative public DNS on 2026-08-25.
 
 1. Add `ponevez.com` to Cloudflare on the Free plan and allow the DNS scan.
 2. Compare the scan with all 27 records above; add or correct anything missing.
-3. Deploy the subpath-aware build and smoke-test its `.pages.dev/kibbudim` URL.
-4. Add Worker routes for `ponevez.com/kibbudim*` and
-   `www.ponevez.com/kibbudim*`.
+3. Deploy the subpath-aware build and smoke-test its `.pages.dev/high-holidays` URL.
+4. Add Worker routes for `ponevez.com/high-holidays*` and
+   `www.ponevez.com/high-holidays*`.
 5. Replace the four IONOS nameservers with the two nameservers assigned by
    Cloudflare.
 6. Wait for Cloudflare to mark the zone active, then test the existing root
    website, `www`, Google Workspace mail DNS, IONOS `mail`, and every kibbudim
    page/API/admin route.
 7. Update `SITE_URL`, Banquest's webhook URL, Turnstile hostnames, and any
-   transactional-email links to use `https://ponevez.com/kibbudim`.
+   transactional-email links to use `https://ponevez.com/high-holidays`.
 
 ## Rollback
 
