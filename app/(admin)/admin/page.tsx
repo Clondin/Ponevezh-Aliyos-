@@ -34,13 +34,13 @@ export default async function AdminHome() {
           <div className="stat-card">
             <div className="micro">Raised</div>
             <div className="stat-card__value">{usd(raised)}</div>
-            <div className="stat-card__note">of {usd(faceValue)} face value</div>
+            <div className="stat-card__note">of {usd(faceValue)} listed</div>
           </div>
           <div className="stat-card">
-            <div className="micro">Pending pledges</div>
+            <div className="micro">Payments to review</div>
             <div className="stat-card__value">{pledges.length}</div>
             <div className="stat-card__note">
-              <Link href="/admin/pledges">awaiting payment review</Link>
+              <Link href="/admin/pledges">open review list</Link>
             </div>
           </div>
         </div>
@@ -49,7 +49,7 @@ export default async function AdminHome() {
           Gabbai sheets
         </h2>
         <p className="admin-sub">
-          One sheet per minyan per tefillah, in kriah order. Print to A4.
+          One printable sheet for each minyan and tefillah.
         </p>
 
         <div className="table-wrap">

@@ -29,12 +29,8 @@ export default function HoldBanner({
   return (
     <div className="hold-banner" role="status">
       <div>
-        <div className="hold-banner__lead">
-          This kibbud is held for you while you complete the details below.
-        </div>
-        <div className="hold-banner__sub">
-          If the time runs out, it is released for others.
-        </div>
+        <div className="hold-banner__lead">Held for you</div>
+        <div className="hold-banner__sub">Released when the timer ends.</div>
       </div>
       <div
         className="hold-banner__clock"

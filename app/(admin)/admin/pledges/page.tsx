@@ -3,7 +3,7 @@ import PledgeQueue from "@/components/PledgeQueue";
 import { getCatalog } from "@/lib/catalog";
 import { getRepository } from "@/lib/storage/repository";
 
-export const metadata: Metadata = { title: "Pending pledges" };
+export const metadata: Metadata = { title: "Payments to review" };
 export const dynamic = "force-dynamic";
 
 export default async function PledgesPage() {
@@ -14,11 +14,8 @@ export default async function PledgesPage() {
   return (
     <section className="admin-section">
       <div className="container">
-        <h1 className="admin-title">Pending pledges</h1>
-        <p className="admin-sub">
-          Admire payments awaiting office confirmation and office-arranged payments.
-          Each reservation holds its kibbudim for 72 hours.
-        </p>
+        <h1 className="admin-title">Payments to review</h1>
+        <p className="admin-sub">Reservations remain active for 72 hours.</p>
         <PledgeQueue pledges={pledges} itemNames={itemNames} />
       </div>
     </section>

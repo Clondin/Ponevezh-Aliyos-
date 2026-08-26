@@ -17,7 +17,7 @@ export default async function ExpiredPage({
     <Notice
       glyph="hourglass"
       title="Your hold has expired"
-      body="The hold ran out and the kibbud has been released. If it is still available, you can take it again."
+      body="This kibbud is available to others again."
       primaryHref={item ? `/${item.minyan}/${item.occasion}` : "/"}
       primaryLabel="See the remaining kibbudim"
       secondaryHref={item ? `/${item.minyan}` : "/"}

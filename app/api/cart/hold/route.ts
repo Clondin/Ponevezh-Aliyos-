@@ -15,14 +15,14 @@ import {
 
 function idsFrom(body: Record<string, unknown>): string[] {
   if (Object.keys(body).some((key) => key !== "kibbudIds") || !Array.isArray(body.kibbudIds)) {
-    invalidInput("kibbudIds must be an array.");
+    invalidInput("Please refresh and try again.");
   }
   if (
     !body.kibbudIds.every(
       (value): value is string => typeof value === "string" && Boolean(value.trim())
     )
   ) {
-    invalidInput("Every kibbud ID must be a non-empty string.");
+    invalidInput("Please refresh and try again.");
   }
   const ids = body.kibbudIds.map((value) => value.trim());
   if (ids.length < 2 || ids.length > 10 || new Set(ids).size !== ids.length) {

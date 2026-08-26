@@ -13,12 +13,12 @@ export default function ReconcileButton() {
       const response = await fetch(withBasePath("/api/admin/reconcile-banquest"), { method: "POST" });
       const body = (await response.json()) as { checked?: number; updated?: number };
       if (!response.ok) throw new Error();
-      setMessage(`Checked ${body.checked ?? 0}; updated ${body.updated ?? 0}.`);
+      setMessage(`${body.checked ?? 0} checked; ${body.updated ?? 0} updated.`);
     } catch {
-      setMessage("Reconciliation failed. Check the deployment logs and Banquest credentials.");
+      setMessage("Could not check payments. Try again.");
     } finally {
       setBusy(false);
     }
   }
-  return <div className="reconcile-control"><button type="button" className="btn btn--sm btn--outline-bronze" disabled={busy} onClick={() => void reconcile()}>{busy ? "Checking Banquest…" : "Reconcile Banquest"}</button>{message ? <span role="status">{message}</span> : null}</div>;
+  return <div className="reconcile-control"><button type="button" className="btn btn--sm btn--outline-bronze" disabled={busy} onClick={() => void reconcile()}>{busy ? "Checking…" : "Check old card payments"}</button>{message ? <span role="status">{message}</span> : null}</div>;
 }

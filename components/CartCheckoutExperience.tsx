@@ -97,8 +97,8 @@ export default function CartCheckoutExperience({
   if (!selected.length) {
     return (
       <div className="notice" style={{ padding: "48px 0" }}>
-        <h1>Your sponsorship list is empty</h1>
-        <p>Add two or more available kibbudim to sponsor them with one card payment.</p>
+        <h1>Your list is empty</h1>
+        <p>Add at least two kibbudim to make one payment.</p>
         <div className="actions">
           <Link href="/find" className="btn btn--fill">
             Find kibbudim
@@ -156,8 +156,7 @@ export default function CartCheckoutExperience({
           </table>
         </div>
         <p className="admin-note">
-          You may combine up to 10 kibbudim. Availability is confirmed when the
-          12-minute hold begins.
+          Up to 10 kibbudim. Availability is checked when you continue.
         </p>
       </div>
 
@@ -185,8 +184,8 @@ export default function CartCheckoutExperience({
           </>
         ) : (
           <div className="form-card">
-            <h2 className="cart-checkout__title">Sponsor together</h2>
-            <p>Reserve all selected kibbudim, then enter the sponsorship details once and pay securely through Admire.</p>
+            <h2 className="cart-checkout__title">Sponsor selected kibbudim</h2>
+            <p>Enter your details once and make one payment.</p>
             {turnstileSiteKey ? (
               <TurnstileWidget
                 key={turnstileAttempt}
@@ -202,7 +201,7 @@ export default function CartCheckoutExperience({
               <p className="form-error">Remove unavailable kibbudim before continuing.</p>
             ) : null}
             {selected.length < 2 ? (
-              <p className="form-error">Add at least one more kibbud for combined payment.</p>
+              <p className="form-error">Choose at least two kibbudim.</p>
             ) : null}
             <button
               type="button"

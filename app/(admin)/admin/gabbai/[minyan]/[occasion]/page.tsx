@@ -67,8 +67,7 @@ export default async function GabbaiSheet({
             {m.name} Minyan &mdash; {o.name}
           </h1>
           <div className="admin-sub" style={{ marginBottom: 0 }}>
-            {o.dateLabel} &middot; {o.hebrewDateLabel} &middot; Kibbudim in
-            kriah order
+            {o.dateLabel} &middot; {o.hebrewDateLabel}
           </div>
         </header>
 
@@ -123,9 +122,7 @@ export default async function GabbaiSheet({
         </div>
 
         <p className="admin-note" style={{ marginTop: 18 }}>
-          Unsold kibbudim are shown dimmed so the gabbai has the complete
-          order of the kriah. Generated {new Date().toLocaleDateString("en-US")} &mdash; Yomim
-          Noraim 5787.
+          Unsold kibbudim are dimmed. Printed {new Date().toLocaleDateString("en-US")}.
         </p>
       </div>
     </section>

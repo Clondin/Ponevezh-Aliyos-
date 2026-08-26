@@ -15,5 +15,5 @@ export default function ShareActions({ title, text }: { title: string; text: str
     setCopied(true);
   }
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${text} ${shareUrl}`)}`;
-  return <div className="share-actions no-print"><button type="button" className="btn btn--sm btn--outline-bronze" onClick={() => void share()} disabled={!shareUrl}>{copied ? "Link copied" : "Share this kibbud"}</button><a className="btn btn--sm btn--outline-bronze" href={whatsapp} target="_blank" rel="noreferrer" aria-disabled={!shareUrl}>WhatsApp</a></div>;
+  return <div className="share-actions no-print"><button type="button" className="btn btn--sm btn--outline-bronze" onClick={() => void share()} disabled={!shareUrl}>{copied ? "Link copied" : "Share"}</button><a className="btn btn--sm btn--outline-bronze" href={whatsapp} target="_blank" rel="noreferrer" aria-disabled={!shareUrl}>WhatsApp</a></div>;
 }

@@ -25,7 +25,7 @@ export function apiErrorResponse(error: unknown): Response {
   }
   console.error(error);
   return Response.json(
-    { error: { code: "internal", message: "An internal error occurred." } },
+    { error: { code: "internal", message: "Something went wrong. Please try again." } },
     { status: 500 }
   );
 }
@@ -33,4 +33,3 @@ export function apiErrorResponse(error: unknown): Response {
 export function invalidInput(message: string): never {
   throw new ApiError("invalid_input", message, 400);
 }
-

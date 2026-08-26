@@ -67,7 +67,7 @@ export default function CheckoutExperience({
       <div className="form-card">
         {turnstileSiteKey && !turnstileToken ? (
           <>
-            <p style={{ marginBottom: 16 }}>One quick security check protects the kibbudim from automated holds.</p>
+            <p style={{ marginBottom: 16 }}>Complete this quick security check.</p>
             <TurnstileWidget
               siteKey={turnstileSiteKey}
               action="reserve_kibbud"

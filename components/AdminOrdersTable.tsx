@@ -35,18 +35,20 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
       return matchesMethod && (!needle || haystack.includes(needle));
     });
   }, [method, query, rows]);
+  const emailLabel = (status: AdminOrderRow["emailStatus"]) =>
+    status === "sent" ? "Sent" : status === "queued" ? "Waiting" : "Not sent";
 
   return (
     <>
       <div className="admin-filters no-print">
         <label>
           <span>Search orders</span>
-          <input className="input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Donor, email, kibbud or transaction" type="search" />
+          <input className="input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, email, kibbud, or payment" type="search" />
         </label>
         <label>
-          <span>Method</span>
+          <span>Payment</span>
           <select className="input" value={method} onChange={(event) => setMethod(event.target.value)}>
-            <option value="all">All methods</option>
+            <option value="all">All payments</option>
             <option value="card">Credit card</option>
             <option value="ach">Office confirmed</option>
           </select>
@@ -61,9 +63,9 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
               <tr key={row.id}>
                 <td><strong>{row.id}</strong><div className="muted">{formatDateTime(row.createdAt)}</div></td>
                 <td><strong>{row.itemName}</strong><div className="muted">{row.occasionName} · {row.minyanName}</div>{row.dedication ? <div>{row.dedication}</div> : null}</td>
-                <td><strong>{row.donorName}</strong><div><a href={`mailto:${row.email}`}>{row.email}</a></div><div className="muted">{row.assignmentAcceptedAt ? `Terms accepted ${formatDateTime(row.assignmentAcceptedAt)}` : "Legacy order — no terms record"}</div></td>
-                <td><strong>{usd(row.amount)}</strong><div className="muted">{row.method === "card" ? "Credit card" : "Office confirmed"}</div><div className="muted">Provider reference: {row.gatewayTransactionId ?? row.gatewayReference ?? "not returned"}</div></td>
-                <td><span className={`badge${row.emailStatus === "queued" ? " badge--pending" : ""}`}>{row.emailStatus}</span>{row.emailStatus !== "sent" ? <div style={{ marginTop: 8 }}><EmailRetryButton id={row.receiptEmailId} /></div> : null}</td>
+                <td><strong>{row.donorName}</strong><div><a href={`mailto:${row.email}`}>{row.email}</a></div><div className="muted">{row.assignmentAcceptedAt ? `Terms accepted ${formatDateTime(row.assignmentAcceptedAt)}` : "No acceptance date"}</div></td>
+                <td><strong>{usd(row.amount)}</strong><div className="muted">{row.method === "card" ? "Credit card" : "Office confirmed"}</div><div className="muted">Payment reference: {row.gatewayTransactionId ?? row.gatewayReference ?? "—"}</div></td>
+                <td><span className={`badge${row.emailStatus === "queued" ? " badge--pending" : ""}`}>{emailLabel(row.emailStatus)}</span>{row.emailStatus !== "sent" ? <div style={{ marginTop: 8 }}><EmailRetryButton id={row.receiptEmailId} /></div> : null}</td>
               </tr>
             ))}
           </tbody>

@@ -22,7 +22,7 @@ export default function EmailRetryButton({ id }: { id: string }) {
 
   return (
     <button type="button" className="btn btn--sm btn--outline-bronze" onClick={() => void retry()} disabled={status === "busy"}>
-      {status === "busy" ? "Retrying…" : status === "sent" ? "Sent" : status === "queued" ? "Still queued" : status === "error" ? "Try again" : "Retry"}
+      {status === "busy" ? "Retrying…" : status === "sent" ? "Sent" : status === "queued" ? "Still waiting" : status === "error" ? "Try again" : "Retry"}
     </button>
   );
 }
