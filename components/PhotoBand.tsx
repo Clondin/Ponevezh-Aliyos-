@@ -1,3 +1,4 @@
+import React from "react";
 import { PHOTOS, type PhotoKey } from "@/lib/photos";
 import { withBasePath } from "@/lib/site-paths";
 
