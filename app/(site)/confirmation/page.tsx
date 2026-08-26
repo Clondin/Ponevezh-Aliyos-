@@ -6,6 +6,7 @@ import { kibbudHe } from "@/lib/hebrew";
 import { usd } from "@/lib/format";
 import { getRepository } from "@/lib/storage/repository";
 import { emailRecord } from "@/lib/notifications/email";
+import PhotoBand from "@/components/PhotoBand";
 import PrintButton from "@/components/PrintButton";
 
 export const metadata: Metadata = { title: "Confirmation", robots: { index: false } };
@@ -68,6 +69,10 @@ export default async function ConfirmationPage({
               ? "Payment submitted"
               : "Thank you"}
       </h1>
+
+      {accessValid && !pending && !unsuccessful ? (
+        <PhotoBand photo="confirm-aron" slim />
+      ) : null}
 
       {item && m && o && accessValid && (
         <div className="receipt">

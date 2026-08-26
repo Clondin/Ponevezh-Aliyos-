@@ -767,6 +767,53 @@ img {
   text-transform: uppercase;
 }
 
+/* ---- photo bands ---- */
+
+.photo-band {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--hairline);
+}
+.photo-band img {
+  display: block;
+  width: 100%;
+  height: clamp(200px, 24vw, 380px);
+  object-fit: cover;
+  object-position: center;
+}
+.photo-band--slim img {
+  height: clamp(120px, 15vw, 210px);
+}
+.photo-band figcaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(26, 24, 21, 0.9);
+  color: rgba(247, 245, 240, 0.7);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.photo-band figcaption span {
+  color: var(--bronze-ftr);
+  font-family: var(--hebrew);
+  font-size: 17px;
+  letter-spacing: 0;
+}
+/* Inset variant inside the centred confirmation column. */
+.confirm .photo-band {
+  border: 1px solid var(--hairline);
+  margin-bottom: 26px;
+}
+.confirm .photo-band img {
+  height: 190px;
+}
+
 /* ---- minyan: day rows ---- */
 
 .day-list {
@@ -2173,6 +2220,7 @@ a.kibbud-card--very-special:hover {
   .no-print,
   .site-header,
   .site-footer,
+  .photo-band,
   .admin-bar {
     display: none !important;
   }

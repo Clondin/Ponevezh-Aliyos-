@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PhotoBand from "@/components/PhotoBand";
 import KibbudFinder, { type FinderItem } from "@/components/KibbudFinder";
 import { getCatalog, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog";
 import { kibbudHe } from "@/lib/hebrew";
@@ -31,5 +32,5 @@ export default async function FindPage() {
       href: `/${item.minyan}/${item.occasion}/${item.slug}`,
     };
   });
-  return <><div className="band"><div className="container" style={{ padding: "52px 40px" }}><div className="page-head"><div className="he he--left" lang="he">מצאו כיבוד</div><h1>Find a kibbud</h1><div className="meta">Search by minyan, day, type, or price.</div></div></div></div><section className="container" style={{ padding: "48px 40px 96px" }}><KibbudFinder items={items} /></section></>;
+  return <><div className="band"><div className="container" style={{ padding: "52px 40px" }}><div className="page-head"><div className="he he--left" lang="he">מצאו כיבוד</div><h1>Find a kibbud</h1><div className="meta">Search by minyan, day, type, or price.</div></div></div></div><PhotoBand photo="find-overview" slim priority /><section className="container" style={{ padding: "48px 40px 96px" }}><KibbudFinder items={items} /></section></>;
 }
