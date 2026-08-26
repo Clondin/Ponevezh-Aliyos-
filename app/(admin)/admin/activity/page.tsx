@@ -13,6 +13,7 @@ const ACTION_LABELS: Record<AuditRecord["action"], string> = {
   payment_completed: "Payment confirmed",
   payment_released: "Reservation released",
   payment_reversed: "Payment reversed",
+  admire_sync_completed: "Synced to Admire",
   pledge_created: "Payment submitted",
   pledge_confirmed: "Payment confirmed",
   pledge_released: "Reservation released",

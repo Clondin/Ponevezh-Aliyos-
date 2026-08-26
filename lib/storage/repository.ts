@@ -580,6 +580,31 @@ export class KibbudRepository {
     await this.redis.del(keys.paymentEventLock(eventId));
   }
 
+  async beginAdmireSync(paymentId: string): Promise<"process" | "done" | "busy"> {
+    if (await this.redis.get(keys.admireSyncDone(paymentId))) return "done";
+    const lock = await this.redis.set(keys.admireSyncLock(paymentId), "1", {
+      nx: true,
+      ex: 60,
+    });
+    return lock === "OK" ? "process" : "busy";
+  }
+
+  async finishAdmireSync(paymentId: string, transactionId?: string): Promise<void> {
+    await Promise.all([
+      this.redis.set(keys.admireSyncDone(paymentId), transactionId || "1"),
+      this.redis.del(keys.admireSyncLock(paymentId)),
+      this.appendAudit({
+        action: "admire_sync_completed",
+        referenceId: paymentId,
+        detail: transactionId ? `Admire transaction ${transactionId}` : undefined,
+      }),
+    ]);
+  }
+
+  async failAdmireSync(paymentId: string): Promise<void> {
+    await this.redis.del(keys.admireSyncLock(paymentId));
+  }
+
   async appendAudit(
     record: Omit<AuditRecord, "id" | "createdAt"> & Partial<Pick<AuditRecord, "createdAt">>
   ): Promise<AuditRecord> {

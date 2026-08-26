@@ -80,6 +80,7 @@ export interface AuditRecord {
     | "payment_completed"
     | "payment_released"
     | "payment_reversed"
+    | "admire_sync_completed"
     | "pledge_created"
     | "pledge_confirmed"
     | "pledge_released"

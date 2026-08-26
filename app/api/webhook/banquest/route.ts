@@ -1,4 +1,5 @@
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
+import { syncBanquestCheckoutToAdmire } from "@/lib/admire/client";
 import {
   type BanquestWebhookEvent,
   parseBanquestWebhook,
@@ -88,6 +89,10 @@ export async function POST(request: Request): Promise<Response> {
       await Promise.all(
         orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
       );
+      const completedCheckout = await repository.checkout(event.paymentId);
+      if (completedCheckout) {
+        await syncBanquestCheckoutToAdmire(completedCheckout, event);
+      }
     }
 
     await repository.finishPaymentEvent(event.id);

@@ -6,6 +6,7 @@ import { MemoryStateStore } from "../lib/storage/memory";
 import { keys } from "../lib/storage/keys";
 import { getRepository } from "../lib/storage/repository";
 import { banquestPublicConfiguration, setBanquestFetchForTests } from "../lib/banquest/client";
+import { setAdmireFetchForTests } from "../lib/admire/client";
 import { POST as holdPost } from "../app/api/hold/route";
 import { POST as checkoutPost } from "../app/api/checkout/route";
 import { POST as cartHoldPost } from "../app/api/cart/hold/route";
@@ -365,6 +366,48 @@ const eventPayload = JSON.stringify({
     },
   },
 });
+process.env.ADMIRE_DONATION_FEED_API_KEY = "admire-contract-feed-token";
+let admireImportCalls = 0;
+setAdmireFetchForTests((async (input, init) => {
+  admireImportCalls += 1;
+  assert.equal(String(input), "https://services.admirepro.app/api/Webhooks/externalDonation");
+  assert.equal(new Headers(init?.headers).get("x-api-key"), "admire-contract-feed-token");
+  const body = JSON.parse(String(init?.body)) as {
+    firstName: string;
+    lastName: string;
+    email: string;
+    externalRecordID: string;
+    payment: {
+      amount: number;
+      refNumber: string;
+      creditCard: {
+        cardType: string;
+        lastFourDigits: string;
+        token: null;
+        tokenGateway: string;
+      };
+      note: string;
+    };
+  };
+  assert.equal(body.firstName, "Webhook");
+  assert.equal(body.lastName, "Donor");
+  assert.equal(body.email, "webhook@example.com");
+  assert.equal(body.externalRecordID, "pay_test_webhook");
+  assert.equal(body.payment.amount, 1800);
+  assert.equal(body.payment.refNumber, "12345");
+  assert.deepEqual(body.payment.creditCard, {
+    cardType: "Visa",
+    lastFourDigits: "1118",
+    token: null,
+    tokenGateway: "Banquest",
+  });
+  assert.match(body.payment.note, /High Holidays sponsorship/);
+  return Response.json({
+    externalRecordID: "pay_test_webhook",
+    transactionID: "admire-transaction-1",
+    warnings: [],
+  });
+}) as typeof fetch);
 const signature = createHmac("sha256", process.env.BANQUEST_WEBHOOK_SIGNATURE)
   .update(eventPayload)
   .digest("hex");
@@ -384,6 +427,7 @@ const orderCount = (await repository.allOrders()).length;
 const replayResponse = await webhookPost(webhookRequest());
 assert.equal(replayResponse.status, 200);
 assert.equal((await repository.allOrders()).length, orderCount);
+assert.equal(admireImportCalls, 1);
 
 const refundPayload = JSON.stringify({
   ...JSON.parse(eventPayload),
@@ -402,6 +446,7 @@ const refundResponse = await webhookPost(
 );
 assert.equal(refundResponse.status, 200);
 assert.deepEqual(await repository.statuses([webhookItem]), []);
+assert.equal(admireImportCalls, 1);
 
 const invalidWebhook = await webhookPost(
   new Request("http://localhost:3110/api/webhook/banquest", {
@@ -412,5 +457,8 @@ const invalidWebhook = await webhookPost(
 );
 assert.equal(invalidWebhook.status, 400);
 assert.equal(((await invalidWebhook.json()) as { error: { code: string } }).error.code, "invalid_input");
+
+setAdmireFetchForTests(undefined);
+delete process.env.ADMIRE_DONATION_FEED_API_KEY;
 
 console.log("API contract and signed webhook tests passed");

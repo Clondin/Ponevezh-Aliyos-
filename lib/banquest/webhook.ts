@@ -13,6 +13,8 @@ export interface BanquestWebhookEvent {
   amount?: number;
   transactionId?: string;
   referenceNumber?: string;
+  cardType?: string;
+  cardLastFour?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -69,6 +71,9 @@ export function parseBanquestWebhook(rawBody: string): BanquestWebhookEvent {
     : isRecord(transaction.card_details) || typeof value.data.card_type === "string"
       ? "card"
       : "unknown";
+  const cardDetails = isRecord(transaction.card_details)
+    ? transaction.card_details
+    : undefined;
 
   return {
     id,
@@ -82,6 +87,11 @@ export function parseBanquestWebhook(rawBody: string): BanquestWebhookEvent {
     amount: numberValue(amountDetails?.amount),
     transactionId: identifierValue(transaction.id),
     referenceNumber: identifierValue(value.data.reference_number),
+    cardType: stringValue(cardDetails?.card_type) ?? stringValue(value.data.card_type),
+    cardLastFour:
+      stringValue(cardDetails?.last4) ??
+      stringValue(cardDetails?.last_four) ??
+      stringValue(value.data.last_four),
   };
 }
 

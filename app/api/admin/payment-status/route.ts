@@ -1,5 +1,6 @@
 import { apiErrorResponse } from "@/lib/api/errors";
 import { requireAdmin } from "@/lib/api/auth";
+import { admireSyncConfigured } from "@/lib/admire/client";
 import {
   banquestEnvironment,
   banquestPublicConfiguration,
@@ -37,6 +38,7 @@ export async function GET(request: Request): Promise<Response> {
         checkoutEnabled: process.env.BANQUEST_CHECKOUT_ENABLED === "true",
         checkoutReady: publicConfiguration.checkoutReady,
         webhookConfigured: Boolean(process.env.BANQUEST_WEBHOOK_SIGNATURE?.trim()),
+        admireSyncConfigured: admireSyncConfigured(),
         emailConfigured: Boolean(
           process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim()
         ),

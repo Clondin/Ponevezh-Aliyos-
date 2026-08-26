@@ -10,6 +10,8 @@ export const keys = {
   order: (orderId: string) => `order:${orderId}`,
   paymentEventLock: (eventId: string) => `payment:event-lock:${eventId}`,
   paymentEventDone: (eventId: string) => `payment:event-done:${eventId}`,
+  admireSyncLock: (paymentId: string) => `admire:sync-lock:${paymentId}`,
+  admireSyncDone: (paymentId: string) => `admire:sync-done:${paymentId}`,
   email: (emailId: string) => `email:${emailId}`,
   rateLimit: (action: string, identity: string, bucket: number) =>
     `rate:${action}:${identity}:${bucket}`,
