@@ -57,8 +57,8 @@ confirmed from `/admin/pledges`.
 
 Optional Cloudflare Turnstile protection uses
 `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`; configure both or
-neither. `WAVE_1_OPENS_AT` and `WAVE_2_OPENS_AT` control when each catalog wave
-can be reserved. `NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN` enables the
+neither. Both catalog waves are currently open; `WAVE_1_OPENS_AT` and
+`WAVE_2_OPENS_AT` can schedule future openings. `NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN` enables the
 privacy-first Web Analytics beacon. See `.env.example` for the complete list.
 
 Donors can search all kibbudim at `/find`, build a sponsorship list of up to

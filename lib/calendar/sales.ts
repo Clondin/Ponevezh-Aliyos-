@@ -1,8 +1,8 @@
 import type { Occasion } from "@/contracts/types";
 
 const DEFAULT_WAVE_OPENINGS: Record<Occasion["wave"], string> = {
-  1: "2026-09-06T00:00:00-04:00",
-  2: "2026-09-16T00:00:00-04:00",
+  1: "2026-08-25T00:00:00-04:00",
+  2: "2026-08-25T00:00:00-04:00",
 };
 
 export function waveOpensAt(wave: Occasion["wave"]): string {
