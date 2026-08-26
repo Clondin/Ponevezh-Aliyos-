@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { clearBasket } from "@/lib/basket";
 import { usd } from "@/lib/format";
 import { withBasePath } from "@/lib/site-paths";
@@ -55,6 +55,8 @@ function admirePaymentUrl({
   return url.toString();
 }
 
+const FRAME_SLOW_AFTER_MS = 8000;
+
 function AdmirePayment({
   reservation,
   firstName,
@@ -80,15 +82,40 @@ function AdmirePayment({
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [frameState, setFrameState] = useState<"loading" | "slow" | "ready">(
+    "loading"
+  );
+
+  // The details form just swapped out from under the donor — bring the top of
+  // the payment step into view so they never land mid-iframe.
+  useEffect(() => {
+    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  useEffect(() => {
+    if (frameState !== "loading") return;
+    const timer = window.setTimeout(() => {
+      setFrameState((current) => (current === "loading" ? "slow" : current));
+    }, FRAME_SLOW_AFTER_MS);
+    return () => window.clearTimeout(timer);
+  }, [frameState]);
 
   return (
-    <section className="admire-checkout" aria-labelledby="admire-checkout-title">
+    <section
+      ref={sectionRef}
+      className="admire-checkout"
+      aria-labelledby="admire-checkout-title"
+    >
       <div className="admire-checkout__intro">
-        <span className="badge badge--pending">Awaiting Admire payment</span>
+        <span className="badge badge--pending">Step 2 of 2 &mdash; Payment</span>
         <h2 id="admire-checkout-title">Complete your secure payment</h2>
         <p>
-          Admire is handling the card payment. The amount below is already filled
-          in for {combined ? "your selected kibbudim" : "this kibbud"}.
+          Your details are saved. The secure Admire form below is already filled
+          in with the exact total for{" "}
+          {combined ? "your selected kibbudim" : "this kibbud"} &mdash; leave the
+          amount and the <strong>One-Time</strong> option as they are, and Admire
+          will confirm the payment right inside the form.
         </p>
         <dl className="admire-checkout__summary">
           <div>
@@ -104,32 +131,64 @@ function AdmirePayment({
             <dd>{heldUntil}</dd>
           </div>
         </dl>
-        <div className="campaign-notice" role="note">
-          Keep <strong>One-Time</strong> selected and do not change the amount.
-          Admire will show the payment confirmation inside the secure form.
-        </div>
       </div>
 
-      <iframe
-        className="admire-checkout__frame"
-        src={paymentUrl}
-        title="Secure Ponevez donation payment through Admire"
-        allow="payment"
-        loading="eager"
-        referrerPolicy="strict-origin-when-cross-origin"
-      />
+      <div className="admire-checkout__bar">
+        <span className="micro">Admire secure checkout</span>
+        <a
+          className="admire-checkout__newtab"
+          href={paymentUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Open in a new tab <span aria-hidden="true">&#8599;</span>
+        </a>
+      </div>
+
+      <div
+        className={`admire-checkout__stage${
+          frameState === "ready" ? "" : " admire-checkout__stage--loading"
+        }`}
+      >
+        <iframe
+          className="admire-checkout__frame"
+          src={paymentUrl}
+          title="Secure Ponevez donation payment through Admire"
+          allow="payment"
+          loading="eager"
+          referrerPolicy="strict-origin-when-cross-origin"
+          onLoad={() => setFrameState("ready")}
+        />
+        {frameState !== "ready" ? (
+          <div className="admire-checkout__loading" role="status">
+            <span
+              className="admire-checkout__spinner"
+              aria-hidden="true"
+            />
+            <p>Opening the secure payment form&hellip;</p>
+            {frameState === "slow" ? (
+              <p className="admire-checkout__slow">
+                Taking longer than expected?{" "}
+                <a href={paymentUrl} target="_blank" rel="noreferrer">
+                  Open the secure form in a new tab
+                </a>{" "}
+                &mdash; it is filled in with the same details.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
 
       <div className="admire-checkout__fallback">
         <p>
-          If the secure form does not appear, open it in a new tab. Use the same
-          email address and the exact total shown above.
+          Your {combined ? "kibbudim are" : "kibbud is"} reserved until{" "}
+          {heldUntil}. If anything goes wrong with the payment, nothing is lost
+          &mdash; open the form in a new tab or contact the office, and the
+          reservation holds.
         </p>
         <div className="actions">
-          <a className="btn btn--outline" href={paymentUrl} target="_blank" rel="noreferrer">
-            Open secure payment
-          </a>
           <Link
-            className="btn btn--outline-bronze"
+            className="btn btn--sm btn--outline-bronze"
             href="/find"
             onClick={combined ? clearBasket : undefined}
           >
@@ -137,8 +196,9 @@ function AdmirePayment({
           </Link>
         </div>
         <p className="fineprint">
-          Until Admire&rsquo;s webhook is connected, the office confirms the payment
-          from Admire&rsquo;s records. Your card details never pass through this site.
+          Admire processes the payment; the office then confirms your
+          sponsorship from Admire&rsquo;s records. Your card details never pass
+          through this site.
         </p>
       </div>
     </section>
@@ -253,6 +313,7 @@ export default function SponsorForm({
   return (
     <form onSubmit={onSubmit} aria-busy={submitting}>
       <div className="campaign-notice">
+        <span className="campaign-notice__step">Step 1 of 2 &mdash; Sponsorship details</span>
         Your {isCombined ? "kibbudim are" : "kibbud is"} reserved while you enter the
         sponsorship details. The next step is a secure Admire payment for <strong>{usd(amount)}</strong>.
       </div>

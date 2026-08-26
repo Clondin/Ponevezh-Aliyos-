@@ -1268,6 +1268,27 @@ a.kibbud-card--very-special:hover {
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+.admire-checkout__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  border: 1px solid var(--hairline);
+  border-bottom: 0;
+  background: var(--paper);
+  padding: 11px 16px;
+}
+.admire-checkout__newtab {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.admire-checkout__stage {
+  position: relative;
+}
 .admire-checkout__frame {
   display: block;
   width: 100%;
@@ -1277,6 +1298,49 @@ a.kibbud-card--very-special:hover {
 }
 .cart-checkout .admire-checkout__frame {
   height: 1850px;
+}
+/* While the third-party form loads, the stage is a short skeleton rather
+   than fifteen hundred pixels of blank frame. */
+.admire-checkout__stage--loading .admire-checkout__frame {
+  height: 420px;
+  opacity: 0;
+}
+.admire-checkout__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 24px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+}
+.admire-checkout__loading p {
+  color: var(--muted);
+  font-size: 14.5px;
+}
+.admire-checkout__slow {
+  max-width: 46ch;
+  font-size: 13.5px;
+}
+.admire-checkout__spinner {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--bronze-lt);
+  border-top-color: var(--bronze);
+  border-radius: 50%;
+  animation: admire-spin 0.9s linear infinite;
+}
+@keyframes admire-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admire-checkout__spinner {
+    animation: none;
+  }
 }
 .admire-checkout__fallback {
   border: 1px solid var(--hairline);
@@ -1377,7 +1441,7 @@ a.kibbud-card--very-special:hover {
 .assignment-disclosure {
   margin: 24px 0;
   padding: 18px 20px;
-  border: 1px solid var(--bronze-light);
+  border: 1px solid var(--bronze-lt);
   background: var(--bronze-tint);
   color: var(--muted);
   font-size: 13px;
@@ -1417,6 +1481,15 @@ a.kibbud-card--very-special:hover {
   padding: 14px 18px;
   color: var(--ink);
   margin-bottom: 28px;
+}
+.campaign-notice__step {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bronze);
+  margin-bottom: 6px;
 }
 .share-actions {
   display: flex;

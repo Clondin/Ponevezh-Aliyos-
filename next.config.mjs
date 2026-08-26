@@ -2,6 +2,10 @@ import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 initOpenNextCloudflareForDev();
 
+// Next.js dev mode relies on eval for fast refresh; production stays strict.
+const scriptEval =
+  process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
+
 /** @type {import('next').NextConfig} */
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -12,7 +16,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob:",
   "font-src 'self' https://fonts.gstatic.com data:",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+  `script-src 'self' 'unsafe-inline'${scriptEval} https://challenges.cloudflare.com https://static.cloudflareinsights.com`,
   "connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com",
   "frame-src https://ponevez.admirepro.app https://challenges.cloudflare.com",
   "upgrade-insecure-requests",
