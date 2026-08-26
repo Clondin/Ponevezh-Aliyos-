@@ -22,16 +22,20 @@ export interface CartItem {
 type State =
   | { kind: "idle" }
   | { kind: "holding" }
-  | { kind: "ready"; expiresAt: string; admireReservation?: boolean }
+  | { kind: "ready"; expiresAt: string }
   | { kind: "error"; message: string };
 
 export default function CartCheckoutExperience({
   items,
-  admireCampaignId,
+  tokenizationKey,
+  banquestEnvironment,
+  checkoutReady,
   turnstileSiteKey,
 }: {
   items: CartItem[];
-  admireCampaignId?: string;
+  tokenizationKey: string;
+  banquestEnvironment: "sandbox" | "production";
+  checkoutReady: boolean;
   turnstileSiteKey: string;
 }) {
   const basket = useBasket();
@@ -163,26 +167,19 @@ export default function CartCheckoutExperience({
       <div className="cart-checkout">
         {state.kind === "ready" ? (
           <>
-            {state.admireReservation ? null : (
-              <HoldBanner
-                expiresAt={state.expiresAt}
-                itemId={selected[0].id}
-                expiredHref="/basket"
-              />
-            )}
+            <HoldBanner
+              expiresAt={state.expiresAt}
+              itemId={selected[0].id}
+              expiredHref="/basket"
+            />
             <div className="form-card">
               <SponsorForm
                 itemId={selected[0].id}
                 itemIds={selected.map((item) => item.id)}
                 amount={total}
-                admireCampaignId={admireCampaignId}
-                onReservationCreated={() =>
-                  setState((current) =>
-                    current.kind === "ready"
-                      ? { ...current, admireReservation: true }
-                      : current
-                  )
-                }
+                tokenizationKey={tokenizationKey}
+                banquestEnvironment={banquestEnvironment}
+                checkoutReady={checkoutReady}
               />
             </div>
           </>

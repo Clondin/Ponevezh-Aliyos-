@@ -10,6 +10,7 @@ import { usd } from "@/lib/format";
 import { isWaveOpen, waveOpensAt } from "@/lib/calendar/sales";
 import ShareActions from "@/components/ShareActions";
 import BasketButton from "@/components/BasketButton";
+import { banquestPublicConfiguration } from "@/lib/banquest/client";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function KibbudPage({
 
   const price = priceForKibbud(item);
   const [status] = await getRepository().statuses([item.id]);
-  const admireCampaignId = process.env.ADMIRE_CAMPAIGN_ID?.trim();
+  const banquest = banquestPublicConfiguration();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
 
   if (!isWaveOpen(o.wave)) {
@@ -130,7 +131,9 @@ export default async function KibbudPage({
           amount={price}
           occasionHref={`/${m.slug}/${o.slug}`}
           minyanHref={`/${m.slug}`}
-          admireCampaignId={admireCampaignId}
+          tokenizationKey={banquest.tokenizationKey}
+          banquestEnvironment={banquest.environment}
+          checkoutReady={banquest.checkoutReady}
           turnstileSiteKey={turnstileSiteKey}
         />
       </section>

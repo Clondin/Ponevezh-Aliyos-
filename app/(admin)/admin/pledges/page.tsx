@@ -16,7 +16,7 @@ export default async function PledgesPage() {
       <div className="container">
         <h1 className="admin-title">Payments to review</h1>
         <p className="admin-sub">
-          Admire reservations stay offline until you confirm or release them.
+          Legacy Admire reservations stay offline until you confirm or release them.
         </p>
         <PledgeQueue pledges={pledges} itemNames={itemNames} />
       </div>

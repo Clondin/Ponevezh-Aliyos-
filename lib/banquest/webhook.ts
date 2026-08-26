@@ -10,6 +10,9 @@ export interface BanquestWebhookEvent {
   paymentId?: string;
   method: PaymentMethod;
   status?: string;
+  amount?: number;
+  transactionId?: string;
+  referenceNumber?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -18,6 +21,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function stringValue(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value : undefined;
+}
+
+function identifierValue(value: unknown): string | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return stringValue(value);
+}
+
+function numberValue(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
 function transactionFrom(data: Record<string, unknown>): Record<string, unknown> {
@@ -49,6 +61,9 @@ export function parseBanquestWebhook(rawBody: string): BanquestWebhookEvent {
   const statusDetails = isRecord(transaction.status_details)
     ? transaction.status_details
     : undefined;
+  const amountDetails = isRecord(transaction.amount_details)
+    ? transaction.amount_details
+    : undefined;
   const method: PaymentMethod = isRecord(transaction.check_details)
     ? "ach"
     : isRecord(transaction.card_details) || typeof value.data.card_type === "string"
@@ -64,6 +79,9 @@ export function parseBanquestWebhook(rawBody: string): BanquestWebhookEvent {
     method,
     status: stringValue(statusDetails?.status) ??
       (type === "status" ? stringValue(value.subType) : undefined),
+    amount: numberValue(amountDetails?.amount),
+    transactionId: identifierValue(transaction.id),
+    referenceNumber: identifierValue(value.data.reference_number),
   };
 }
 

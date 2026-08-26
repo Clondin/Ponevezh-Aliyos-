@@ -175,6 +175,7 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
     "kibbudId",
     "donorName",
     "email",
+    "phone",
     "misheberachNames",
     "dedicationType",
     "dedicationName",
@@ -193,6 +194,7 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
       kibbudId: body.kibbudId,
       donorName: body.donorName,
       email: body.email,
+      phone: body.phone,
       misheberachNames: body.misheberachNames,
       dedicationType: body.dedicationType,
       dedicationName: body.dedicationName,
@@ -202,7 +204,7 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
       recognitionName: body.recognitionName,
       assignmentAccepted: body.assignmentAccepted,
     },
-    false
+    true
   );
   const payment = body.payment;
   const paymentAllowed = new Set(["nonce", "expiryMonth", "expiryYear", "avsZip"]);
@@ -242,7 +244,7 @@ export function cardPaymentPayload(body: Record<string, unknown>): CardPaymentPa
 
 export function cartPaymentPayload(body: Record<string, unknown>): CartPaymentPayload {
   const allowed = new Set([
-    "kibbudIds", "donorName", "email", "misheberachNames", "payment",
+    "kibbudIds", "donorName", "email", "phone", "misheberachNames", "payment",
     "dedicationType", "dedicationName", "dedicationMessage", "honoreeEmail",
     "publicRecognition", "recognitionName", "assignmentAccepted",
   ]);
@@ -258,6 +260,7 @@ export function cartPaymentPayload(body: Record<string, unknown>): CartPaymentPa
     kibbudId: kibbudIds[0],
     donorName: body.donorName,
     email: body.email,
+    phone: body.phone,
     misheberachNames: body.misheberachNames,
     payment: body.payment,
     dedicationType: body.dedicationType,

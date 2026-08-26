@@ -3,17 +3,12 @@ import { holdCookieFromRequest } from "@/lib/api/hold-cookie";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
 import { assertSaleOpen, cartPaymentPayload, readJson, requireKibbud, trustedAmount } from "@/lib/api/validation";
 import { chargeBanquestCard, BanquestDeclinedError } from "@/lib/banquest/card";
-import { BanquestApiError, BanquestConfigurationError } from "@/lib/banquest/client";
+import { assertBanquestCheckoutReady, BanquestApiError, BanquestConfigurationError } from "@/lib/banquest/client";
 import { AlreadyTakenError, CheckoutInProgressError, getRepository, HoldExpiredError } from "@/lib/storage/repository";
 
 export async function POST(request: Request): Promise<Response> {
-  if (process.env.ENABLE_LEGACY_BANQUEST_CHECKOUT !== "true") {
-    return Response.json(
-      { error: { code: "not_found", message: "Direct card checkout is disabled. Use Admire." } },
-      { status: 410 }
-    );
-  }
   try {
+    assertBanquestCheckoutReady();
     await enforceRateLimit(request, "cart-checkout", 6, 15 * 60);
     const payload = cartPaymentPayload(await readJson(request));
     const items = payload.kibbudIds.map(requireKibbud);

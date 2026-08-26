@@ -38,6 +38,54 @@ export function banquestBaseUrl(): string {
     : SANDBOX_BASE_URL;
 }
 
+export interface BanquestPublicConfiguration {
+  environment: "sandbox" | "production";
+  tokenizationKey: string;
+  checkoutReady: boolean;
+}
+
+/** Safe values that may be passed from a Server Component to the browser. */
+export function banquestPublicConfiguration(
+  runtimeEnvironment = process.env.NODE_ENV
+): BanquestPublicConfiguration {
+  let environment: "sandbox" | "production" = "sandbox";
+  try {
+    environment = banquestEnvironment();
+  } catch {
+    return { environment, tokenizationKey: "", checkoutReady: false };
+  }
+
+  const tokenizationKey = process.env.BANQUEST_TOKENIZATION_KEY?.trim() ?? "";
+  const credentialsPresent = Boolean(
+    process.env.BANQUEST_SOURCE_KEY?.trim() &&
+      process.env.BANQUEST_PIN?.trim() &&
+      tokenizationKey.startsWith("pk_")
+  );
+  const sandboxAllowed =
+    runtimeEnvironment !== "production" ||
+    process.env.ALLOW_SANDBOX_CHECKOUT === "true";
+  const checkoutEnabled =
+    runtimeEnvironment !== "production" ||
+    process.env.BANQUEST_CHECKOUT_ENABLED === "true";
+
+  return {
+    environment,
+    tokenizationKey,
+    checkoutReady:
+      credentialsPresent &&
+      checkoutEnabled &&
+      (environment === "production" || sandboxAllowed),
+  };
+}
+
+export function assertBanquestCheckoutReady(): void {
+  if (!banquestPublicConfiguration().checkoutReady) {
+    throw new BanquestConfigurationError(
+      "Banquest checkout requires valid credentials and a production environment"
+    );
+  }
+}
+
 function messageFrom(value: unknown): string {
   if (!value || typeof value !== "object") return "Banquest rejected the request.";
   const record = value as Record<string, unknown>;

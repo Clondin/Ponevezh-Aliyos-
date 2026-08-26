@@ -30,15 +30,27 @@ export async function reconcileBanquestTransactions(): Promise<ReconciliationRes
         transaction.custom_fields?.custom1 ?? transaction.transaction_details?.key;
       if (!paymentId || !(await repository.checkout(paymentId))) continue;
       checked += 1;
+      const checkout = await repository.checkout(paymentId);
+      if (checkout && transaction.id != null) {
+        await repository.updateCheckoutGateway(paymentId, {
+          gatewayTransactionId: String(transaction.id),
+        });
+      }
       const status = transaction.status_details?.status;
       if (status && FAILED.has(status)) {
-        const checkout = await repository.checkout(paymentId);
         await repository.reverseCheckout(paymentId);
         if (checkout) {
           await sendReversalNotifications(checkout).catch((error) => console.error(error));
         }
         updated += 1;
       } else if (status === "settled" || status === "captured" || status === "approved") {
+        if (
+          checkout &&
+          transaction.amount_details?.amount != null &&
+          transaction.amount_details.amount + 0.005 < checkout.amount
+        ) {
+          continue;
+        }
         const orders = await repository.markCheckoutGroupSold(paymentId, "card");
         await Promise.all(
           orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))

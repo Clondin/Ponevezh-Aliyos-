@@ -9,7 +9,7 @@ import { withBasePath } from "@/lib/site-paths";
 
 type HoldState =
   | { kind: "loading" }
-  | { kind: "ready"; expiresAt: string; admireReservation?: boolean }
+  | { kind: "ready"; expiresAt: string }
   | { kind: "unavailable"; message: string };
 
 export default function CheckoutExperience({
@@ -17,14 +17,18 @@ export default function CheckoutExperience({
   amount,
   occasionHref,
   minyanHref,
-  admireCampaignId,
+  tokenizationKey,
+  banquestEnvironment,
+  checkoutReady,
   turnstileSiteKey,
 }: {
   itemId: string;
   amount: number;
   occasionHref: string;
   minyanHref: string;
-  admireCampaignId?: string;
+  tokenizationKey: string;
+  banquestEnvironment: "sandbox" | "production";
+  checkoutReady: boolean;
   turnstileSiteKey: string;
 }) {
   const [state, setState] = useState<HoldState>({ kind: "loading" });
@@ -95,21 +99,14 @@ export default function CheckoutExperience({
   }
   return (
     <>
-      {state.admireReservation ? null : (
-        <HoldBanner expiresAt={state.expiresAt} itemId={itemId} />
-      )}
+      <HoldBanner expiresAt={state.expiresAt} itemId={itemId} />
       <div className="form-card">
         <SponsorForm
           itemId={itemId}
           amount={amount}
-          admireCampaignId={admireCampaignId}
-          onReservationCreated={() =>
-            setState((current) =>
-              current.kind === "ready"
-                ? { ...current, admireReservation: true }
-                : current
-            )
-          }
+          tokenizationKey={tokenizationKey}
+          banquestEnvironment={banquestEnvironment}
+          checkoutReady={checkoutReady}
         />
       </div>
     </>

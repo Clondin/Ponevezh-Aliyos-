@@ -1,200 +1,80 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { clearBasket } from "@/lib/basket";
 import { usd } from "@/lib/format";
 import { withBasePath } from "@/lib/site-paths";
 
-const ADMIRE_DONATION_URL = "https://ponevez.admirepro.app/donate";
+interface TokenizationResult {
+  nonce?: string;
+  expiryMonth?: string | number;
+  expiryYear?: string | number;
+  avsZip?: string;
+  expiry_month?: string | number;
+  expiry_year?: string | number;
+  avs_zip?: string;
+}
 
-interface AdmireReservation {
-  pledgeId: string;
-  reference: string;
-  heldUntilReviewed: true;
-  amount: number;
+interface HostedTokenizationClient {
+  on(eventType: "ready", handler: () => void): HostedTokenizationClient;
+  getNonceToken(): Promise<TokenizationResult>;
+  destroy(): void;
+}
+
+interface HostedTokenizationConstructor {
+  new (
+    publicKey: string,
+    options: {
+      target: string;
+      showZip: boolean;
+      requireCvv2: boolean;
+      showFieldErrors: boolean;
+      styles?: Record<string, string>;
+    }
+  ): HostedTokenizationClient;
+}
+
+declare global {
+  interface Window {
+    HostedTokenization?: HostedTokenizationConstructor;
+  }
 }
 
 interface SponsorFormProps {
   itemId: string;
   amount: number;
   itemIds?: string[];
-  admireCampaignId?: string;
-  onReservationCreated?: () => void;
+  tokenizationKey: string;
+  banquestEnvironment: "sandbox" | "production";
+  checkoutReady: boolean;
 }
 
-interface AdmirePaymentProps {
-  reservation: AdmireReservation;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  campaignId?: string;
-  combined: boolean;
+function tokenizationScript(environment: "sandbox" | "production"): string {
+  return environment === "production"
+    ? "https://tokenization.banquestgateway.com/tokenization/v0.3"
+    : "https://tokenization.sandbox.banquestgateway.com/tokenization/v0.3";
 }
 
-function admirePaymentUrl({
-  reservation,
-  firstName,
-  lastName,
-  email,
-  phone,
-  campaignId,
-}: Omit<AdmirePaymentProps, "combined">): string {
-  const url = new URL(ADMIRE_DONATION_URL);
-  url.searchParams.set("amount", String(reservation.amount));
-  url.searchParams.set("firstName", firstName);
-  url.searchParams.set("lastName", lastName);
-  url.searchParams.set("email", email);
-  if (phone) url.searchParams.set("cellPhone", phone);
-  if (campaignId) url.searchParams.set("campaignID", campaignId);
-  // Admire ignores unknown fields. This starts working automatically if the
-  // office adds a custom field with this internal name to the donation form.
-  url.searchParams.set("KibbudReference", reservation.reference);
-  url.searchParams.set("recurring", "false");
-  return url.toString();
-}
-
-const FRAME_SLOW_AFTER_MS = 8000;
-
-function AdmirePayment({
-  reservation,
-  firstName,
-  lastName,
-  email,
-  phone,
-  campaignId,
-  combined,
-}: AdmirePaymentProps) {
-  const paymentUrl = useMemo(
-    () =>
-      admirePaymentUrl({
-        reservation,
-        firstName,
-        lastName,
-        email,
-        phone,
-        campaignId,
-      }),
-    [campaignId, email, firstName, lastName, phone, reservation]
-  );
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const [frameState, setFrameState] = useState<"loading" | "slow" | "ready">(
-    "loading"
-  );
-
-  // The details form just swapped out from under the donor — bring the top of
-  // the payment step into view so they never land mid-iframe.
-  useEffect(() => {
-    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
-
-  useEffect(() => {
-    if (frameState !== "loading") return;
-    const timer = window.setTimeout(() => {
-      setFrameState((current) => (current === "loading" ? "slow" : current));
-    }, FRAME_SLOW_AFTER_MS);
-    return () => window.clearTimeout(timer);
-  }, [frameState]);
-
-  return (
-    <section
-      ref={sectionRef}
-      className="admire-checkout"
-      aria-labelledby="admire-checkout-title"
-    >
-      <div className="admire-checkout__intro">
-        <span className="badge badge--pending">Step 2 of 2 &mdash; Payment</span>
-        <h2 id="admire-checkout-title">Complete your payment</h2>
-        <p>Your total is ready below. Keep <strong>One-Time</strong> selected and use the amount shown.</p>
-        <dl className="admire-checkout__summary">
-          <div>
-            <dt>Total</dt>
-            <dd>{usd(reservation.amount)}</dd>
-          </div>
-          <div>
-            <dt>Reference</dt>
-            <dd>{reservation.reference}</dd>
-          </div>
-          <div>
-            <dt>Availability</dt>
-            <dd>Held for you</dd>
-          </div>
-        </dl>
-      </div>
-
-      <div className="admire-checkout__bar">
-        <span className="micro">Admire secure checkout</span>
-        <a
-          className="admire-checkout__newtab"
-          href={paymentUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Open in a new tab <span aria-hidden="true">&#8599;</span>
-        </a>
-      </div>
-
-      <div
-        className={`admire-checkout__stage${
-          frameState === "ready" ? "" : " admire-checkout__stage--loading"
-        }`}
-      >
-        <iframe
-          className="admire-checkout__frame"
-          src={paymentUrl}
-          title="Secure payment form"
-          allow="payment"
-          loading="eager"
-          referrerPolicy="strict-origin-when-cross-origin"
-          onLoad={() => setFrameState("ready")}
-        />
-        {frameState !== "ready" ? (
-          <div className="admire-checkout__loading" role="status">
-            <span
-              className="admire-checkout__spinner"
-              aria-hidden="true"
-            />
-            <p>Opening the secure payment form&hellip;</p>
-            {frameState === "slow" ? (
-              <p className="admire-checkout__slow">
-                Taking longer?{" "}
-                <a href={paymentUrl} target="_blank" rel="noreferrer">
-                  Open the form in a new tab
-                </a>
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="admire-checkout__fallback">
-        <p>
-          {combined ? "These kibbudim are" : "This kibbud is"} now unavailable
-          to other donors while the office reviews the payment.
-        </p>
-        <div className="actions">
-          <Link
-            className="btn btn--sm btn--outline-bronze"
-            href="/find"
-            onClick={combined ? clearBasket : undefined}
-          >
-            Return to kibbudim
-          </Link>
-        </div>
-        <p className="fineprint">The office will confirm your payment. Your card details stay with Admire.</p>
-      </div>
-    </section>
-  );
+function tokenizationMessage(error: unknown): string {
+  if (error && typeof error === "object" && "fieldErrors" in error) {
+    return "Check the highlighted card details and try again.";
+  }
+  return error instanceof Error && error.message
+    ? error.message
+    : "Check your card details and try again.";
 }
 
 export default function SponsorForm({
   itemId,
   amount,
   itemIds,
-  admireCampaignId,
-  onReservationCreated,
+  tokenizationKey,
+  banquestEnvironment,
+  checkoutReady,
 }: SponsorFormProps) {
+  const router = useRouter();
+  const hostedTokenization = useRef<HostedTokenizationClient | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -207,11 +87,74 @@ export default function SponsorForm({
   const [publicRecognition, setPublicRecognition] = useState(false);
   const [recognitionName, setRecognitionName] = useState("");
   const [assignmentAccepted, setAssignmentAccepted] = useState(false);
+  const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reservation, setReservation] = useState<AdmireReservation | null>(null);
   const isCombined = Boolean(itemIds && itemIds.length > 1);
   const donorName = `${firstName.trim()} ${lastName.trim()}`.trim();
+
+  useEffect(() => {
+    if (!checkoutReady || !tokenizationKey) return;
+
+    let cancelled = false;
+    const initialize = () => {
+      if (cancelled || hostedTokenization.current || !window.HostedTokenization) return;
+      try {
+        const client = new window.HostedTokenization(tokenizationKey, {
+          target: "#banquest-card-fields",
+          showZip: true,
+          requireCvv2: true,
+          showFieldErrors: true,
+          styles: {
+            container: "font-family: Arial, sans-serif; color: #211f1b;",
+            card: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
+            expiryMonth: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
+            expiryYear: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
+            cvv2: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
+            avsZip: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
+            labels: "font-size: 12px; font-weight: 600; color: #655f56;",
+            fieldErrors: "font-size: 12px; color: #9d2b22;",
+          },
+        });
+        hostedTokenization.current = client;
+        client.on("ready", () => {
+          if (!cancelled) setCardReady(true);
+        });
+      } catch {
+        if (!cancelled) setError("The secure card form could not load. Refresh and try again.");
+      }
+    };
+
+    const selector = `script[data-banquest-tokenization="${banquestEnvironment}"]`;
+    const existing = document.querySelector<HTMLScriptElement>(selector);
+    if (window.HostedTokenization) {
+      initialize();
+    } else if (existing) {
+      existing.addEventListener("load", initialize, { once: true });
+    } else {
+      const script = document.createElement("script");
+      script.src = tokenizationScript(banquestEnvironment);
+      script.async = true;
+      script.dataset.banquestTokenization = banquestEnvironment;
+      script.addEventListener("load", initialize, { once: true });
+      script.addEventListener(
+        "error",
+        () => {
+          if (!cancelled) setError("The secure card form could not load. Refresh and try again.");
+        },
+        { once: true }
+      );
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+      existing?.removeEventListener("load", initialize);
+      hostedTokenization.current?.destroy();
+      hostedTokenization.current = null;
+      setCardReady(false);
+    };
+  }, [banquestEnvironment, checkoutReady, tokenizationKey]);
 
   const setName = (index: number, value: string) =>
     setNames((current) => current.map((name, position) => (position === index ? value : name)));
@@ -227,77 +170,88 @@ export default function SponsorForm({
     setError(null);
 
     try {
-      const response = await fetch(withBasePath("/api/admire/reservation"), {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...(isCombined ? { kibbudIds: itemIds } : { kibbudId: itemId }),
-          donorName,
-          email,
-          ...(phone.trim() ? { phone: phone.trim() } : {}),
-          misheberachNames: names.map((name) => name.trim()).filter(Boolean),
-          ...(dedicationType !== "none"
-            ? {
-                dedicationType,
-                dedicationName: dedicationName.trim(),
-                ...(dedicationMessage.trim()
-                  ? { dedicationMessage: dedicationMessage.trim() }
-                  : {}),
-                ...(honoreeEmail.trim() ? { honoreeEmail: honoreeEmail.trim() } : {}),
-              }
-            : {}),
-          publicRecognition,
-          assignmentAccepted,
-          ...(publicRecognition
-            ? { recognitionName: recognitionName.trim() || donorName }
-            : {}),
-        }),
-      });
-      const body = (await response.json()) as Partial<AdmireReservation> & {
+      if (!checkoutReady || !hostedTokenization.current || !cardReady) {
+        throw new Error("Online card payment is not ready. Please try again shortly.");
+      }
+
+      let token: TokenizationResult;
+      try {
+        token = await hostedTokenization.current.getNonceToken();
+      } catch (tokenError) {
+        throw new Error(tokenizationMessage(tokenError));
+      }
+      const expiryMonth = Number(token.expiryMonth ?? token.expiry_month);
+      const expiryYear = Number(token.expiryYear ?? token.expiry_year);
+      if (!token.nonce || !Number.isInteger(expiryMonth) || !Number.isInteger(expiryYear)) {
+        throw new Error("Check your card details and try again.");
+      }
+
+      const response = await fetch(
+        withBasePath(isCombined ? "/api/cart/checkout" : "/api/checkout"),
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            ...(isCombined ? { kibbudIds: itemIds } : { kibbudId: itemId }),
+            donorName,
+            email,
+            ...(phone.trim() ? { phone: phone.trim() } : {}),
+            misheberachNames: names.map((name) => name.trim()).filter(Boolean),
+            ...(dedicationType !== "none"
+              ? {
+                  dedicationType,
+                  dedicationName: dedicationName.trim(),
+                  ...(dedicationMessage.trim()
+                    ? { dedicationMessage: dedicationMessage.trim() }
+                    : {}),
+                  ...(honoreeEmail.trim() ? { honoreeEmail: honoreeEmail.trim() } : {}),
+                }
+              : {}),
+            publicRecognition,
+            assignmentAccepted,
+            ...(publicRecognition
+              ? { recognitionName: recognitionName.trim() || donorName }
+              : {}),
+            payment: {
+              nonce: token.nonce,
+              expiryMonth,
+              expiryYear,
+              avsZip: token.avsZip ?? token.avs_zip,
+            },
+          }),
+        }
+      );
+      const body = (await response.json()) as {
+        paymentId?: string;
+        status?: "sold" | "pending";
         error?: { message?: string };
       };
-      if (
-        !response.ok ||
-        !body.pledgeId ||
-        !body.reference ||
-        body.heldUntilReviewed !== true ||
-        typeof body.amount !== "number"
-      ) {
-        throw new Error(body.error?.message || "We could not start your payment. Please try again.");
+      if (!response.ok || !body.paymentId || !body.status) {
+        throw new Error(body.error?.message || "The card payment could not be completed.");
       }
-      const nextReservation: AdmireReservation = {
-        pledgeId: body.pledgeId,
-        reference: body.reference,
-        heldUntilReviewed: true,
-        amount: body.amount,
-      };
-      setReservation(nextReservation);
-      onReservationCreated?.();
+
+      if (isCombined) {
+        clearBasket();
+        router.push(`/basket/confirmation?key=${encodeURIComponent(body.paymentId)}`);
+      } else {
+        const params = new URLSearchParams({
+          item: itemId,
+          method: "card",
+          key: body.paymentId,
+        });
+        router.push(`/confirmation?${params.toString()}`);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Something went wrong.");
       setSubmitting(false);
     }
   }
 
-  if (reservation) {
-    return (
-      <AdmirePayment
-        reservation={reservation}
-        firstName={firstName}
-        lastName={lastName}
-        email={email}
-        phone={phone}
-        campaignId={admireCampaignId}
-        combined={isCombined}
-      />
-    );
-  }
-
   return (
     <form onSubmit={onSubmit} aria-busy={submitting}>
       <div className="campaign-notice">
-        <span className="campaign-notice__step">Step 1 of 2 &mdash; Sponsorship details</span>
-        Reserved. Enter your details, then pay <strong>{usd(amount)}</strong>.
+        <span className="campaign-notice__step">Sponsorship details</span>
+        Reserved. Enter your details and pay <strong>{usd(amount)}</strong>.
       </div>
 
       <div className="field">
@@ -336,7 +290,7 @@ export default function SponsorForm({
       <fieldset className="form-section">
         <legend className="field-label">Dedication <span className="label-optional">optional</span></legend>
         <div className="segmented-control">
-          {([ ["none", "No dedication"], ["honor", "In honor of"], ["memory", "In memory of"] ] as const).map(([value, label]) => (
+          {([["none", "No dedication"], ["honor", "In honor of"], ["memory", "In memory of"]] as const).map(([value, label]) => (
             <label key={value} className={dedicationType === value ? "selected" : undefined}>
               <input type="radio" name="dedicationType" value={value} checked={dedicationType === value} onChange={() => setDedicationType(value)} />
               {label}
@@ -355,7 +309,7 @@ export default function SponsorForm({
             </div>
             <div className="field">
               <label htmlFor="honoree-email">Notification email <span className="label-optional">optional</span></label>
-              <input id="honoree-email" type="email" className="input" value={honoreeEmail} onChange={(event) => setHonoreeEmail(event.target.value)} placeholder="We can notify the honoree or family after confirmation" autoComplete="off" />
+              <input id="honoree-email" type="email" className="input" value={honoreeEmail} onChange={(event) => setHonoreeEmail(event.target.value)} placeholder="We can notify the honoree or family" autoComplete="off" />
             </div>
           </div>
         ) : null}
@@ -379,11 +333,22 @@ export default function SponsorForm({
         <label><input type="checkbox" required checked={assignmentAccepted} onChange={(event) => setAssignmentAccepted(event.target.checked)} /><span>I understand and agree.</span></label>
       </div>
 
-      <button type="submit" className="btn btn--fill btn--block" disabled={submitting}>
-        {submitting ? "Preparing payment…" : "Continue to payment"}
+      <span className="field-label">Credit card</span>
+      <div className="card-fields">
+        {checkoutReady ? <div id="banquest-card-fields" /> : null}
+        {checkoutReady && !cardReady ? (
+          <p className="card-fields__loading" role="status">Loading secure card fields&hellip;</p>
+        ) : null}
+        {!checkoutReady ? (
+          <p className="form-error" role="alert">Online card payment is being configured. Please try again shortly.</p>
+        ) : null}
+      </div>
+
+      <button type="submit" className="btn btn--fill btn--block" disabled={submitting || !cardReady}>
+        {submitting ? "Processing payment…" : `Pay ${usd(amount)}`}
       </button>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
-      <p className="fineprint">Your card details are handled securely by Admire.</p>
+      <p className="fineprint">Card details are collected securely by Banquest and never pass through this website.</p>
     </form>
   );
 }

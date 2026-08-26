@@ -24,6 +24,7 @@ export interface CheckoutRecord {
   holdToken: string;
   donorName: string;
   email: string;
+  phone?: string;
   misheberachNames: string[];
   dedicationType?: "honor" | "memory";
   dedicationName?: string;
@@ -57,6 +58,7 @@ export interface StoredPledge extends Pledge {
 }
 
 export interface StoredOrder extends Order {
+  phone?: string;
   paymentId?: string;
   gatewayTransactionId?: string;
   gatewayReference?: string;

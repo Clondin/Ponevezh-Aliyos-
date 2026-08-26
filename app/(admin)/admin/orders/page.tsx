@@ -24,6 +24,7 @@ export default async function OrdersPage() {
       occasionName: item ? getOccasion(item.occasion)?.name ?? item.occasion : "Unknown",
       donorName: order.donorName,
       email: order.email,
+      phone: order.phone,
       amount: order.amount,
       method: order.method,
       createdAt: order.createdAt,

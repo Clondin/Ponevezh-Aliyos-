@@ -83,6 +83,7 @@ export async function chargeBanquestCard(
     holdToken,
     donorName: payload.donorName,
     email: payload.email,
+    phone: payload.phone,
     misheberachNames: payload.misheberachNames,
     dedicationType: payload.dedicationType,
     dedicationName: payload.dedicationName,
@@ -112,6 +113,9 @@ export async function chargeBanquestCard(
         avs_zip: payload.payment.avsZip,
         capture: true,
         ignore_duplicates: banquestEnvironment() === "sandbox",
+        transaction_flags: {
+          allow_partial_approval: false,
+        },
         transaction_details: {
           description: items.length === 1 ? `Sponsor ${item.name}` : `Sponsor ${items.length} Ponevez kibbudim`,
           invoice_number: items.length === 1 ? item.id : `PONEVEZ-${paymentId.slice(-12)}`,
@@ -131,12 +135,12 @@ export async function chargeBanquestCard(
     } catch (error) {
       if (error instanceof BanquestApiError && error.status < 500) {
         await repository.releaseCheckout(paymentId);
-      } else {
-        // A timeout or gateway error is ambiguous: the charge may have reached
-        // Banquest. Keep the item reserved and let webhook/reconciliation settle it.
-        await repository.markCheckoutPending(paymentId);
+        throw error;
       }
-      throw error;
+      // A timeout or gateway error is ambiguous: the charge may have reached
+      // Banquest. Keep the item reserved and let webhook/reconciliation settle it.
+      await repository.markCheckoutPending(paymentId);
+      return { paymentId, status: "pending" };
     }
 
     await repository.updateCheckoutGateway(paymentId, {
@@ -144,7 +148,7 @@ export async function chargeBanquestCard(
       gatewayReference: response.reference_number?.toString(),
     });
 
-    if (response.status === "Approved" || response.status === "Partially Approved") {
+    if (response.status === "Approved") {
       const orders = await repository.markCheckoutGroupSold(paymentId, "card");
       await Promise.all(
         orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
@@ -152,6 +156,10 @@ export async function chargeBanquestCard(
       return { paymentId, status: "sold" };
     }
     if (response.status === "Submitted") {
+      await repository.markCheckoutPending(paymentId);
+      return { paymentId, status: "pending" };
+    }
+    if (response.status === "Partially Approved") {
       await repository.markCheckoutPending(paymentId);
       return { paymentId, status: "pending" };
     }

@@ -229,6 +229,7 @@ export class KibbudRepository {
       kibbudId,
       donorName: checkout.donorName,
       email: checkout.email,
+      phone: checkout.phone,
       misheberachNames: checkout.misheberachNames,
       dedicationType: checkout.dedicationType,
       dedicationName: checkout.dedicationName,

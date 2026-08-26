@@ -5,13 +5,13 @@ import { setStateStoreForTests } from "../lib/storage/client";
 import { MemoryStateStore } from "../lib/storage/memory";
 import { keys } from "../lib/storage/keys";
 import { getRepository } from "../lib/storage/repository";
-import { setBanquestFetchForTests } from "../lib/banquest/client";
+import { banquestPublicConfiguration, setBanquestFetchForTests } from "../lib/banquest/client";
 import { POST as holdPost } from "../app/api/hold/route";
 import { POST as checkoutPost } from "../app/api/checkout/route";
 import { POST as cartHoldPost } from "../app/api/cart/hold/route";
 import { POST as cartCheckoutPost } from "../app/api/cart/checkout/route";
 import { POST as pledgePost } from "../app/api/pledge/route";
-import { POST as admireReservationPost } from "../app/api/admire/reservation/route";
+import { POST as retiredAdmirePost } from "../app/api/admire/reservation/route";
 import { GET as stateGet } from "../app/api/state/[minyan]/[occasion]/route";
 import { POST as webhookPost } from "../app/api/webhook/banquest/route";
 import { POST as pledgeConfirmPost } from "../app/api/admin/pledge/[id]/confirm/route";
@@ -21,14 +21,24 @@ import { cardPaymentPayload } from "../lib/api/validation";
 process.env.BANQUEST_WEBHOOK_SIGNATURE = "banquest-contract-signature";
 process.env.BANQUEST_SOURCE_KEY = "sandbox-source-key";
 process.env.BANQUEST_PIN = "sandbox-pin";
+process.env.BANQUEST_TOKENIZATION_KEY = "pk_contract_tokenization_key";
 process.env.BANQUEST_ENV = "sandbox";
 process.env.BANQUEST_SANDBOX_AMOUNT_USD = "1";
-process.env.ENABLE_LEGACY_BANQUEST_CHECKOUT = "true";
 process.env.OFFICE_NOTIFY_EMAIL = "office@example.com";
 process.env.ADMIN_TOKEN = "test-admin-token";
 process.env.SITE_URL = "http://localhost:3110";
 process.env.WAVE_1_OPENS_AT = "2026-01-01T00:00:00-05:00";
 process.env.WAVE_2_OPENS_AT = "2026-01-01T00:00:00-05:00";
+
+assert.equal(banquestPublicConfiguration("production").checkoutReady, false);
+process.env.ALLOW_SANDBOX_CHECKOUT = "true";
+process.env.BANQUEST_CHECKOUT_ENABLED = "true";
+assert.equal(banquestPublicConfiguration("production").checkoutReady, true);
+delete process.env.ALLOW_SANDBOX_CHECKOUT;
+delete process.env.BANQUEST_CHECKOUT_ENABLED;
+
+const retiredAdmireResponse = await retiredAdmirePost();
+assert.equal(retiredAdmireResponse.status, 410);
 
 const stateStore = new MemoryStateStore();
 setStateStoreForTests(stateStore);
@@ -67,6 +77,7 @@ setBanquestFetchForTests((async (input, init) => {
     amount: number;
     expiry_month: number;
     expiry_year: number;
+    transaction_flags: { allow_partial_approval: boolean };
     custom_fields: { custom1: string; custom2: string };
   };
   assert.match(String(input), /\/transactions\/charge$/);
@@ -74,6 +85,7 @@ setBanquestFetchForTests((async (input, init) => {
   assert.equal(requestBody.amount, 1);
   assert.equal(requestBody.expiry_month, 12);
   assert.equal(requestBody.expiry_year, 2030);
+  assert.equal(requestBody.transaction_flags.allow_partial_approval, false);
   assert.equal(requestBody.custom_fields.custom2, heldItem);
   assert.match(requestBody.custom_fields.custom1, /^bq_/);
   return Response.json(
@@ -93,6 +105,7 @@ const checkoutResponse = await checkoutPost(
       kibbudId: heldItem,
       donorName: "Checkout Donor",
       email: "checkout@example.com",
+      phone: "+1 212 555 0118",
       misheberachNames: ["Checkout Name"],
       assignmentAccepted: true,
       payment: {
@@ -117,6 +130,7 @@ const checkoutOrder = (await getRepository().allOrders()).find(
   (order) => order.id === checkoutOrderId
 );
 assert.ok(checkoutOrder?.assignmentAcceptedAt);
+assert.equal(checkoutOrder?.phone, "+1 212 555 0118");
 const queuedEmailIds = await stateStore.smembers<string[]>(keys.emailOutbox);
 assert.ok(queuedEmailIds.includes(`order-confirmation-${checkoutOrderId}`));
 assert.ok(queuedEmailIds.includes(`order-office-${checkoutOrderId}`));
@@ -161,6 +175,76 @@ const concurrentResponses = await Promise.all([
 ]);
 assert.equal(concurrentGatewayCalls, 1);
 assert.ok(concurrentResponses.every((response) => response.status === 200 || response.status === 409));
+setBanquestFetchForTests(undefined);
+
+// A partial approval must never sell a full sponsorship.
+const partialItem = "grodna/rh-1/levi";
+const partialHoldResponse = await holdPost(
+  jsonRequest("http://localhost:3110/api/hold", { kibbudId: partialItem })
+);
+const partialCookie = partialHoldResponse.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+setBanquestFetchForTests((async () =>
+  Response.json({ status: "Partially Approved", transaction: { id: 22331 } })) as typeof fetch);
+const partialResponse = await checkoutPost(
+  jsonRequest("http://localhost:3110/api/checkout", {
+    kibbudId: partialItem,
+    donorName: "Partial Donor",
+    email: "partial@example.com",
+    misheberachNames: [],
+    assignmentAccepted: true,
+    payment: { nonce: "partialNonce123", expiryMonth: 12, expiryYear: 2030 },
+  }, { cookie: partialCookie })
+);
+assert.equal(partialResponse.status, 200);
+const partialPayment = (await partialResponse.json()) as { paymentId: string; status: string };
+assert.equal(partialPayment.status, "pending");
+assert.deepEqual(await getRepository().statuses([partialItem]), [{ id: partialItem, state: "pending" }]);
+assert.equal((await getRepository().ordersForPayment(partialPayment.paymentId)).length, 0);
+setBanquestFetchForTests(undefined);
+
+// A gateway error is ambiguous, so keep the item pending instead of inviting a duplicate charge.
+const ambiguousItem = "grodna/rh-1/shevii";
+const ambiguousHoldResponse = await holdPost(
+  jsonRequest("http://localhost:3110/api/hold", { kibbudId: ambiguousItem })
+);
+const ambiguousCookie = ambiguousHoldResponse.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+setBanquestFetchForTests((async () =>
+  Response.json({ message: "Gateway timeout" }, { status: 503 })) as typeof fetch);
+const ambiguousResponse = await checkoutPost(
+  jsonRequest("http://localhost:3110/api/checkout", {
+    kibbudId: ambiguousItem,
+    donorName: "Pending Donor",
+    email: "pending@example.com",
+    misheberachNames: [],
+    assignmentAccepted: true,
+    payment: { nonce: "pendingNonce123", expiryMonth: 12, expiryYear: 2030 },
+  }, { cookie: ambiguousCookie })
+);
+assert.equal(ambiguousResponse.status, 200);
+assert.equal(((await ambiguousResponse.json()) as { status: string }).status, "pending");
+assert.deepEqual(await getRepository().statuses([ambiguousItem]), [{ id: ambiguousItem, state: "pending" }]);
+setBanquestFetchForTests(undefined);
+
+// A known decline releases the hold immediately.
+const declinedItem = "grodna/rh-1/hagbah-1";
+const declinedHoldResponse = await holdPost(
+  jsonRequest("http://localhost:3110/api/hold", { kibbudId: declinedItem })
+);
+const declinedCookie = declinedHoldResponse.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+setBanquestFetchForTests((async () =>
+  Response.json({ status: "Declined", error_message: "Card declined" })) as typeof fetch);
+const declinedResponse = await checkoutPost(
+  jsonRequest("http://localhost:3110/api/checkout", {
+    kibbudId: declinedItem,
+    donorName: "Declined Donor",
+    email: "declined@example.com",
+    misheberachNames: [],
+    assignmentAccepted: true,
+    payment: { nonce: "declinedNonce123", expiryMonth: 12, expiryYear: 2030 },
+  }, { cookie: declinedCookie })
+);
+assert.equal(declinedResponse.status, 402);
+assert.deepEqual(await getRepository().statuses([declinedItem]), []);
 setBanquestFetchForTests(undefined);
 
 // A combined sponsorship holds and sells every selected item with one charge.
@@ -248,70 +332,6 @@ const confirmResponse = await pledgeConfirmPost(
 assert.equal(confirmResponse.status, 200);
 assert.deepEqual(await confirmResponse.json(), { ok: true });
 
-// Admire owns the card form; our site creates one pending reservation for a
-// combined basket and the office can later confirm every item together.
-const admireItems = ["grodna/rh-1/hotzaah-1", "grodna/rh-1/hotzaah-2"];
-const admireHoldResponse = await cartHoldPost(
-  jsonRequest("http://localhost:3110/api/cart/hold", { kibbudIds: admireItems })
-);
-assert.equal(admireHoldResponse.status, 200);
-const admireCookie = admireHoldResponse.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
-const admireReservationResponse = await admireReservationPost(
-  jsonRequest(
-    "http://localhost:3110/api/admire/reservation",
-    {
-      kibbudIds: admireItems,
-      donorName: "Admire Donor",
-      email: "admire@example.com",
-      phone: "+1 212 555 0199",
-      misheberachNames: ["Admire Name"],
-      assignmentAccepted: true,
-    },
-    { cookie: admireCookie }
-  )
-);
-assert.equal(admireReservationResponse.status, 200);
-const admireReservation = (await admireReservationResponse.json()) as {
-  pledgeId: string;
-  reference: string;
-  heldUntilReviewed: boolean;
-  amount: number;
-};
-assert.match(admireReservation.pledgeId, /^plg_/);
-assert.match(admireReservation.reference, /^PNV-[A-F0-9]{12}$/);
-assert.equal(admireReservation.heldUntilReviewed, true);
-assert.ok(admireReservation.amount > 0);
-assert.deepEqual(Object.keys(admireReservation).sort(), [
-  "amount",
-  "heldUntilReviewed",
-  "pledgeId",
-  "reference",
-]);
-assert.deepEqual(
-  (await getRepository().statuses(admireItems)).map((status) => status.state),
-  ["pending", "pending"]
-);
-const storedAdmirePledge = await getRepository().pledge(admireReservation.pledgeId);
-assert.equal(storedAdmirePledge?.paymentSource, "admire");
-assert.equal(storedAdmirePledge?.holdUntilReviewed, true);
-assert.deepEqual(storedAdmirePledge?.kibbudIds, admireItems);
-const admireConfirmResponse = await pledgeConfirmPost(
-  new Request(
-    `http://localhost:3110/api/admin/pledge/${admireReservation.pledgeId}/confirm`,
-    { method: "POST", headers: { "x-admin-token": "test-admin-token" } }
-  ),
-  { params: Promise.resolve({ id: admireReservation.pledgeId }) }
-);
-assert.equal(admireConfirmResponse.status, 200);
-const admireOrders = (await getRepository().allOrders()).filter((order) =>
-  admireItems.includes(order.kibbudId)
-);
-assert.equal(admireOrders.length, 2);
-assert.ok(admireOrders.every((order) => order.method === "card"));
-assert.ok(
-  admireOrders.every((order) => order.gatewayReference === admireReservation.reference)
-);
-
 // A signature-verified card webhook fulfills a stored payment record.
 const webhookItem = "grodna/rh-1/maftir";
 const repository = getRepository();
@@ -338,6 +358,7 @@ const eventPayload = JSON.stringify({
     reference_number: 12345,
     transaction: {
       id: 12345,
+      amount_details: { amount: 1800 },
       custom_fields: { custom1: "pay_test_webhook" },
       status_details: { status: "captured" },
       card_details: { last4: "1118", card_type: "Visa" },
@@ -363,6 +384,24 @@ const orderCount = (await repository.allOrders()).length;
 const replayResponse = await webhookPost(webhookRequest());
 assert.equal(replayResponse.status, 200);
 assert.equal((await repository.allOrders()).length, orderCount);
+
+const refundPayload = JSON.stringify({
+  ...JSON.parse(eventPayload),
+  id: "evt_contract_refund",
+  subType: "refund",
+});
+const refundSignature = createHmac("sha256", process.env.BANQUEST_WEBHOOK_SIGNATURE)
+  .update(refundPayload)
+  .digest("hex");
+const refundResponse = await webhookPost(
+  new Request("http://localhost:3110/api/webhook/banquest", {
+    method: "POST",
+    headers: { "x-signature": refundSignature },
+    body: refundPayload,
+  })
+);
+assert.equal(refundResponse.status, 200);
+assert.deepEqual(await repository.statuses([webhookItem]), []);
 
 const invalidWebhook = await webhookPost(
   new Request("http://localhost:3110/api/webhook/banquest", {

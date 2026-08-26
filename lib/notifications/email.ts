@@ -230,6 +230,7 @@ export async function notifyOfficeOfOrder(order: StoredOrder): Promise<void> {
       <p><strong>Occasion:</strong> ${escapeHtml(occasion?.name ?? "Unknown")}</p>
       <p><strong>Donor:</strong> ${escapeHtml(order.donorName)}</p>
       <p><strong>Email:</strong> ${escapeHtml(order.email)}</p>
+      ${order.phone ? `<p><strong>Phone:</strong> ${escapeHtml(order.phone)}</p>` : ""}
       <p><strong>Amount:</strong> $${order.amount.toLocaleString("en-US")}</p>
       <p><strong>Payment method:</strong> ${order.method === "card" ? "Credit card" : "Office-confirmed payment"}</p>
       <p><strong>Mi Shebeirach:</strong> ${escapeHtml(order.misheberachNames.join("; ") || "None provided")}</p>

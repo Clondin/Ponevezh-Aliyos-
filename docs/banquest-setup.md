@@ -16,6 +16,8 @@ Copy `.env.example` to `.env.local` and set:
 - `BANQUEST_ENV=sandbox`
 - `BANQUEST_SOURCE_KEY` and `BANQUEST_PIN` for server-side API calls
 - `BANQUEST_TOKENIZATION_KEY` (the `pk_...` key safe for the browser iframe)
+- `BANQUEST_WEBHOOK_SIGNATURE` after registering the public webhook
+- `BANQUEST_CHECKOUT_ENABLED=false` until production credentials pass testing
 - `BANQUEST_SANDBOX_AMOUNT_USD=1` while testing
 - Cloudflare D1, site, admin, and email variables as described in `.env.example`
 
@@ -45,8 +47,11 @@ transaction to the local sponsorship.
 Banquest must provide production credentials and enable the source key's credit
 card Charge permission. Replace all sandbox credentials, set
 `BANQUEST_ENV=production`, remove the sandbox amount override, and run a small
-real-card transaction followed by a refund. Sandbox transactions cannot be moved
-to production.
+real-card transaction followed by a refund. Production builds refuse sandbox
+checkout unless `ALLOW_SANDBOX_CHECKOUT=true` is deliberately set, and that
+override must stay off on ponevez.com. Sandbox transactions cannot be moved to
+production. Set `BANQUEST_CHECKOUT_ENABLED=true` only after the production
+credentials and hosted fields have passed verification.
 
 Run `npm run check` before deploying. `npm run test:live` additionally requires a
 fresh Banquest nonce and a configured Cloudflare D1 database; nonces expire after 15

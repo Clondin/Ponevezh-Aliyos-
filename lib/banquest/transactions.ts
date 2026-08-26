@@ -12,6 +12,9 @@ export interface BanquestTransaction {
   status_details?: {
     status?: string;
   };
+  amount_details?: {
+    amount?: number;
+  };
   card_details?: Record<string, unknown>;
   check_details?: Record<string, unknown>;
 }

@@ -53,10 +53,18 @@ export async function POST(request: Request): Promise<Response> {
       event.type === "declined" ||
       event.type === "error" ||
       event.subType === "void" ||
+      event.subType === "refund" ||
       Boolean(event.status && FAILED_STATUSES.has(event.status));
 
+    const checkout = await repository.checkout(event.paymentId);
+    if (checkout && (event.transactionId || event.referenceNumber)) {
+      await repository.updateCheckoutGateway(event.paymentId, {
+        gatewayTransactionId: event.transactionId,
+        gatewayReference: event.referenceNumber,
+      });
+    }
+
     if (failed) {
-      const checkout = await repository.checkout(event.paymentId);
       if (checkout?.status === "sold" || checkout?.status === "pending") {
         await repository.reverseCheckout(event.paymentId);
       } else {
@@ -65,7 +73,17 @@ export async function POST(request: Request): Promise<Response> {
       if (checkout) {
         await sendReversalNotifications(checkout).catch((error) => console.error(error));
       }
-    } else if (event.type === "succeeded" || event.status === "settled") {
+    } else if (
+      checkout &&
+      event.amount != null &&
+      event.amount + 0.005 < checkout.amount
+    ) {
+      await repository.markCheckoutPending(event.paymentId);
+      console.error("Banquest reported a payment below the expected sponsorship total.");
+    } else if (
+      (event.type === "succeeded" && event.subType === "charge") ||
+      event.status === "settled"
+    ) {
       const orders = await repository.markCheckoutGroupSold(event.paymentId, "card");
       await Promise.all(
         orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))

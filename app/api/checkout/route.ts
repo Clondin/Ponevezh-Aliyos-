@@ -15,19 +15,15 @@ import {
   CheckoutInProgressError,
 } from "@/lib/storage/repository";
 import {
+  assertBanquestCheckoutReady,
   BanquestApiError,
   BanquestConfigurationError,
 } from "@/lib/banquest/client";
 import { BanquestDeclinedError, chargeBanquestCard } from "@/lib/banquest/card";
 
 export async function POST(request: Request): Promise<Response> {
-  if (process.env.ENABLE_LEGACY_BANQUEST_CHECKOUT !== "true") {
-    return Response.json(
-      { error: { code: "not_found", message: "Direct card checkout is disabled. Use Admire." } },
-      { status: 410 }
-    );
-  }
   try {
+    assertBanquestCheckoutReady();
     await enforceRateLimit(request, "checkout", 10, 15 * 60);
     const payload = cardPaymentPayload(await readJson(request));
     const item = requireKibbud(payload.kibbudId);
@@ -66,7 +62,7 @@ export async function POST(request: Request): Promise<Response> {
       return apiErrorResponse(
         new ApiError(
           "internal",
-          "Online payment setup is not complete. Please choose wire or try again later.",
+          "Online payment setup is not complete. Please try again shortly.",
           503
         )
       );
