@@ -42,8 +42,8 @@ export default function PledgeQueue({
         <div className="notice__glyph" aria-hidden="true">
           ✳
         </div>
-        <h1>No pending pledges</h1>
-        <p>Every pending Admire payment or office-arranged pledge has been settled.</p>
+        <h1>No payments to review</h1>
+        <p>Everything is up to date.</p>
       </div>
     );
   }
@@ -96,7 +96,7 @@ export default function PledgeQueue({
                           disabled={busy === p.id}
                           onClick={() => void resolvePledge(p.id, "confirm")}
                         >
-                          {p.paymentSource === "admire" ? "Admire received" : "Payment received"}
+                          Payment received
                         </button>
                         <button
                           className="btn btn--sm btn--outline-bronze"
@@ -116,8 +116,8 @@ export default function PledgeQueue({
       </div>
       {error ? <p className="admin-note" role="alert">{error}</p> : null}
       <p className="admin-note">
-        {open.length} awaiting settlement. Confirming marks the kibbud sold;
-        releasing returns it to the site immediately.
+        {open.length} awaiting review. Confirm to mark sold, or release to make
+        available again.
       </p>
     </>
   );

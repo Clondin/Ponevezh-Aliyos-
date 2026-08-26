@@ -5,7 +5,7 @@ export default function NotFound() {
     <Notice
       glyph="asterisk"
       title="Page not found"
-      body="This page doesn't exist — the minyan, day, or kibbud may have been mistyped."
+      body="Check the link or choose another kibbud."
       primaryHref="/"
       primaryLabel="See all kibbudim"
       secondaryHref="/"

@@ -106,22 +106,22 @@ export default async function ConfirmationPage({
           : isWire
           ? delivery?.status === "sent"
             ? "The kibbud is held for you for 72 hours. Payment instructions were emailed to the address you provided."
-            : "The kibbud is held for you for 72 hours. Your payment instructions are queued for delivery; you may also contact the office directly."
+            : "The kibbud is held for 72 hours. We will email payment instructions shortly."
           : unsuccessful
-            ? "Banquest did not complete this payment. The kibbud will be available to reserve again."
+            ? "Your payment was not completed. The kibbud is available again."
             : pending
-              ? "Banquest is still confirming the credit-card payment."
+              ? "Your payment is being confirmed."
               : delivery?.status === "sent"
-                ? "A receipt has been emailed to you. The names you entered will be read at the Mi Shebeirach from the bimah."
-                : "Your sponsorship is confirmed. Your receipt is queued for delivery, and the names you entered will be read at the Mi Shebeirach from the bimah."}
+                ? "Your receipt was emailed. The names you entered will be read at the Mi Shebeirach."
+                : "Your sponsorship is confirmed. Your receipt will be emailed, and the names you entered will be read at the Mi Shebeirach."}
       </p>
       <p className="confirm__note">
         {!accessValid
-          ? "Return to the kibbudim list or contact the office for assistance."
+          ? "Return to the kibbudim list or contact the office."
           : isWire
           ? "If payment does not arrive within 72 hours, the kibbud is released."
           : pending
-            ? "We will email the receipt after the payment is confirmed."
+            ? "We will email your receipt after confirmation."
             : "No goods or services were provided in exchange for this contribution."}
       </p>
 

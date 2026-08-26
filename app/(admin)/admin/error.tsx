@@ -12,7 +12,7 @@ export default function AdminError({
         ✳
       </div>
       <h1>Couldn&rsquo;t load office data</h1>
-      <p>The records are safe; this page just failed to render.</p>
+      <p>Your records are safe. Please try again.</p>
       <div className="actions">
         <button onClick={reset} className="btn btn--fill">
           Try again

@@ -109,17 +109,11 @@ function AdmirePayment({
     >
       <div className="admire-checkout__intro">
         <span className="badge badge--pending">Step 2 of 2 &mdash; Payment</span>
-        <h2 id="admire-checkout-title">Complete your secure payment</h2>
-        <p>
-          Your details are saved. The secure Admire form below is already filled
-          in with the exact total for{" "}
-          {combined ? "your selected kibbudim" : "this kibbud"} &mdash; leave the
-          amount and the <strong>One-Time</strong> option as they are, and Admire
-          will confirm the payment right inside the form.
-        </p>
+        <h2 id="admire-checkout-title">Complete your payment</h2>
+        <p>Your total is ready below. Keep <strong>One-Time</strong> selected and use the amount shown.</p>
         <dl className="admire-checkout__summary">
           <div>
-            <dt>Exact total</dt>
+            <dt>Total</dt>
             <dd>{usd(reservation.amount)}</dd>
           </div>
           <div>
@@ -153,7 +147,7 @@ function AdmirePayment({
         <iframe
           className="admire-checkout__frame"
           src={paymentUrl}
-          title="Secure Ponevez donation payment through Admire"
+          title="Secure payment form"
           allow="payment"
           loading="eager"
           referrerPolicy="strict-origin-when-cross-origin"
@@ -168,11 +162,10 @@ function AdmirePayment({
             <p>Opening the secure payment form&hellip;</p>
             {frameState === "slow" ? (
               <p className="admire-checkout__slow">
-                Taking longer than expected?{" "}
+                Taking longer?{" "}
                 <a href={paymentUrl} target="_blank" rel="noreferrer">
-                  Open the secure form in a new tab
-                </a>{" "}
-                &mdash; it is filled in with the same details.
+                  Open the form in a new tab
+                </a>
               </p>
             ) : null}
           </div>
@@ -181,10 +174,8 @@ function AdmirePayment({
 
       <div className="admire-checkout__fallback">
         <p>
-          Your {combined ? "kibbudim are" : "kibbud is"} reserved until{" "}
-          {heldUntil}. If anything goes wrong with the payment, nothing is lost
-          &mdash; open the form in a new tab or contact the office, and the
-          reservation holds.
+          Reserved until {heldUntil}. If needed, open the form in a new tab or
+          contact the office.
         </p>
         <div className="actions">
           <Link
@@ -195,11 +186,7 @@ function AdmirePayment({
             Return to kibbudim
           </Link>
         </div>
-        <p className="fineprint">
-          Admire processes the payment; the office then confirms your
-          sponsorship from Admire&rsquo;s records. Your card details never pass
-          through this site.
-        </p>
+        <p className="fineprint">The office will confirm your payment. Your card details stay with Admire.</p>
       </div>
     </section>
   );
@@ -280,7 +267,7 @@ export default function SponsorForm({
         !body.expiresAt ||
         typeof body.amount !== "number"
       ) {
-        throw new Error(body.error?.message || "The Admire reservation could not be created.");
+        throw new Error(body.error?.message || "We could not start your payment. Please try again.");
       }
       const nextReservation: AdmireReservation = {
         pledgeId: body.pledgeId,
@@ -314,8 +301,7 @@ export default function SponsorForm({
     <form onSubmit={onSubmit} aria-busy={submitting}>
       <div className="campaign-notice">
         <span className="campaign-notice__step">Step 1 of 2 &mdash; Sponsorship details</span>
-        Your {isCombined ? "kibbudim are" : "kibbud is"} reserved while you enter the
-        sponsorship details. The next step is a secure Admire payment for <strong>{usd(amount)}</strong>.
+        Reserved. Enter your details, then pay <strong>{usd(amount)}</strong>.
       </div>
 
       <div className="field">
@@ -328,7 +314,7 @@ export default function SponsorForm({
       </div>
       <div className="field">
         <label htmlFor="email">Email</label>
-        <input id="email" type="email" className="input" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="For your Admire receipt and confirmation" autoComplete="email" />
+        <input id="email" type="email" className="input" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="For your receipt" autoComplete="email" />
       </div>
       <div className="field">
         <label htmlFor="phone">Phone <span className="label-optional">optional</span></label>
@@ -348,7 +334,7 @@ export default function SponsorForm({
           ))}
         </div>
         <button type="button" className="add-name" onClick={addName}>+ Add another name</button>
-        <div className="hint">Hebrew is welcome here. The gabbai reads these names exactly as written.</div>
+        <div className="hint">Enter names exactly as they should be read. Hebrew is welcome.</div>
       </div>
 
       <fieldset className="form-section">
@@ -382,7 +368,7 @@ export default function SponsorForm({
       <div className="recognition-option">
         <label>
           <input type="checkbox" checked={publicRecognition} onChange={(event) => setPublicRecognition(event.target.checked)} />
-          <span><strong>List this sponsorship on the public recognition page</strong><small>Your email and Mi Shebeirach names are never displayed.</small></span>
+          <span><strong>Show my name on the sponsor page</strong><small>Your email and Mi Shebeirach names stay private.</small></span>
         </label>
         {publicRecognition ? (
           <div className="field">
@@ -393,15 +379,15 @@ export default function SponsorForm({
       </div>
 
       <div className="assignment-disclosure">
-        <p><strong>Aliyah assignment:</strong> All aliyos are assigned to Roshei Yeshiva, Rabbanim, and congregants at the Yeshiva&rsquo;s discretion. Purchasing this sponsorship does not guarantee that you will personally receive the aliyah. What is guaranteed is that a Mi Shebeirach will be recited for the person or persons you name.</p>
+        <p><strong>Aliyah assignment:</strong> The Yeshiva assigns aliyos to Roshei Yeshiva, Rabbanim, and congregants. Sponsorship does not guarantee that you will receive the aliyah. It guarantees a Mi Shebeirach for the names you provide.</p>
         <label><input type="checkbox" required checked={assignmentAccepted} onChange={(event) => setAssignmentAccepted(event.target.checked)} /><span>I understand and agree.</span></label>
       </div>
 
       <button type="submit" className="btn btn--fill btn--block" disabled={submitting}>
-        {submitting ? "Creating your reservation…" : "Continue to secure Admire payment"}
+        {submitting ? "Preparing payment…" : "Continue to payment"}
       </button>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
-      <p className="fineprint">Admire securely collects and processes your credit-card information. Raw card details never pass through or remain on this website.</p>
+      <p className="fineprint">Your card details are handled securely by Admire.</p>
     </form>
   );
 }

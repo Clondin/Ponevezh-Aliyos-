@@ -36,17 +36,17 @@ const ALLOWED_FIELDS = new Set([
 
 function itemIdsFrom(body: Record<string, unknown>): string[] {
   if (Object.keys(body).some((key) => !ALLOWED_FIELDS.has(key))) {
-    invalidInput("Request contains an unsupported field.");
+    invalidInput("Please refresh and try again.");
   }
   if (body.kibbudId != null && body.kibbudIds != null) {
-    invalidInput("Choose either kibbudId or kibbudIds, not both.");
+    invalidInput("Please refresh and try again.");
   }
   const raw = body.kibbudIds ?? (body.kibbudId == null ? null : [body.kibbudId]);
   if (!Array.isArray(raw) || raw.length < 1 || raw.length > 10) {
     invalidInput("Choose between 1 and 10 kibbudim.");
   }
   if (!raw.every((value) => typeof value === "string" && Boolean(value.trim()))) {
-    invalidInput("Every kibbud ID must be a non-empty string.");
+    invalidInput("Please refresh and try again.");
   }
   const itemIds = raw.map((value) => (value as string).trim());
   if (new Set(itemIds).size !== itemIds.length) {

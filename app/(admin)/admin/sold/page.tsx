@@ -3,7 +3,7 @@ import { getCatalog, getMinyanim, priceFor } from "@/lib/catalog";
 import { usd } from "@/lib/format";
 import { getRepository } from "@/lib/storage/repository";
 
-export const metadata: Metadata = { title: "Sold summary" };
+export const metadata: Metadata = { title: "Sponsorship summary" };
 export const dynamic = "force-dynamic";
 
 export default async function SoldSummaryPage() {
@@ -35,22 +35,19 @@ export default async function SoldSummaryPage() {
   return (
     <section className="admin-section">
       <div className="container">
-        <h1 className="admin-title">Sold summary by minyan</h1>
-        <p className="admin-sub">
-          Completed payments only; pending reservations are excluded until the
-          payment is confirmed.
-        </p>
+        <h1 className="admin-title">Sponsorships by minyan</h1>
+        <p className="admin-sub">Confirmed payments only.</p>
         <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
                 <th>Minyan</th>
                 <th>Level</th>
-                <th style={{ textAlign: "right" }}>Sold</th>
-                <th style={{ textAlign: "right" }}>Items</th>
+                <th style={{ textAlign: "right" }}>Sponsored</th>
+                <th style={{ textAlign: "right" }}>Total</th>
                 <th style={{ textAlign: "right" }}>Raised</th>
-                <th style={{ textAlign: "right" }}>Face value</th>
-                <th style={{ textAlign: "right" }}>Sell-through</th>
+                <th style={{ textAlign: "right" }}>Listed total</th>
+                <th style={{ textAlign: "right" }}>Rate</th>
               </tr>
             </thead>
             <tbody>

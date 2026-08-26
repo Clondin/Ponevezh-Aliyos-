@@ -19,9 +19,9 @@ export default function AdminLayout({
           <span className="brand">PONEVEZ &middot; Office</span>
           <Link href="/admin">Overview</Link>
           <Link href="/admin/orders">Orders</Link>
-          <Link href="/admin/pledges">Pledges</Link>
-          <Link href="/admin/sold">Sold</Link>
-          <Link href="/admin/activity">Activity</Link>
+          <Link href="/admin/pledges">Payments</Link>
+          <Link href="/admin/sold">Summary</Link>
+          <Link href="/admin/activity">History</Link>
           <Link href="/admin/email">Email</Link>
           <span style={{ marginLeft: "auto" }}>
             <Link href="/">&larr; Donor site</Link>

@@ -22,7 +22,7 @@ const STEPS = [
   {
     num: "03",
     title: "Complete your sponsorship",
-    body: "Credit card, or reserve and arrange payment with the office.",
+    body: "Pay securely online.",
   },
 ];
 
@@ -142,7 +142,7 @@ export default async function HomePage() {
               Ponevez.
             </p>
             <a href="#how" className="yeshiva-story__link">
-              How sponsorship works <span aria-hidden="true">&rarr;</span>
+              How it works <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
         </div>

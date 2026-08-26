@@ -52,7 +52,7 @@ export async function reconcileBanquestTransactions(): Promise<ReconciliationRes
 
   await repository.appendAudit({
     action: "reconciliation_run",
-    detail: `${checked} Banquest transactions checked; ${updated} local records updated`,
+    detail: `${checked} payments checked; ${updated} updated`,
   });
 
   return { checked, updated };

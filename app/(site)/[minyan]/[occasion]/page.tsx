@@ -75,11 +75,11 @@ export default async function OccasionPage({
       <section className="container" style={{ padding: "56px 40px 96px" }}>
         {opensAt ? (
           <div className="campaign-notice" role="status">
-            Sponsorship for these kibbudim opens {new Date(opensAt).toLocaleString("en-US", {
+            Sponsorship opens {new Date(opensAt).toLocaleString("en-US", {
               timeZone: "America/New_York",
               dateStyle: "long",
               timeStyle: "short",
-            })} Eastern Time. You may browse the opportunities now.
+            })} ET.
           </div>
         ) : null}
         {items.length === 0 ? (
@@ -88,10 +88,7 @@ export default async function OccasionPage({
               ✳
             </div>
             <h1>No kibbudim listed</h1>
-            <p>
-              The kibbudim for this tefillah have not been posted yet. Please
-              check back, or contact the office.
-            </p>
+            <p>Please check back or contact the office.</p>
             <div className="actions">
               <Link href={`/${m.slug}`} className="btn btn--fill">
                 Other days
@@ -115,8 +112,7 @@ export default async function OccasionPage({
               ))}
             </div>
 
-            <div className="grid-footnote">
-              <p>A sponsored kibbud remains listed in honor of its donor.</p>
+            <div className="grid-footnote" style={{ justifyContent: "flex-end" }}>
               <Link
                 href={`/${m.slug}`}
                 className="btn btn--sm btn--outline-bronze"

@@ -51,12 +51,12 @@ export default async function KibbudPage({
     return (
       <Notice
         glyph="asterisk"
-        title="This sponsorship wave has not opened yet"
+        title="Sponsorship has not opened yet"
         body={`This kibbud becomes available ${new Date(waveOpensAt(o.wave)).toLocaleString("en-US", {
           timeZone: "America/New_York",
           dateStyle: "long",
           timeStyle: "short",
-        })} Eastern Time.`}
+        })} ET.`}
         primaryHref={`/${m.slug}/${o.slug}`}
         primaryLabel="View this tefillah"
         secondaryHref={`/${m.slug}`}
@@ -73,8 +73,8 @@ export default async function KibbudPage({
         title={sold ? "This kibbud has been sponsored" : "This kibbud is reserved"}
         body={
           sold
-            ? "It has already found its sponsor, and remains listed in that sponsor's honor."
-            : "Another donor is completing this kibbud right now. If it is not completed, it reopens shortly."
+            ? "This kibbud already has a sponsor."
+            : "Another donor is completing this sponsorship. It may reopen shortly."
         }
         primaryHref={`/${m.slug}/${o.slug}`}
         primaryLabel="See the remaining kibbudim"

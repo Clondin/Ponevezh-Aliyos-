@@ -36,6 +36,17 @@ export interface CartPaymentPayload extends Omit<CardPaymentPayload, "kibbudId">
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const FIELD_LABELS: Record<string, string> = {
+  kibbudId: "Kibbud",
+  donorName: "Name",
+  email: "Email",
+  phone: "Phone",
+  "misheberachNames entry": "Mi Shebeirach name",
+  dedicationName: "Dedication name",
+  dedicationMessage: "Dedication message",
+  honoreeEmail: "Notification email",
+  recognitionName: "Display name",
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -46,18 +57,18 @@ export async function readJson(request: Request): Promise<Record<string, unknown
   try {
     value = await request.json();
   } catch {
-    invalidInput("Request body must be valid JSON.");
+    invalidInput("Please refresh and try again.");
   }
-  if (!isRecord(value)) invalidInput("Request body must be a JSON object.");
+  if (!isRecord(value)) invalidInput("Please refresh and try again.");
   return value;
 }
 
 function cleanString(value: unknown, field: string, max: number): string {
-  if (typeof value !== "string") invalidInput(`${field} must be a string.`);
+  const label = FIELD_LABELS[field] ?? "This field";
+  if (typeof value !== "string") invalidInput(`${label} is required.`);
   const cleaned = value.trim();
-  if (!cleaned || cleaned.length > max) {
-    invalidInput(`${field} must be between 1 and ${max} characters.`);
-  }
+  if (!cleaned) invalidInput(`${label} is required.`);
+  if (cleaned.length > max) invalidInput(`${label} is too long.`);
   return cleaned;
 }
 
@@ -93,16 +104,16 @@ export function sponsorPayload(
   const kibbudId = cleanString(body.kibbudId, "kibbudId", 160);
   const donorName = cleanString(body.donorName, "donorName", 160);
   const email = cleanString(body.email, "email", 254).toLowerCase();
-  if (!EMAIL.test(email)) invalidInput("email must be a valid email address.");
+  if (!EMAIL.test(email)) invalidInput("Enter a valid email address.");
   if (!Array.isArray(body.misheberachNames) || body.misheberachNames.length > 20) {
-    invalidInput("misheberachNames must be an array of at most 20 strings.");
+    invalidInput("Add no more than 20 Mi Shebeirach names.");
   }
   const misheberachNames = body.misheberachNames
     .map((value) => cleanString(value, "misheberachNames entry", 160))
     .filter(Boolean);
   const totalNamesLength = misheberachNames.reduce((sum, value) => sum + value.length, 0);
   if (totalNamesLength > 450) {
-    invalidInput("misheberachNames are too long for payment metadata.");
+    invalidInput("The Mi Shebeirach names are too long. Please shorten them.");
   }
   const phone =
     allowPhone && body.phone != null && body.phone !== ""
@@ -113,14 +124,14 @@ export function sponsorPayload(
       ? body.dedicationType
       : undefined;
   if (body.dedicationType != null && body.dedicationType !== "" && !dedicationType) {
-    invalidInput("dedicationType must be honor or memory.");
+    invalidInput("Choose In honor of or In memory of.");
   }
   const dedicationName =
     dedicationType && body.dedicationName != null
       ? cleanString(body.dedicationName, "dedicationName", 160)
       : undefined;
   if (dedicationType && !dedicationName) {
-    invalidInput("dedicationName is required when adding a dedication.");
+    invalidInput("Add a name for the dedication.");
   }
   const dedicationMessage =
     body.dedicationMessage == null || body.dedicationMessage === ""
@@ -131,7 +142,7 @@ export function sponsorPayload(
       ? undefined
       : cleanString(body.honoreeEmail, "honoreeEmail", 254).toLowerCase();
   if (honoreeEmail && !EMAIL.test(honoreeEmail)) {
-    invalidInput("honoreeEmail must be a valid email address.");
+    invalidInput("Enter a valid notification email.");
   }
   if (body.publicRecognition != null && typeof body.publicRecognition !== "boolean") {
     invalidInput("publicRecognition must be true or false.");

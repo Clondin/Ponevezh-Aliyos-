@@ -47,7 +47,7 @@ export default async function AdminLogin({
             {error ? (
               <p role="alert" style={{ color: "#9f2b2b", marginBottom: 16 }}>
                 {error === "security"
-                  ? "The security check failed or there were too many attempts. Please wait and try again."
+                  ? "Please wait a few minutes and try again."
                   : "Incorrect password. Please try again."}
               </p>
             ) : null}
