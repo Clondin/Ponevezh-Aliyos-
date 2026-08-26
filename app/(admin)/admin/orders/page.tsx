@@ -36,5 +36,5 @@ export default async function OrdersPage() {
       assignmentAcceptedAt: order.assignmentAcceptedAt,
     };
   }));
-  return <section className="admin-section"><div className="container"><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, see Banquest references, and recover queued receipts.</p><AdminOrdersTable rows={rows} /></div></section>;
+  return <section className="admin-section"><div className="container"><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, review payment references, and recover queued receipts.</p><AdminOrdersTable rows={rows} /></div></section>;
 }

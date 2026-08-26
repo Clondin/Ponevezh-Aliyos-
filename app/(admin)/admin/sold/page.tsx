@@ -37,8 +37,8 @@ export default async function SoldSummaryPage() {
       <div className="container">
         <h1 className="admin-title">Sold summary by minyan</h1>
         <p className="admin-sub">
-          Completed payments only; pending pledges are excluded until the wire
-          arrives.
+          Completed payments only; pending reservations are excluded until the
+          payment is confirmed.
         </p>
         <div className="table-wrap">
           <table className="table">

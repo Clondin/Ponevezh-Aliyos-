@@ -30,7 +30,13 @@ export async function GET(
     ]);
     const statusById = new Map(statuses.map((status) => [status.id, status]));
     const orderByItem = new Map(orders.map((order) => [order.kibbudId, order]));
-    const pledgeByItem = new Map(pledges.map((pledge) => [pledge.kibbudId, pledge]));
+    const pledgeByItem = new Map(
+      pledges.flatMap((pledge) =>
+        (pledge.kibbudIds?.length ? pledge.kibbudIds : [pledge.kibbudId]).map(
+          (kibbudId) => [kibbudId, pledge] as const
+        )
+      )
+    );
     const rows = items.map((item) => {
       const state = statusById.get(item.id)?.state ?? "available";
       const owner = state === "sold" ? orderByItem.get(item.id) : pledgeByItem.get(item.id);

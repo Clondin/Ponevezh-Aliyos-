@@ -11,6 +11,7 @@ import { POST as checkoutPost } from "../app/api/checkout/route";
 import { POST as cartHoldPost } from "../app/api/cart/hold/route";
 import { POST as cartCheckoutPost } from "../app/api/cart/checkout/route";
 import { POST as pledgePost } from "../app/api/pledge/route";
+import { POST as admireReservationPost } from "../app/api/admire/reservation/route";
 import { GET as stateGet } from "../app/api/state/[minyan]/[occasion]/route";
 import { POST as webhookPost } from "../app/api/webhook/banquest/route";
 import { POST as pledgeConfirmPost } from "../app/api/admin/pledge/[id]/confirm/route";
@@ -22,6 +23,7 @@ process.env.BANQUEST_SOURCE_KEY = "sandbox-source-key";
 process.env.BANQUEST_PIN = "sandbox-pin";
 process.env.BANQUEST_ENV = "sandbox";
 process.env.BANQUEST_SANDBOX_AMOUNT_USD = "1";
+process.env.ENABLE_LEGACY_BANQUEST_CHECKOUT = "true";
 process.env.OFFICE_NOTIFY_EMAIL = "office@example.com";
 process.env.ADMIN_TOKEN = "test-admin-token";
 process.env.SITE_URL = "http://localhost:3110";
@@ -245,6 +247,62 @@ const confirmResponse = await pledgeConfirmPost(
 );
 assert.equal(confirmResponse.status, 200);
 assert.deepEqual(await confirmResponse.json(), { ok: true });
+
+// Admire owns the card form; our site creates one pending reservation for a
+// combined basket and the office can later confirm every item together.
+const admireItems = ["grodna/rh-1/hotzaah-1", "grodna/rh-1/hotzaah-2"];
+const admireHoldResponse = await cartHoldPost(
+  jsonRequest("http://localhost:3110/api/cart/hold", { kibbudIds: admireItems })
+);
+assert.equal(admireHoldResponse.status, 200);
+const admireCookie = admireHoldResponse.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+const admireReservationResponse = await admireReservationPost(
+  jsonRequest(
+    "http://localhost:3110/api/admire/reservation",
+    {
+      kibbudIds: admireItems,
+      donorName: "Admire Donor",
+      email: "admire@example.com",
+      phone: "+1 212 555 0199",
+      misheberachNames: ["Admire Name"],
+      assignmentAccepted: true,
+    },
+    { cookie: admireCookie }
+  )
+);
+assert.equal(admireReservationResponse.status, 200);
+const admireReservation = (await admireReservationResponse.json()) as {
+  pledgeId: string;
+  reference: string;
+  expiresAt: string;
+  amount: number;
+};
+assert.match(admireReservation.pledgeId, /^plg_/);
+assert.match(admireReservation.reference, /^PNV-[A-F0-9]{12}$/);
+assert.ok(admireReservation.amount > 0);
+assert.deepEqual(
+  (await getRepository().statuses(admireItems)).map((status) => status.state),
+  ["pending", "pending"]
+);
+const storedAdmirePledge = await getRepository().pledge(admireReservation.pledgeId);
+assert.equal(storedAdmirePledge?.paymentSource, "admire");
+assert.deepEqual(storedAdmirePledge?.kibbudIds, admireItems);
+const admireConfirmResponse = await pledgeConfirmPost(
+  new Request(
+    `http://localhost:3110/api/admin/pledge/${admireReservation.pledgeId}/confirm`,
+    { method: "POST", headers: { "x-admin-token": "test-admin-token" } }
+  ),
+  { params: Promise.resolve({ id: admireReservation.pledgeId }) }
+);
+assert.equal(admireConfirmResponse.status, 200);
+const admireOrders = (await getRepository().allOrders()).filter((order) =>
+  admireItems.includes(order.kibbudId)
+);
+assert.equal(admireOrders.length, 2);
+assert.ok(admireOrders.every((order) => order.method === "card"));
+assert.ok(
+  admireOrders.every((order) => order.gatewayReference === admireReservation.reference)
+);
 
 // A signature-verified card webhook fulfills a stored payment record.
 const webhookItem = "grodna/rh-1/maftir";

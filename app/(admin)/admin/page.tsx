@@ -40,7 +40,7 @@ export default async function AdminHome() {
             <div className="micro">Pending pledges</div>
             <div className="stat-card__value">{pledges.length}</div>
             <div className="stat-card__note">
-              <Link href="/admin/pledges">awaiting wire &mdash; review</Link>
+              <Link href="/admin/pledges">awaiting payment review</Link>
             </div>
           </div>
         </div>

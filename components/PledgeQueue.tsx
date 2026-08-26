@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Pledge } from "@/contracts/types";
+import type { StoredPledge } from "@/lib/storage/types";
 import { usd, formatDateTime } from "@/lib/format";
 import { withBasePath } from "@/lib/site-paths";
 
@@ -9,7 +9,7 @@ export default function PledgeQueue({
   pledges,
   itemNames,
 }: {
-  pledges: Pledge[];
+  pledges: StoredPledge[];
   itemNames: Record<string, string>;
 }) {
   const [resolved, setResolved] = useState<Record<string, "confirmed" | "released">>({});
@@ -43,7 +43,7 @@ export default function PledgeQueue({
           ✳
         </div>
         <h1>No pending pledges</h1>
-        <p>Every reserve-and-wire pledge has been settled.</p>
+        <p>Every pending Admire payment or office-arranged pledge has been settled.</p>
       </div>
     );
   }
@@ -65,12 +65,13 @@ export default function PledgeQueue({
           <tbody>
             {pledges.map((p) => {
               const done = resolved[p.id];
+              const kibbudIds = p.kibbudIds?.length ? p.kibbudIds : [p.kibbudId];
               return (
                 <tr key={p.id} className={done ? "row--muted" : undefined}>
                   <td style={{ fontWeight: 600 }}>
-                    {itemNames[p.kibbudId] ?? p.kibbudId}
+                    {kibbudIds.map((id) => itemNames[id] ?? id).join("; ")}
                     <div className="muted" style={{ fontSize: "0.8rem", fontWeight: 400 }}>
-                      {p.kibbudId}
+                      {p.externalReference ?? kibbudIds.join("; ")}
                     </div>
                   </td>
                   <td>
@@ -95,7 +96,7 @@ export default function PledgeQueue({
                           disabled={busy === p.id}
                           onClick={() => void resolvePledge(p.id, "confirm")}
                         >
-                          Wire received
+                          {p.paymentSource === "admire" ? "Admire received" : "Payment received"}
                         </button>
                         <button
                           className="btn btn--sm btn--outline-bronze"

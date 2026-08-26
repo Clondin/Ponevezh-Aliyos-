@@ -21,6 +21,12 @@ import {
 import { BanquestDeclinedError, chargeBanquestCard } from "@/lib/banquest/card";
 
 export async function POST(request: Request): Promise<Response> {
+  if (process.env.ENABLE_LEGACY_BANQUEST_CHECKOUT !== "true") {
+    return Response.json(
+      { error: { code: "not_found", message: "Direct card checkout is disabled. Use Admire." } },
+      { status: 410 }
+    );
+  }
   try {
     await enforceRateLimit(request, "checkout", 10, 15 * 60);
     const payload = cardPaymentPayload(await readJson(request));

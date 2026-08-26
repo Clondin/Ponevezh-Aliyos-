@@ -39,6 +39,10 @@ export interface CheckoutRecord {
 }
 
 export interface StoredPledge extends Pledge {
+  kibbudIds?: string[];
+  amounts?: Record<string, number>;
+  paymentSource?: "manual" | "admire";
+  externalReference?: string;
   dedicationType?: "honor" | "memory";
   dedicationName?: string;
   dedicationMessage?: string;

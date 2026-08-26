@@ -10,8 +10,10 @@ export async function POST(
   try {
     await requireAdmin(request);
     const { id } = await params;
-    const order = await getRepository().confirmPledge(id);
-    await sendOrderNotifications(order).catch((error) => console.error(error));
+    const orders = await getRepository().confirmPledgeGroup(id);
+    await Promise.all(
+      orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
+    );
     return Response.json({ ok: true });
   } catch (error) {
     if (error instanceof HoldExpiredError) {

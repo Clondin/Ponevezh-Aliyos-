@@ -25,6 +25,10 @@ function checkoutItemIds(checkout: CheckoutRecord): string[] {
   return checkout.kibbudIds?.length ? checkout.kibbudIds : [checkout.kibbudId];
 }
 
+function pledgeItemIds(pledge: StoredPledge): string[] {
+  return pledge.kibbudIds?.length ? pledge.kibbudIds : [pledge.kibbudId];
+}
+
 export class KibbudRepository {
   constructor(private readonly redis: StateStore = getStateStore()) {}
 
@@ -292,36 +296,45 @@ export class KibbudRepository {
     token: string,
     fromCheckoutHold = false
   ): Promise<void> {
+    const itemIds = pledgeItemIds(pledge);
+    const acquired: string[] = [];
     if (fromCheckoutHold) {
-      await this.checkoutHold(pledge.kibbudId, token);
+      await Promise.all(itemIds.map((kibbudId) => this.checkoutHold(kibbudId, token)));
     } else {
-      await this.acquireHold(
-        pledge.kibbudId,
-        token,
-        PLEDGE_HOLD_SECONDS,
-        "pledge"
-      );
+      try {
+        for (const kibbudId of itemIds) {
+          await this.acquireHold(kibbudId, token, PLEDGE_HOLD_SECONDS, "pledge");
+          acquired.push(kibbudId);
+        }
+      } catch (error) {
+        await Promise.all(acquired.map((kibbudId) => this.releaseHold(kibbudId, token)));
+        throw error;
+      }
     }
-    const pending: PendingRecord = {
-      kibbudId: pledge.kibbudId,
-      kind: "pledge",
-      referenceId: pledge.id,
-      expiresAt: pledge.expiresAt,
-    };
-    const hold: HoldRecord = {
-      kibbudId: pledge.kibbudId,
-      token,
-      kind: "pledge",
-      expiresAt: pledge.expiresAt,
-    };
     try {
       await Promise.all([
         this.redis.set(keys.pledge(pledge.id), pledge),
-        this.redis.set(keys.pending(pledge.kibbudId), pending, {
-          ex: PLEDGE_HOLD_SECONDS,
-        }),
-        this.redis.set(keys.hold(pledge.kibbudId), hold, {
-          ex: PLEDGE_HOLD_SECONDS,
+        ...itemIds.flatMap((kibbudId) => {
+          const pending: PendingRecord = {
+            kibbudId,
+            kind: "pledge",
+            referenceId: pledge.id,
+            expiresAt: pledge.expiresAt,
+          };
+          const hold: HoldRecord = {
+            kibbudId,
+            token,
+            kind: "pledge",
+            expiresAt: pledge.expiresAt,
+          };
+          return [
+            this.redis.set(keys.pending(kibbudId), pending, {
+              ex: PLEDGE_HOLD_SECONDS,
+            }),
+            this.redis.set(keys.hold(kibbudId), hold, {
+              ex: PLEDGE_HOLD_SECONDS,
+            }),
+          ];
         }),
         this.redis.sadd(keys.pendingPledges, pledge.id),
       ]);
@@ -329,9 +342,15 @@ export class KibbudRepository {
         action: "pledge_created",
         kibbudId: pledge.kibbudId,
         referenceId: pledge.id,
+        detail:
+          pledge.paymentSource === "admire"
+            ? `Awaiting Admire confirmation for ${itemIds.length} kibbudim`
+            : undefined,
       });
     } catch (error) {
-      if (!fromCheckoutHold) await this.releaseHold(pledge.kibbudId, token);
+      if (!fromCheckoutHold) {
+        await Promise.all(acquired.map((kibbudId) => this.releaseHold(kibbudId, token)));
+      }
       throw error;
     }
   }
@@ -361,18 +380,27 @@ export class KibbudRepository {
   }
 
   async confirmPledge(pledgeId: string): Promise<StoredOrder> {
+    const orders = await this.confirmPledgeGroup(pledgeId);
+    if (!orders[0]) throw new HoldExpiredError();
+    return orders[0];
+  }
+
+  async confirmPledgeGroup(pledgeId: string): Promise<StoredOrder[]> {
     const pledge = await this.pledge(pledgeId);
     if (!pledge) throw new HoldExpiredError();
+    const itemIds = pledgeItemIds(pledge);
     if (pledge.status === "confirmed") {
-      const existing = await this.redis.get<StoredOrder>(keys.sold(pledge.kibbudId));
-      if (existing) return existing;
+      const existing = await Promise.all(
+        itemIds.map((kibbudId) => this.redis.get<StoredOrder>(keys.sold(kibbudId)))
+      );
+      if (existing.every(Boolean)) return existing as StoredOrder[];
     }
     if (pledge.status !== "pending" || Date.parse(pledge.expiresAt) <= Date.now()) {
       throw new HoldExpiredError();
     }
-    const order: StoredOrder = {
-      id: `ord_${pledge.id}`,
-      kibbudId: pledge.kibbudId,
+    const orders: StoredOrder[] = itemIds.map((kibbudId, index) => ({
+      id: itemIds.length === 1 ? `ord_${pledge.id}` : `ord_${pledge.id}_${index + 1}`,
+      kibbudId,
       donorName: pledge.donorName,
       email: pledge.email,
       misheberachNames: pledge.misheberachNames,
@@ -383,13 +411,12 @@ export class KibbudRepository {
       publicRecognition: pledge.publicRecognition,
       recognitionName: pledge.recognitionName,
       assignmentAcceptedAt: pledge.assignmentAcceptedAt,
-      amount: pledge.amount,
-      // The frozen Order contract models bank payments as ACH; office-settled
-      // wire/check pledges use the same bank-rail value.
-      method: "ach",
+      amount: pledge.amounts?.[kibbudId] ?? pledge.amount,
+      method: pledge.paymentSource === "admire" ? "card" : "ach",
       createdAt: new Date().toISOString(),
-    };
-    await this.persistOrder(order);
+      gatewayReference: pledge.externalReference,
+    }));
+    for (const order of orders) await this.persistOrder(order);
     await this.redis.set(keys.pledge(pledge.id), { ...pledge, status: "confirmed" });
     await this.clearPledgeReservation(pledge);
     await this.appendAudit({
@@ -397,7 +424,7 @@ export class KibbudRepository {
       kibbudId: pledge.kibbudId,
       referenceId: pledge.id,
     });
-    return order;
+    return orders;
   }
 
   async releasePledge(pledgeId: string): Promise<void> {
@@ -418,13 +445,17 @@ export class KibbudRepository {
   }
 
   private async clearPledgeReservation(pledge: StoredPledge): Promise<void> {
-    const pending = await this.redis.get<PendingRecord>(keys.pending(pledge.kibbudId));
-    const hold = await this.redis.get<HoldRecord>(keys.hold(pledge.kibbudId));
     const deletes: string[] = [];
-    const ownsPending = pending?.kind === "pledge" && pending.referenceId === pledge.id;
-    if (ownsPending) {
-      deletes.push(keys.pending(pledge.kibbudId));
-      if (hold?.kind === "pledge") deletes.push(keys.hold(pledge.kibbudId));
+    for (const kibbudId of pledgeItemIds(pledge)) {
+      const [pending, hold] = await this.redis.mget<[
+        PendingRecord | null,
+        HoldRecord | null,
+      ]>(keys.pending(kibbudId), keys.hold(kibbudId));
+      const ownsPending = pending?.kind === "pledge" && pending.referenceId === pledge.id;
+      if (ownsPending) {
+        deletes.push(keys.pending(kibbudId));
+        if (hold?.kind === "pledge") deletes.push(keys.hold(kibbudId));
+      }
     }
     if (deletes.length) await this.redis.del(...deletes);
     await this.redis.srem(keys.pendingPledges, pledge.id);

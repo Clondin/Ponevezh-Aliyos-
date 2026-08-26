@@ -39,7 +39,13 @@ export default async function GabbaiSheet({
   ]);
   const statuses = new Map(statusList.map((status) => [status.id, status]));
   const ordersByItem = new Map(orders.map((order) => [order.kibbudId, order]));
-  const pledgesByItem = new Map(pledges.map((pledge) => [pledge.kibbudId, pledge]));
+  const pledgesByItem = new Map(
+    pledges.flatMap((pledge) =>
+      (pledge.kibbudIds?.length ? pledge.kibbudIds : [pledge.kibbudId]).map(
+        (kibbudId) => [kibbudId, pledge] as const
+      )
+    )
+  );
 
   return (
     <section className="admin-section print-sheet">

@@ -7,6 +7,12 @@ import { BanquestApiError, BanquestConfigurationError } from "@/lib/banquest/cli
 import { AlreadyTakenError, CheckoutInProgressError, getRepository, HoldExpiredError } from "@/lib/storage/repository";
 
 export async function POST(request: Request): Promise<Response> {
+  if (process.env.ENABLE_LEGACY_BANQUEST_CHECKOUT !== "true") {
+    return Response.json(
+      { error: { code: "not_found", message: "Direct card checkout is disabled. Use Admire." } },
+      { status: 410 }
+    );
+  }
   try {
     await enforceRateLimit(request, "cart-checkout", 6, 15 * 60);
     const payload = cartPaymentPayload(await readJson(request));

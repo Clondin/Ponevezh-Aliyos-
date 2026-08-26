@@ -12,9 +12,9 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob:",
   "font-src 'self' https://fonts.gstatic.com data:",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "script-src 'self' 'unsafe-inline' https://tokenization.banquestgateway.com https://tokenization.sandbox.banquestgateway.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
-  "connect-src 'self' https://tokenization.banquestgateway.com https://tokenization.sandbox.banquestgateway.com https://challenges.cloudflare.com https://cloudflareinsights.com",
-  "frame-src https://tokenization.banquestgateway.com https://tokenization.sandbox.banquestgateway.com https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+  "connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com",
+  "frame-src https://ponevez.admirepro.app https://challenges.cloudflare.com",
   "upgrade-insecure-requests",
 ].join("; ");
 
@@ -37,7 +37,7 @@ const nextConfig = {
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "X-Frame-Options", value: "DENY" },
-        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(self \"https://ponevez.admirepro.app\"), usb=()" },
         { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
       ],
     }];

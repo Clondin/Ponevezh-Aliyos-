@@ -22,18 +22,16 @@ export interface CartItem {
 type State =
   | { kind: "idle" }
   | { kind: "holding" }
-  | { kind: "ready"; expiresAt: string }
+  | { kind: "ready"; expiresAt: string; admireReservation?: boolean }
   | { kind: "error"; message: string };
 
 export default function CartCheckoutExperience({
   items,
-  tokenizationKey,
-  banquestEnvironment,
+  admireCampaignId,
   turnstileSiteKey,
 }: {
   items: CartItem[];
-  tokenizationKey: string;
-  banquestEnvironment: "sandbox" | "production";
+  admireCampaignId?: string;
   turnstileSiteKey: string;
 }) {
   const basket = useBasket();
@@ -166,24 +164,29 @@ export default function CartCheckoutExperience({
       <div className="cart-checkout">
         {state.kind === "ready" ? (
           <>
-            <HoldBanner
-              expiresAt={state.expiresAt}
-              itemId={selected[0].id}
-              expiredHref="/basket"
-            />
+            {state.admireReservation ? null : (
+              <HoldBanner
+                expiresAt={state.expiresAt}
+                itemId={selected[0].id}
+                expiredHref="/basket"
+              />
+            )}
             <div className="form-card">
               <SponsorForm
                 itemId={selected[0].id}
                 itemIds={selected.map((item) => item.id)}
-                tokenizationKey={tokenizationKey}
-                banquestEnvironment={banquestEnvironment}
+                amount={total}
+                admireCampaignId={admireCampaignId}
+                onReservationCreated={(expiresAt) =>
+                  setState({ kind: "ready", expiresAt, admireReservation: true })
+                }
               />
             </div>
           </>
         ) : (
           <div className="form-card">
             <h2 className="cart-checkout__title">Sponsor together</h2>
-            <p>Reserve all selected kibbudim, then enter the donor and card information once.</p>
+            <p>Reserve all selected kibbudim, then enter the sponsorship details once and pay securely through Admire.</p>
             {turnstileSiteKey ? (
               <TurnstileWidget
                 key={turnstileAttempt}

@@ -44,11 +44,7 @@ export default async function KibbudPage({
 
   const price = priceForKibbud(item);
   const [status] = await getRepository().statuses([item.id]);
-  const tokenizationKey = process.env.BANQUEST_TOKENIZATION_KEY?.trim() ?? "";
-  const banquestEnvironment =
-    process.env.BANQUEST_ENV?.trim().toLowerCase() === "production"
-      ? "production"
-      : "sandbox";
+  const admireCampaignId = process.env.ADMIRE_CAMPAIGN_ID?.trim();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
 
   if (!isWaveOpen(o.wave)) {
@@ -131,10 +127,10 @@ export default async function KibbudPage({
         <div className="sponsorship-list-action"><BasketButton itemId={item.id} /></div>
         <CheckoutExperience
           itemId={item.id}
+          amount={price}
           occasionHref={`/${m.slug}/${o.slug}`}
           minyanHref={`/${m.slug}`}
-          tokenizationKey={tokenizationKey}
-          banquestEnvironment={banquestEnvironment}
+          admireCampaignId={admireCampaignId}
           turnstileSiteKey={turnstileSiteKey}
         />
       </section>

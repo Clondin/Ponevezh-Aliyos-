@@ -16,8 +16,8 @@ export default async function PledgesPage() {
       <div className="container">
         <h1 className="admin-title">Pending pledges</h1>
         <p className="admin-sub">
-          Reserve-and-pay-by-wire holds. Each holds its kibbud for 72 hours from
-          the pledge.
+          Admire payments awaiting office confirmation and office-arranged payments.
+          Each reservation holds its kibbudim for 72 hours.
         </p>
         <PledgeQueue pledges={pledges} itemNames={itemNames} />
       </div>
