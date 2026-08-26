@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import PhotoBand from "@/components/PhotoBand";
 import { getMinyan, occasionsForMinyan } from "@/lib/catalog";
 import { occasionAvailability, occasionFromPrice } from "@/lib/availability";
 import {
   HEADING_HE,
+  MINYAN_HE,
   OCCASION_HE,
   OCCASION_HE_DAY,
   minyanHeTitle,
 } from "@/lib/hebrew";
 import { shortDate, usd } from "@/lib/format";
+import { minyanPhoto } from "@/lib/photos";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +62,13 @@ export default async function MinyanPage({
           </div>
         </div>
       </div>
+
+      <PhotoBand
+        photo={minyanPhoto(m.slug)}
+        he={MINYAN_HE[m.slug]}
+        caption={`${m.name} Minyan`}
+        priority
+      />
 
       <section className="container" style={{ padding: "60px 40px 96px" }}>
         <div className="micro micro--wide" style={{ marginBottom: 22 }}>

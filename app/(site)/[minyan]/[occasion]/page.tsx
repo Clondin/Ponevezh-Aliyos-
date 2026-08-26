@@ -2,11 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import KibbudCard from "@/components/KibbudCard";
+import PhotoBand from "@/components/PhotoBand";
 import { getMinyan, getOccasion, itemsFor, priceForKibbud } from "@/lib/catalog";
 import { availabilityFromStatuses } from "@/lib/availability";
 import { OCCASION_HE } from "@/lib/hebrew";
 import { getRepository } from "@/lib/storage/repository";
 import { isWaveOpen, waveOpensAt } from "@/lib/calendar/sales";
+import { minyanPhoto } from "@/lib/photos";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +69,8 @@ export default async function OccasionPage({
           </div>
         </div>
       </div>
+
+      <PhotoBand photo={minyanPhoto(m.slug)} slim />
 
       <section className="container" style={{ padding: "56px 40px 96px" }}>
         {opensAt ? (
