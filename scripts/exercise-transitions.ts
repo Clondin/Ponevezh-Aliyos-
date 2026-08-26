@@ -75,6 +75,26 @@ await repository.createPledge(pledge("plg_release", releasedItem), "pledge-relea
 await repository.releasePledge("plg_release");
 assert.deepEqual(await repository.statuses([releasedItem]), []);
 
+// Admire reservations do not expire. They remain unavailable until the office
+// explicitly confirms or releases them, even after the legacy expiresAt field.
+const admireItem = "grodna/rh-1/chamishi";
+const admirePledge: StoredPledge = {
+  ...pledge("plg_admire_review", admireItem),
+  paymentSource: "admire",
+  holdUntilReviewed: true,
+  externalReference: "PNV-TESTREVIEW01",
+  expiresAt: new Date(Date.now() - 60_000).toISOString(),
+};
+await repository.createPledge(admirePledge, "admire-review-token");
+assert.deepEqual(await repository.statuses([admireItem]), [
+  { id: admireItem, state: "pending" },
+]);
+assert.ok(
+  (await repository.pendingPledges()).some((pending) => pending.id === admirePledge.id)
+);
+await repository.releasePledge(admirePledge.id);
+assert.deepEqual(await repository.statuses([admireItem]), []);
+
 // Per-occasion post-cutoff rejection.
 const cutoffItem = requireKibbud("grodna/yk-mincha/maftir-yonah");
 const cutoff = new Date("2026-09-20T18:20:00+03:00").getTime();

@@ -29,6 +29,14 @@ function pledgeItemIds(pledge: StoredPledge): string[] {
   return pledge.kibbudIds?.length ? pledge.kibbudIds : [pledge.kibbudId];
 }
 
+function pledgeNeedsOfficeReview(pledge: StoredPledge): boolean {
+  return pledge.holdUntilReviewed === true || pledge.paymentSource === "admire";
+}
+
+function recordIsActive(record: HoldRecord | PendingRecord, now = Date.now()): boolean {
+  return record.holdUntilReviewed === true || Date.parse(record.expiresAt) > now;
+}
+
 export class KibbudRepository {
   constructor(private readonly redis: StateStore = getStateStore()) {}
 
@@ -71,7 +79,7 @@ export class KibbudRepository {
 
   async holdOwnedBy(kibbudId: string, token: string): Promise<HoldRecord> {
     const hold = await this.redis.get<HoldRecord>(keys.hold(kibbudId));
-    if (!hold || hold.token !== token || Date.parse(hold.expiresAt) <= Date.now()) {
+    if (!hold || hold.token !== token || !recordIsActive(hold)) {
       throw new HoldExpiredError();
     }
     return hold;
@@ -297,6 +305,7 @@ export class KibbudRepository {
     fromCheckoutHold = false
   ): Promise<void> {
     const itemIds = pledgeItemIds(pledge);
+    const holdUntilReviewed = pledgeNeedsOfficeReview(pledge);
     const acquired: string[] = [];
     if (fromCheckoutHold) {
       await Promise.all(itemIds.map((kibbudId) => this.checkoutHold(kibbudId, token)));
@@ -320,20 +329,26 @@ export class KibbudRepository {
             kind: "pledge",
             referenceId: pledge.id,
             expiresAt: pledge.expiresAt,
+            ...(holdUntilReviewed ? { holdUntilReviewed: true } : {}),
           };
           const hold: HoldRecord = {
             kibbudId,
             token,
             kind: "pledge",
             expiresAt: pledge.expiresAt,
+            ...(holdUntilReviewed ? { holdUntilReviewed: true } : {}),
           };
           return [
-            this.redis.set(keys.pending(kibbudId), pending, {
-              ex: PLEDGE_HOLD_SECONDS,
-            }),
-            this.redis.set(keys.hold(kibbudId), hold, {
-              ex: PLEDGE_HOLD_SECONDS,
-            }),
+            this.redis.set(
+              keys.pending(kibbudId),
+              pending,
+              holdUntilReviewed ? undefined : { ex: PLEDGE_HOLD_SECONDS }
+            ),
+            this.redis.set(
+              keys.hold(kibbudId),
+              hold,
+              holdUntilReviewed ? undefined : { ex: PLEDGE_HOLD_SECONDS }
+            ),
           ];
         }),
         this.redis.sadd(keys.pendingPledges, pledge.id),
@@ -369,7 +384,11 @@ export class KibbudRepository {
     const stale: string[] = [];
     const pending: StoredPledge[] = [];
     records.forEach((pledge, index) => {
-      if (!pledge || pledge.status !== "pending" || Date.parse(pledge.expiresAt) <= now) {
+      if (
+        !pledge ||
+        pledge.status !== "pending" ||
+        (!pledgeNeedsOfficeReview(pledge) && Date.parse(pledge.expiresAt) <= now)
+      ) {
         stale.push(ids[index]);
       } else {
         pending.push(pledge);
@@ -395,7 +414,10 @@ export class KibbudRepository {
       );
       if (existing.every(Boolean)) return existing as StoredOrder[];
     }
-    if (pledge.status !== "pending" || Date.parse(pledge.expiresAt) <= Date.now()) {
+    if (
+      pledge.status !== "pending" ||
+      (!pledgeNeedsOfficeReview(pledge) && Date.parse(pledge.expiresAt) <= Date.now())
+    ) {
       throw new HoldExpiredError();
     }
     const orders: StoredOrder[] = itemIds.map((kibbudId, index) => ({
@@ -528,9 +550,9 @@ export class KibbudRepository {
       const hold = values[length * 2 + index] as HoldRecord | null;
       if (sold) {
         result.push({ id: itemIds[index], state: "sold" });
-      } else if (pending && Date.parse(pending.expiresAt) > now) {
+      } else if (pending && recordIsActive(pending, now)) {
         result.push({ id: itemIds[index], state: "pending" });
-      } else if (hold && Date.parse(hold.expiresAt) > now) {
+      } else if (hold && recordIsActive(hold, now)) {
         result.push({ id: itemIds[index], state: "held", expiresAt: hold.expiresAt });
       }
     }

@@ -57,7 +57,7 @@ export default function PledgeQueue({
               <th>Kibbud</th>
               <th>Donor</th>
               <th>Amount</th>
-              <th>Expires</th>
+              <th>Reservation</th>
               <th>Mi Shebeirach</th>
               <th></th>
             </tr>
@@ -82,7 +82,11 @@ export default function PledgeQueue({
                     </div>
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>{usd(p.amount)}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>{formatDateTime(p.expiresAt)}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>
+                    {p.holdUntilReviewed || p.paymentSource === "admire"
+                      ? "Until reviewed"
+                      : formatDateTime(p.expiresAt)}
+                  </td>
                   <td className="rtl" lang="he">
                     {p.misheberachNames.join(" וכן ")}
                   </td>

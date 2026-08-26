@@ -116,6 +116,7 @@ export async function POST(request: Request): Promise<Response> {
       assignmentAcceptedAt: now.toISOString(),
       amount,
       paymentSource: "admire",
+      holdUntilReviewed: true,
       externalReference: `PNV-${uuid.replaceAll("-", "").slice(0, 12).toUpperCase()}`,
       status: "pending",
       expiresAt: new Date(now.getTime() + PLEDGE_HOLD_SECONDS * 1000).toISOString(),
@@ -127,7 +128,7 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({
       pledgeId: pledge.id,
       reference: pledge.externalReference,
-      expiresAt: pledge.expiresAt,
+      heldUntilReviewed: true,
       amount: pledge.amount,
     });
   } catch (error) {

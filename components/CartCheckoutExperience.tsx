@@ -176,8 +176,12 @@ export default function CartCheckoutExperience({
                 itemIds={selected.map((item) => item.id)}
                 amount={total}
                 admireCampaignId={admireCampaignId}
-                onReservationCreated={(expiresAt) =>
-                  setState({ kind: "ready", expiresAt, admireReservation: true })
+                onReservationCreated={() =>
+                  setState((current) =>
+                    current.kind === "ready"
+                      ? { ...current, admireReservation: true }
+                      : current
+                  )
                 }
               />
             </div>

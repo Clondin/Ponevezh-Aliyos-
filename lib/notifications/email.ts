@@ -122,7 +122,7 @@ export async function notifyOfficeOfPledge(pledge: StoredPledge): Promise<void> 
       <p><strong>Phone:</strong> ${escapeHtml(pledge.phone ?? "Not provided")}</p>
       <p><strong>Amount:</strong> $${pledge.amount.toLocaleString("en-US")}</p>
       ${pledge.externalReference ? `<p><strong>Reference:</strong> ${escapeHtml(pledge.externalReference)}</p>` : ""}
-      <p><strong>Expires:</strong> ${escapeHtml(pledge.expiresAt)}</p>
+      ${isAdmire ? "<p><strong>Reservation:</strong> Held offline until confirmed or released</p>" : `<p><strong>Expires:</strong> ${escapeHtml(pledge.expiresAt)}</p>`}
       <p><strong>Mi Shebeirach:</strong> ${escapeHtml(pledge.misheberachNames.join("; "))}</p>
       ${pledge.dedicationType && pledge.dedicationName ? `<p><strong>${pledge.dedicationType === "memory" ? "In memory of" : "In honor of"}:</strong> ${escapeHtml(pledge.dedicationName)}</p>` : ""}
       ${isAdmire ? "<p><strong>Action:</strong> Verify the donation in Admire using the email and amount, then confirm this reservation in the site admin.</p>" : ""}`,
@@ -161,11 +161,11 @@ export async function sendDonorPledgeReservation(pledge: StoredPledge): Promise<
     subject: `Your Ponevez kibbud reservation${item ? ` — ${item.name}` : ""}`,
     html: `<h1>Your ${pledge.kibbudIds?.length ? "kibbudim are" : "kibbud is"} reserved</h1>
       <p>Dear ${escapeHtml(pledge.donorName)},</p>
-      <p>We are holding ${pledge.kibbudIds?.length ? `${pledge.kibbudIds.length} selected kibbudim` : escapeHtml(item?.name ?? pledge.kibbudId)}${occasion && !pledge.kibbudIds?.length ? ` for ${escapeHtml(occasion.name)}` : ""}${minyan && !pledge.kibbudIds?.length ? ` in the ${escapeHtml(minyan.name)} Minyan` : ""} until ${escapeHtml(pledge.expiresAt)}.</p>
+      <p>We are holding ${pledge.kibbudIds?.length ? `${pledge.kibbudIds.length} selected kibbudim` : escapeHtml(item?.name ?? pledge.kibbudId)}${occasion && !pledge.kibbudIds?.length ? ` for ${escapeHtml(occasion.name)}` : ""}${minyan && !pledge.kibbudIds?.length ? ` in the ${escapeHtml(minyan.name)} Minyan` : ""}${isAdmire ? " while the office verifies the Admire payment" : ` until ${escapeHtml(pledge.expiresAt)}`}.</p>
       <p><strong>Amount:</strong> $${pledge.amount.toLocaleString("en-US")}</p>
       ${pledge.externalReference ? `<p><strong>Reference:</strong> ${escapeHtml(pledge.externalReference)}</p>` : ""}
       ${isAdmire ? `<p>This email is a reservation, not a payment receipt. If you have not finished paying, <a href="${escapeHtml(admireUrl.toString())}">complete the secure one-time payment in Admire</a> without changing the amount.</p><p>Admire sends the payment receipt. The Ponevez office then confirms the sponsorship from Admire&rsquo;s records.</p>` : `<p>${escapeHtml(instructions)}</p>`}
-      <p>If payment is not arranged before the reservation expires, the kibbud will return to the site.</p>`,
+      <p>${isAdmire ? "The selected kibbudim remain unavailable to other donors until the office confirms the payment or releases the reservation." : "If payment is not arranged before the reservation expires, the kibbud will return to the site."}</p>`,
     status: "queued",
     createdAt: new Date().toISOString(),
   });

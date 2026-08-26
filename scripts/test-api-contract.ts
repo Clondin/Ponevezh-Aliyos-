@@ -274,18 +274,26 @@ assert.equal(admireReservationResponse.status, 200);
 const admireReservation = (await admireReservationResponse.json()) as {
   pledgeId: string;
   reference: string;
-  expiresAt: string;
+  heldUntilReviewed: boolean;
   amount: number;
 };
 assert.match(admireReservation.pledgeId, /^plg_/);
 assert.match(admireReservation.reference, /^PNV-[A-F0-9]{12}$/);
+assert.equal(admireReservation.heldUntilReviewed, true);
 assert.ok(admireReservation.amount > 0);
+assert.deepEqual(Object.keys(admireReservation).sort(), [
+  "amount",
+  "heldUntilReviewed",
+  "pledgeId",
+  "reference",
+]);
 assert.deepEqual(
   (await getRepository().statuses(admireItems)).map((status) => status.state),
   ["pending", "pending"]
 );
 const storedAdmirePledge = await getRepository().pledge(admireReservation.pledgeId);
 assert.equal(storedAdmirePledge?.paymentSource, "admire");
+assert.equal(storedAdmirePledge?.holdUntilReviewed, true);
 assert.deepEqual(storedAdmirePledge?.kibbudIds, admireItems);
 const admireConfirmResponse = await pledgeConfirmPost(
   new Request(

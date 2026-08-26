@@ -5,9 +5,9 @@ pledges, completed sponsorships, and office views use Cloudflare D1-backed state
 
 Online payment is an embedded Ponevez Admire donation form. Admire owns the card
 collection and payment processing, so this application never receives raw card
-numbers or CVV values. The site creates a 72-hour pending reservation before it
-opens Admire and the office confirms the matching donation until an Admire
-webhook is available.
+numbers or CVV values. Once a donor submits sponsorship details, the selected
+kibbudim remain unavailable until the office confirms or releases the matching
+Admire payment.
 
 ## Run locally
 

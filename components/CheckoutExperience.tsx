@@ -103,8 +103,12 @@ export default function CheckoutExperience({
           itemId={itemId}
           amount={amount}
           admireCampaignId={admireCampaignId}
-          onReservationCreated={(expiresAt) =>
-            setState({ kind: "ready", expiresAt, admireReservation: true })
+          onReservationCreated={() =>
+            setState((current) =>
+              current.kind === "ready"
+                ? { ...current, admireReservation: true }
+                : current
+            )
           }
         />
       </div>

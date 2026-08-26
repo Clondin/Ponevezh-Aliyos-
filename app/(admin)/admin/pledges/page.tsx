@@ -15,7 +15,9 @@ export default async function PledgesPage() {
     <section className="admin-section">
       <div className="container">
         <h1 className="admin-title">Payments to review</h1>
-        <p className="admin-sub">Reservations remain active for 72 hours.</p>
+        <p className="admin-sub">
+          Admire reservations stay offline until you confirm or release them.
+        </p>
         <PledgeQueue pledges={pledges} itemNames={itemNames} />
       </div>
     </section>

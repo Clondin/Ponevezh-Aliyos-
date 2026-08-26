@@ -5,6 +5,7 @@ export interface HoldRecord {
   token: string;
   kind: "checkout" | "pledge";
   expiresAt: string;
+  holdUntilReviewed?: boolean;
 }
 
 export interface PendingRecord {
@@ -12,6 +13,7 @@ export interface PendingRecord {
   kind: "checkout" | "pledge";
   referenceId: string;
   expiresAt: string;
+  holdUntilReviewed?: boolean;
 }
 
 export interface CheckoutRecord {
@@ -42,6 +44,8 @@ export interface StoredPledge extends Pledge {
   kibbudIds?: string[];
   amounts?: Record<string, number>;
   paymentSource?: "manual" | "admire";
+  /** Admire reservations remain unavailable until the office confirms or releases them. */
+  holdUntilReviewed?: boolean;
   externalReference?: string;
   dedicationType?: "honor" | "memory";
   dedicationName?: string;

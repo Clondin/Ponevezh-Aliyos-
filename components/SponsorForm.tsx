@@ -11,7 +11,7 @@ const ADMIRE_DONATION_URL = "https://ponevez.admirepro.app/donate";
 interface AdmireReservation {
   pledgeId: string;
   reference: string;
-  expiresAt: string;
+  heldUntilReviewed: true;
   amount: number;
 }
 
@@ -20,7 +20,7 @@ interface SponsorFormProps {
   amount: number;
   itemIds?: string[];
   admireCampaignId?: string;
-  onReservationCreated?: (expiresAt: string) => void;
+  onReservationCreated?: () => void;
 }
 
 interface AdmirePaymentProps {
@@ -78,10 +78,6 @@ function AdmirePayment({
       }),
     [campaignId, email, firstName, lastName, phone, reservation]
   );
-  const heldUntil = new Date(reservation.expiresAt).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
   const sectionRef = useRef<HTMLElement | null>(null);
   const [frameState, setFrameState] = useState<"loading" | "slow" | "ready">(
     "loading"
@@ -121,8 +117,8 @@ function AdmirePayment({
             <dd>{reservation.reference}</dd>
           </div>
           <div>
-            <dt>Reserved until</dt>
-            <dd>{heldUntil}</dd>
+            <dt>Availability</dt>
+            <dd>Held for you</dd>
           </div>
         </dl>
       </div>
@@ -174,8 +170,8 @@ function AdmirePayment({
 
       <div className="admire-checkout__fallback">
         <p>
-          Reserved until {heldUntil}. If needed, open the form in a new tab or
-          contact the office.
+          {combined ? "These kibbudim are" : "This kibbud is"} now unavailable
+          to other donors while the office reviews the payment.
         </p>
         <div className="actions">
           <Link
@@ -264,7 +260,7 @@ export default function SponsorForm({
         !response.ok ||
         !body.pledgeId ||
         !body.reference ||
-        !body.expiresAt ||
+        body.heldUntilReviewed !== true ||
         typeof body.amount !== "number"
       ) {
         throw new Error(body.error?.message || "We could not start your payment. Please try again.");
@@ -272,11 +268,11 @@ export default function SponsorForm({
       const nextReservation: AdmireReservation = {
         pledgeId: body.pledgeId,
         reference: body.reference,
-        expiresAt: body.expiresAt,
+        heldUntilReviewed: true,
         amount: body.amount,
       };
       setReservation(nextReservation);
-      onReservationCreated?.(nextReservation.expiresAt);
+      onReservationCreated?.();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Something went wrong.");
       setSubmitting(false);
