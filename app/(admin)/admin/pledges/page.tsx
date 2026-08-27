@@ -14,10 +14,15 @@ export default async function PledgesPage() {
   return (
     <section className="admin-section">
       <div className="container">
-        <h1 className="admin-title">Payments to review</h1>
-        <p className="admin-sub">
-          Legacy Admire reservations stay offline until you confirm or release them.
-        </p>
+        <div className="admin-head">
+          <div>
+            <div className="admin-eyebrow">Ponevez Office</div>
+            <h1 className="admin-title">Payments to review</h1>
+            <p className="admin-sub">
+              Legacy Admire reservations stay offline until you confirm or release them.
+            </p>
+          </div>
+        </div>
         <PledgeQueue pledges={pledges} itemNames={itemNames} />
       </div>
     </section>

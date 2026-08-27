@@ -36,8 +36,11 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
       return matchesMethod && (!needle || haystack.includes(needle));
     });
   }, [method, query, rows]);
-  const emailLabel = (status: AdminOrderRow["emailStatus"]) =>
-    status === "sent" ? "Sent" : status === "queued" ? "Waiting" : "Not sent";
+  const emailBadge = (status: AdminOrderRow["emailStatus"]) => {
+    if (status === "sent") return { cls: "status status--ok", label: "Sent" };
+    if (status === "queued") return { cls: "status status--warn", label: "Waiting" };
+    return { cls: "status status--bad", label: "Not sent" };
+  };
 
   return (
     <>
@@ -66,7 +69,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                 <td><strong>{row.itemName}</strong><div className="muted">{row.occasionName} · {row.minyanName}</div>{row.dedication ? <div>{row.dedication}</div> : null}</td>
                 <td><strong>{row.donorName}</strong><div><a href={`mailto:${row.email}`}>{row.email}</a></div>{row.phone ? <div><a href={`tel:${row.phone}`}>{row.phone}</a></div> : null}<div className="muted">{row.assignmentAcceptedAt ? `Terms accepted ${formatDateTime(row.assignmentAcceptedAt)}` : "No acceptance date"}</div></td>
                 <td><strong>{usd(row.amount)}</strong><div className="muted">{row.method === "card" ? "Credit card" : "Office confirmed"}</div><div className="muted">Payment reference: {row.gatewayTransactionId ?? row.gatewayReference ?? "—"}</div></td>
-                <td><span className={`badge${row.emailStatus === "queued" ? " badge--pending" : ""}`}>{emailLabel(row.emailStatus)}</span>{row.emailStatus !== "sent" ? <div style={{ marginTop: 8 }}><EmailRetryButton id={row.receiptEmailId} /></div> : null}</td>
+                <td><span className={emailBadge(row.emailStatus).cls}>{emailBadge(row.emailStatus).label}</span>{row.emailStatus !== "sent" ? <div style={{ marginTop: 8 }}><EmailRetryButton id={row.receiptEmailId} /></div> : null}</td>
               </tr>
             ))}
           </tbody>

@@ -37,5 +37,5 @@ export default async function OrdersPage() {
       assignmentAcceptedAt: order.assignmentAcceptedAt,
     };
   }));
-  return <section className="admin-section"><div className="container"><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, payments, and receipts.</p><AdminOrdersTable rows={rows} /></div></section>;
+  return <section className="admin-section"><div className="container"><div className="admin-head"><div><div className="admin-eyebrow">Ponevez Office</div><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, payments, and receipts.</p></div></div><AdminOrdersTable rows={rows} /></div></section>;
 }

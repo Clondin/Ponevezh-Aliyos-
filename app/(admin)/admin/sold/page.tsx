@@ -35,8 +35,13 @@ export default async function SoldSummaryPage() {
   return (
     <section className="admin-section">
       <div className="container">
-        <h1 className="admin-title">Sponsorships by minyan</h1>
-        <p className="admin-sub">Confirmed payments only.</p>
+        <div className="admin-head">
+          <div>
+            <div className="admin-eyebrow">Ponevez Office</div>
+            <h1 className="admin-title">Sponsorships by minyan</h1>
+            <p className="admin-sub">Confirmed payments only.</p>
+          </div>
+        </div>
         <div className="table-wrap">
           <table className="table">
             <thead>
@@ -60,7 +65,12 @@ export default async function SoldSummaryPage() {
                   <td style={{ textAlign: "right" }}>{usd(raised)}</td>
                   <td style={{ textAlign: "right" }}>{usd(face)}</td>
                   <td style={{ textAlign: "right" }}>
-                    {total ? Math.round((sold / total) * 100) : 0}%
+                    <span className="rate-cell">
+                      <span className="rate-cell__bar">
+                        <span style={{ width: `${total ? Math.round((sold / total) * 100) : 0}%` }} />
+                      </span>
+                      {total ? Math.round((sold / total) * 100) : 0}%
+                    </span>
                   </td>
                 </tr>
               ))}

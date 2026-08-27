@@ -92,7 +92,9 @@ export default function PledgeQueue({
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>
                     {done ? (
-                      <span className="badge">{done}</span>
+                      <span className={`status ${done === "confirmed" ? "status--ok" : "status--muted"}`}>
+                        {done === "confirmed" ? "Confirmed" : "Released"}
+                      </span>
                     ) : (
                       <span style={{ display: "flex", gap: 6 }}>
                         <button
