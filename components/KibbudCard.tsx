@@ -19,14 +19,22 @@ export default function KibbudCard({
   price,
   status,
   opensAt,
+  closed,
+  ownedHold,
 }: {
   item: Kibbud;
   price: number;
   status: KibbudStatus;
   opensAt?: string;
+  closed?: boolean;
+  ownedHold?: boolean;
 }) {
   const he = kibbudHe(item.slug, item.name);
-  const dim = status.state !== "available" || Boolean(opensAt);
+  const ownedReservation = status.state === "held" && Boolean(ownedHold);
+  const dim =
+    (status.state !== "available" && !ownedReservation) ||
+    Boolean(opensAt) ||
+    Boolean(closed);
   const className = `kibbud-card${TIER_CLASS[item.tier]}${dim ? " kibbud-card--dim" : ""}`;
 
   const face = (
@@ -41,14 +49,16 @@ export default function KibbudCard({
       <div className="kibbud-card__strip">
         <span className="kibbud-card__price">{usd(price)}</span>
         <span className="kibbud-card__action">
-          {status.state === "available" && !opensAt && "Sponsor"}
+          {status.state === "available" && !opensAt && !closed && "Sponsor"}
           {status.state === "available" && opensAt &&
             `Opens ${new Date(opensAt).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
             })}`}
           {status.state === "sold" && "Sponsored"}
-          {(status.state === "pending" || status.state === "held") && "Reserved"}
+          {status.state === "pending" && "Reserved"}
+          {status.state === "held" && (ownedReservation ? "Continue" : "Reserved")}
+          {status.state === "available" && closed && "Closed"}
         </span>
       </div>
     </>

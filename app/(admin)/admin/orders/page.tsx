@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import AdminOrdersTable, { type AdminOrderRow } from "@/components/AdminOrdersTable";
 import { getCatalog, getMinyan, getOccasion } from "@/lib/catalog";
-import { emailRecord } from "@/lib/notifications/email";
 import { getRepository } from "@/lib/storage/repository";
 
 export const metadata: Metadata = { title: "Orders" };
 export const dynamic = "force-dynamic";
 
 export default async function OrdersPage() {
-  const orders = (await getRepository().allOrders()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const repository = getRepository();
+  const orders = (await repository.allOrders()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const catalog = getCatalog();
   const rows: AdminOrderRow[] = await Promise.all(orders.map(async (order) => {
     const item = catalog.items.find((candidate) => candidate.id === order.kibbudId);
-    const delivery = await emailRecord(`order-confirmation-${order.id}`);
+    const admireStatus = order.paymentId
+      ? await repository.admireSyncStatus(order.paymentId)
+      : "not_queued";
     const dedication = order.dedicationType && order.dedicationName
       ? `${order.dedicationType === "memory" ? "In memory of" : "In honor of"} ${order.dedicationName}`
       : undefined;
@@ -32,10 +34,10 @@ export default async function OrdersPage() {
       paymentId: order.paymentId,
       gatewayTransactionId: order.gatewayTransactionId,
       gatewayReference: order.gatewayReference,
-      emailStatus: delivery?.status ?? "missing",
-      receiptEmailId: `order-confirmation-${order.id}`,
+      admireStatus,
       assignmentAcceptedAt: order.assignmentAcceptedAt,
+      status: order.status ?? "paid",
     };
   }));
-  return <section className="admin-section"><div className="container"><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, payments, and receipts.</p><AdminOrdersTable rows={rows} /></div></section>;
+  return <section className="admin-section"><div className="container"><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, payments, and Admire records.</p><AdminOrdersTable rows={rows} /></div></section>;
 }

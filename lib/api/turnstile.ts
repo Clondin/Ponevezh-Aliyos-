@@ -16,7 +16,12 @@ export async function verifyTurnstile(
   expectedAction: string
 ): Promise<void> {
   const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
-  if (!secret) return;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("TURNSTILE_SECRET_KEY is required in production");
+    }
+    return;
+  }
   if (!turnstileSiteKey()) {
     throw new Error("NEXT_PUBLIC_TURNSTILE_SITE_KEY is required with TURNSTILE_SECRET_KEY");
   }
@@ -36,7 +41,7 @@ export async function verifyTurnstile(
     cache: "no-store",
   });
   const result = (await response.json().catch(() => null)) as SiteverifyResponse | null;
-  if (!response.ok || !result?.success || (result.action && result.action !== expectedAction)) {
+  if (!response.ok || !result?.success || result.action !== expectedAction) {
     throw new ApiError(
       "invalid_input",
       "The security check expired or could not be verified. Please try again.",

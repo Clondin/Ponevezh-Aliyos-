@@ -7,10 +7,11 @@ import { getKibbud, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog
 import { TIER_LABEL, kibbudHe } from "@/lib/hebrew";
 import { getRepository } from "@/lib/storage/repository";
 import { usd } from "@/lib/format";
-import { isWaveOpen, waveOpensAt } from "@/lib/calendar/sales";
+import { saleWindowFor, waveOpensAt } from "@/lib/calendar/sales";
 import ShareActions from "@/components/ShareActions";
 import BasketButton from "@/components/BasketButton";
 import { banquestPublicConfiguration } from "@/lib/banquest/client";
+import { campaignUrl, socialImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,15 @@ export async function generateMetadata({
   return {
     title: `Sponsor ${item.name}`,
     description,
-    openGraph: { title: `${item.name} — ${o.name}`, description, type: "website" },
+    alternates: {
+      canonical: campaignUrl(`/${item.minyan}/${item.occasion}/${item.slug}`),
+    },
+    openGraph: {
+      title: `${item.name} — ${o.name}`,
+      description,
+      type: "website",
+      images: [{ url: socialImageUrl(), width: 1200, height: 630 }],
+    },
   };
 }
 
@@ -48,7 +57,8 @@ export default async function KibbudPage({
   const banquest = banquestPublicConfiguration();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
 
-  if (!isWaveOpen(o.wave)) {
+  const saleWindow = saleWindowFor(o);
+  if (saleWindow === "upcoming") {
     return (
       <Notice
         glyph="asterisk"
@@ -62,6 +72,20 @@ export default async function KibbudPage({
         primaryLabel="View this tefillah"
         secondaryHref={`/${m.slug}`}
         secondaryLabel="Other days"
+      />
+    );
+  }
+
+  if (saleWindow === "closed") {
+    return (
+      <Notice
+        glyph="asterisk"
+        title="Sponsorship is closed"
+        body="The deadline for this tefillah has passed."
+        primaryHref={`/${m.slug}`}
+        primaryLabel="Other days"
+        secondaryHref="/find"
+        secondaryLabel="Find a kibbud"
       />
     );
   }

@@ -39,8 +39,12 @@ export async function GET(request: Request): Promise<Response> {
         checkoutReady: publicConfiguration.checkoutReady,
         webhookConfigured: Boolean(process.env.BANQUEST_WEBHOOK_SIGNATURE?.trim()),
         admireSyncConfigured: admireSyncConfigured(),
-        emailConfigured: Boolean(
-          process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim()
+        turnstileConfigured: Boolean(
+          process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() &&
+            process.env.TURNSTILE_SECRET_KEY?.trim()
+        ),
+        adminSecurityConfigured: Boolean(
+          process.env.ADMIN_API_TOKEN?.trim() && process.env.ADMIN_SESSION_SECRET?.trim()
         ),
       },
       { headers: { "cache-control": "no-store" } }

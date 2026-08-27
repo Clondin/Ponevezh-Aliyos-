@@ -1,11 +1,11 @@
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
-import { syncBanquestCheckoutToAdmire } from "@/lib/admire/client";
+import { queueAndSyncCheckoutToAdmire } from "@/lib/admire/client";
+import { reverseBanquestTransaction } from "@/lib/banquest/reversal";
 import {
   type BanquestWebhookEvent,
   parseBanquestWebhook,
   verifyBanquestSignature,
 } from "@/lib/banquest/webhook";
-import { sendOrderNotifications, sendReversalNotifications } from "@/lib/notifications/email";
 import {
   AlreadyTakenError,
   getRepository,
@@ -42,7 +42,10 @@ export async function POST(request: Request): Promise<Response> {
 
   const repository = getRepository();
   const claim = await repository.beginPaymentEvent(event.id);
-  if (claim !== "process") return Response.json({ received: true });
+  if (claim === "done") return Response.json({ received: true });
+  if (claim === "busy") {
+    return Response.json({ received: false, retry: true }, { status: 503 });
+  }
 
   try {
     if (event.event !== "transaction" || !event.paymentId) {
@@ -50,11 +53,13 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json({ received: true });
     }
 
+    const isRefund = event.subType === "refund";
+    const isVoid = event.subType === "void";
     const failed =
       event.type === "declined" ||
       event.type === "error" ||
-      event.subType === "void" ||
-      event.subType === "refund" ||
+      isVoid ||
+      isRefund ||
       Boolean(event.status && FAILED_STATUSES.has(event.status));
 
     const checkout = await repository.checkout(event.paymentId);
@@ -62,37 +67,73 @@ export async function POST(request: Request): Promise<Response> {
       await repository.updateCheckoutGateway(event.paymentId, {
         gatewayTransactionId: event.transactionId,
         gatewayReference: event.referenceNumber,
+        cardType: event.cardType,
+        cardLastFour: event.cardLastFour,
       });
     }
 
     if (failed) {
-      if (checkout?.status === "sold" || checkout?.status === "pending") {
-        await repository.reverseCheckout(event.paymentId);
+      if (
+        isRefund &&
+        checkout?.status === "sold" &&
+        event.amount != null &&
+        event.amount + 0.005 < checkout.amount
+      ) {
+        await repository.markCheckoutNeedsReview(
+          event.paymentId,
+          `Partial Banquest refund of $${event.amount.toFixed(2)} requires item-level office review.`
+        );
+      } else if (checkout?.status === "sold" || checkout?.status === "pending") {
+        await repository.reverseCheckout(
+          event.paymentId,
+          isRefund ? "Banquest refund" : isVoid ? "Banquest void" : "Banquest payment failed"
+        );
       } else {
         await repository.releaseCheckout(event.paymentId);
-      }
-      if (checkout) {
-        await sendReversalNotifications(checkout).catch((error) => console.error(error));
       }
     } else if (
       checkout &&
       event.amount != null &&
       event.amount + 0.005 < checkout.amount
     ) {
-      await repository.markCheckoutPending(event.paymentId);
-      console.error("Banquest reported a payment below the expected sponsorship total.");
+      await repository.markCheckoutNeedsReview(
+        event.paymentId,
+        `Banquest reported $${event.amount.toFixed(2)} for an expected $${checkout.amount.toFixed(2)}.`
+      );
     } else if (
       (event.type === "succeeded" && event.subType === "charge") ||
       event.status === "settled"
     ) {
-      const orders = await repository.markCheckoutGroupSold(event.paymentId, "card");
-      await Promise.all(
-        orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
-      );
-      const completedCheckout = await repository.checkout(event.paymentId);
-      if (completedCheckout) {
-        await syncBanquestCheckoutToAdmire(completedCheckout, event);
+      try {
+        await repository.markCheckoutGroupSold(event.paymentId, "card");
+      } catch (error) {
+        if (!(error instanceof AlreadyTakenError)) throw error;
+        if (event.referenceNumber) {
+          try {
+            await reverseBanquestTransaction(event.referenceNumber);
+            await repository.reverseCheckout(
+              event.paymentId,
+              "Automatically reversed after webhook inventory conflict"
+            );
+          } catch (reversalError) {
+            await repository.markCheckoutNeedsReview(
+              event.paymentId,
+              `Webhook payment could not settle or reverse: ${
+                reversalError instanceof Error ? reversalError.message : "unknown reversal error"
+              }`
+            );
+          }
+        } else {
+          await repository.markCheckoutNeedsReview(
+            event.paymentId,
+            "Webhook payment could not settle and had no reversal reference."
+          );
+        }
+        throw error;
       }
+      await queueAndSyncCheckoutToAdmire(event.paymentId).catch((error) =>
+        console.error(error)
+      );
     }
 
     await repository.finishPaymentEvent(event.id);

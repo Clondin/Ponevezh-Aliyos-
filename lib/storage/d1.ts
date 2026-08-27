@@ -1,4 +1,4 @@
-import type { SetOptions, StateStore } from "@/lib/storage/types";
+import type { AtomicWrite, SetOptions, StateStore } from "@/lib/storage/types";
 
 const MAX_KEYS_PER_QUERY = 90;
 
@@ -43,16 +43,21 @@ export class D1StateStore implements StateStore {
   async mget<T extends unknown[]>(...keys: string[]): Promise<T> {
     if (!keys.length) return [] as unknown as T;
     const found = new Map<string, unknown>();
-    for (const chunk of groups(keys)) {
-      const result = await this.database
-        .prepare(
+    const chunks = groups(keys);
+    const results = await this.database.batch(
+      chunks.map((chunk) =>
+        this.database.prepare(
           `SELECT key, value FROM app_kv WHERE key IN (${placeholders(
             chunk.length
           )}) AND (expires_at IS NULL OR expires_at > ?)`
         )
         .bind(...chunk, Date.now())
-        .all<{ key: string; value: string }>();
-      for (const row of result.results) found.set(row.key, decode(row.value));
+      )
+    );
+    for (const result of results) {
+      for (const row of result.results as Array<{ key: string; value: string }>) {
+        found.set(row.key, decode(row.value));
+      }
     }
     return keys.map((key) => found.get(key) ?? null) as T;
   }
@@ -152,5 +157,158 @@ export class D1StateStore implements StateStore {
       .bind(key)
       .all<{ member: string }>();
     return result.results.map((row) => decode(row.member)) as T;
+  }
+
+  async atomic(write: AtomicWrite): Promise<boolean> {
+    const guardKey = `atomic:${crypto.randomUUID()}`;
+    const now = Date.now();
+    const conditions: string[] = [];
+    const conditionValues: unknown[] = [];
+
+    for (const condition of write.conditions ?? []) {
+      const active = "(expires_at IS NULL OR expires_at > ?)";
+      const hasEquals = Object.prototype.hasOwnProperty.call(condition, "equals");
+      if (condition.exists === false) {
+        conditions.push(`NOT EXISTS (SELECT 1 FROM app_kv WHERE key = ? AND ${active})`);
+        conditionValues.push(condition.key, now);
+      } else if (hasEquals) {
+        conditions.push(
+          `EXISTS (SELECT 1 FROM app_kv WHERE key = ? AND ${active} AND value = ?)`
+        );
+        conditionValues.push(condition.key, now, encode(condition.equals));
+      } else {
+        conditions.push(`EXISTS (SELECT 1 FROM app_kv WHERE key = ? AND ${active})`);
+        conditionValues.push(condition.key, now);
+      }
+    }
+
+    const guardSql = conditions.length
+      ? `INSERT INTO app_kv (key, value, expires_at)
+         SELECT ?, ?, ? WHERE ${conditions.join(" AND ")}`
+      : "INSERT INTO app_kv (key, value, expires_at) VALUES (?, ?, ?)";
+    const statements: D1PreparedStatement[] = [
+      this.database
+        .prepare(guardSql)
+        .bind(guardKey, encode("guard"), now + 60_000, ...conditionValues),
+    ];
+    const guardExists = "EXISTS (SELECT 1 FROM app_kv WHERE key = ?)";
+
+    for (const operation of write.sets ?? []) {
+      const expiresAt = operation.ex == null ? null : now + operation.ex * 1000;
+      if (operation.nx) {
+        statements.push(
+          this.database
+            .prepare(
+              `DELETE FROM app_kv
+               WHERE key = ? AND expires_at IS NOT NULL AND expires_at <= ?
+                 AND ${guardExists}`
+            )
+            .bind(operation.key, now, guardKey),
+          this.database
+            .prepare(
+              `INSERT INTO app_kv (key, value, expires_at)
+               SELECT ?, ?, ? WHERE ${guardExists}`
+            )
+            .bind(operation.key, encode(operation.value), expiresAt, guardKey)
+        );
+      } else {
+        statements.push(
+          this.database
+            .prepare(
+              `INSERT INTO app_kv (key, value, expires_at)
+               SELECT ?, ?, ? WHERE ${guardExists}
+               ON CONFLICT(key) DO UPDATE SET
+                 value = excluded.value,
+                 expires_at = excluded.expires_at`
+            )
+            .bind(operation.key, encode(operation.value), expiresAt, guardKey)
+        );
+      }
+    }
+
+    for (const key of write.deletes ?? []) {
+      statements.push(
+        this.database
+          .prepare(`DELETE FROM app_kv WHERE key = ? AND ${guardExists}`)
+          .bind(key, guardKey),
+        this.database
+          .prepare(`DELETE FROM app_set_members WHERE set_key = ? AND ${guardExists}`)
+          .bind(key, guardKey)
+      );
+    }
+    for (const operation of write.setAdds ?? []) {
+      for (const member of operation.members) {
+        statements.push(
+          this.database
+            .prepare(
+              `INSERT INTO app_set_members (set_key, member)
+               SELECT ?, ? WHERE ${guardExists}
+               ON CONFLICT DO NOTHING`
+            )
+            .bind(operation.key, encode(member), guardKey)
+        );
+      }
+    }
+    for (const operation of write.setRemoves ?? []) {
+      for (const member of operation.members) {
+        statements.push(
+          this.database
+            .prepare(
+              `DELETE FROM app_set_members
+               WHERE set_key = ? AND member = ? AND ${guardExists}`
+            )
+            .bind(operation.key, encode(member), guardKey)
+        );
+      }
+    }
+    statements.push(
+      this.database.prepare("DELETE FROM app_kv WHERE key = ?").bind(guardKey)
+    );
+
+    try {
+      const results = await this.database.batch(statements);
+      return changed(results[0]) > 0;
+    } catch (error) {
+      if (error instanceof Error && /unique|constraint/i.test(error.message)) return false;
+      throw error;
+    }
+  }
+
+  async increment(key: string, seconds: number): Promise<number> {
+    const now = Date.now();
+    const expiresAt = now + seconds * 1000;
+    const row = await this.database
+      .prepare(
+        `INSERT INTO app_kv (key, value, expires_at) VALUES (?, '1', ?)
+         ON CONFLICT(key) DO UPDATE SET
+           value = CASE
+             WHEN app_kv.expires_at IS NOT NULL AND app_kv.expires_at > ?
+               THEN CAST(CAST(app_kv.value AS INTEGER) + 1 AS TEXT)
+             ELSE '1'
+           END,
+           expires_at = CASE
+             WHEN app_kv.expires_at IS NOT NULL AND app_kv.expires_at > ?
+               THEN app_kv.expires_at
+             ELSE excluded.expires_at
+           END
+         RETURNING value`
+      )
+      .bind(key, expiresAt, now, now)
+      .first<{ value: string }>();
+    return Number(row?.value ?? 1);
+  }
+
+  async purgeExpired(limit = 500): Promise<number> {
+    const result = await this.database
+      .prepare(
+        `DELETE FROM app_kv WHERE key IN (
+           SELECT key FROM app_kv
+           WHERE expires_at IS NOT NULL AND expires_at <= ?
+           LIMIT ?
+         )`
+      )
+      .bind(Date.now(), Math.max(1, Math.min(limit, 5000)))
+      .run();
+    return changed(result);
   }
 }

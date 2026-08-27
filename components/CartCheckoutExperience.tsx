@@ -101,7 +101,7 @@ export default function CartCheckoutExperience({
   if (!selected.length) {
     return (
       <div className="notice" style={{ padding: "48px 0" }}>
-        <h1>Your list is empty</h1>
+        <h2>Your list is empty</h2>
         <p>Add at least two kibbudim to make one payment.</p>
         <div className="actions">
           <Link href="/find" className="btn btn--fill">

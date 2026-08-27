@@ -5,8 +5,9 @@ import { getCatalog, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalo
 import { kibbudHe } from "@/lib/hebrew";
 import { saleWindowFor } from "@/lib/calendar/sales";
 import { getRepository } from "@/lib/storage/repository";
+import { campaignUrl } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Find a kibbud", description: "Search available Yomim Noraim kibbudim by minyan, day, type and price." };
+export const metadata: Metadata = { title: "Find a kibbud", description: "Search available Yomim Noraim kibbudim by minyan, day, type and price.", alternates: { canonical: campaignUrl("/find") } };
 export const dynamic = "force-dynamic";
 
 export default async function FindPage() {

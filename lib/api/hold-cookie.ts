@@ -11,6 +11,8 @@ export function encodeHoldCookie(value: HoldCookieValue): string {
 }
 
 export function decodeHoldCookie(raw: string | undefined): HoldCookieValue | null {
+  // This cookie is only a pointer. Every server action verifies its unguessable
+  // hold token against D1 before granting access or changing inventory.
   if (!raw) return null;
   try {
     const value = JSON.parse(Buffer.from(raw, "base64url").toString("utf8")) as unknown;

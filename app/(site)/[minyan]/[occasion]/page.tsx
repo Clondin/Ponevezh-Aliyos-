@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import KibbudCard from "@/components/KibbudCard";
 import PhotoBand from "@/components/PhotoBand";
 import { getMinyan, getOccasion, itemsFor, priceForKibbud } from "@/lib/catalog";
 import { availabilityFromStatuses } from "@/lib/availability";
 import { OCCASION_HE } from "@/lib/hebrew";
 import { getRepository } from "@/lib/storage/repository";
-import { isWaveOpen, waveOpensAt } from "@/lib/calendar/sales";
+import { saleWindowFor, waveOpensAt } from "@/lib/calendar/sales";
 import { minyanPhoto } from "@/lib/photos";
+import { campaignUrl } from "@/lib/seo";
+import { decodeHoldCookie, HOLD_COOKIE } from "@/lib/api/hold-cookie";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +23,12 @@ export async function generateMetadata({
   const { minyan, occasion } = await params;
   const m = getMinyan(minyan);
   const o = getOccasion(occasion);
-  return { title: m && o ? `${o.name} — ${m.name}` : "Kibbudim" };
+  return {
+    title: m && o ? `${o.name} — ${m.name}` : "Kibbudim",
+    ...(m && o
+      ? { alternates: { canonical: campaignUrl(`/${m.slug}/${o.slug}`) } }
+      : {}),
+  };
 }
 
 export default async function OccasionPage({
@@ -35,10 +43,31 @@ export default async function OccasionPage({
   if (o.minyanim && !o.minyanim.includes(m.slug)) notFound();
 
   const items = itemsFor(m.slug, o.slug);
-  const statusList = await getRepository().statuses(items.map((item) => item.id));
+  const repository = getRepository();
+  const statusList = await repository.statuses(items.map((item) => item.id));
   const statuses = new Map(statusList.map((status) => [status.id, status]));
-  const { fraction } = availabilityFromStatuses(items.length, statusList);
-  const opensAt = isWaveOpen(o.wave) ? undefined : waveOpensAt(o.wave);
+  const cookieStore = await cookies();
+  const holdCookie = decodeHoldCookie(cookieStore.get(HOLD_COOKIE)?.value);
+  const cookieIds = new Set(
+    holdCookie?.kibbudIds ?? (holdCookie ? [holdCookie.kibbudId] : [])
+  );
+  const ownedHolds = new Set<string>();
+  if (holdCookie) {
+    const candidates = items.filter((item) => cookieIds.has(item.id));
+    const checks = await Promise.allSettled(
+      candidates.map((item) => repository.holdOwnedBy(item.id, holdCookie.token))
+    );
+    checks.forEach((result, index) => {
+      if (result.status === "fulfilled") ownedHolds.add(candidates[index].id);
+    });
+  }
+  const saleWindow = saleWindowFor(o);
+  const { fraction } = availabilityFromStatuses(
+    items.length,
+    statusList,
+    saleWindow === "open"
+  );
+  const opensAt = saleWindow === "upcoming" ? waveOpensAt(o.wave) : undefined;
 
   return (
     <>
@@ -82,12 +111,17 @@ export default async function OccasionPage({
             })} ET.
           </div>
         ) : null}
+        {saleWindow === "closed" ? (
+          <div className="campaign-notice" role="status">
+            Sponsorship for this tefillah is closed.
+          </div>
+        ) : null}
         {items.length === 0 ? (
           <div className="notice" style={{ padding: "40px 0 60px" }}>
             <div className="notice__glyph" aria-hidden="true">
               ✳
             </div>
-            <h1>No kibbudim listed</h1>
+            <h2>No kibbudim listed</h2>
             <p>Please check back or contact the office.</p>
             <div className="actions">
               <Link href={`/${m.slug}`} className="btn btn--fill">
@@ -108,6 +142,8 @@ export default async function OccasionPage({
                   price={priceForKibbud(item)}
                   status={statuses.get(item.id) ?? { id: item.id, state: "available" }}
                   opensAt={opensAt}
+                  closed={saleWindow === "closed"}
+                  ownedHold={ownedHolds.has(item.id)}
                 />
               ))}
             </div>

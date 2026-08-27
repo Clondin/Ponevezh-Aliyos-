@@ -1,8 +1,10 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE } from "@/lib/api/admin-session";
+import { ADMIN_COOKIE, revokeAdminSession } from "@/lib/api/admin-session";
 import { withBasePath } from "@/lib/site-paths";
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  await revokeAdminSession(request.cookies.get(ADMIN_COOKIE)?.value);
   const response = NextResponse.redirect(new URL(withBasePath("/admin/login"), request.url), 303);
   response.cookies.set(ADMIN_COOKIE, "", {
     httpOnly: true,

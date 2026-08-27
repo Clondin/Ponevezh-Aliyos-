@@ -22,7 +22,6 @@ export default function AdminLayout({
           <Link href="/admin/pledges">Payments</Link>
           <Link href="/admin/sold">Summary</Link>
           <Link href="/admin/activity">History</Link>
-          <Link href="/admin/email">Email</Link>
           <span style={{ marginLeft: "auto" }}>
             <Link href="/">&larr; Donor site</Link>
           </span>

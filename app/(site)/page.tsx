@@ -1,10 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import SectionHeading from "@/components/SectionHeading";
 import { getMinyanim, getOccasions } from "@/lib/catalog";
-import { minyanAvailability, minyanFromPrice } from "@/lib/availability";
+import { availabilitySnapshot } from "@/lib/availability";
 import { HEADING_HE, MINYAN_HE, OCCASION_HE } from "@/lib/hebrew";
 import { shortDate, usd } from "@/lib/format";
 import { withBasePath } from "@/lib/site-paths";
+import { campaignUrl } from "@/lib/seo";
+
+export const metadata: Metadata = { alternates: { canonical: campaignUrl() } };
 
 export const dynamic = "force-dynamic";
 
@@ -29,14 +33,7 @@ const STEPS = [
 export default async function HomePage() {
   const minyanim = getMinyanim();
   const occasions = getOccasions();
-  const availability = new Map(
-    await Promise.all(
-      minyanim.map(async (minyan) => [
-        minyan.slug,
-        await minyanAvailability(minyan.slug),
-      ] as const)
-    )
-  );
+  const availability = await availabilitySnapshot();
 
   return (
     <>
@@ -81,7 +78,8 @@ export default async function HomePage() {
         <SectionHeading he={HEADING_HE.chooseMinyan}>Choose a minyan</SectionHeading>
         <div className="minyan-grid">
           {minyanim.map((m) => {
-            const fraction = availability.get(m.slug)?.fraction ?? "00 / 00";
+            const fraction = availability.minyan.get(m.slug)?.fraction ?? "00 / 00";
+            const fromPrice = availability.minyanFromPrice.get(m.slug) ?? 0;
             return (
               <Link key={m.slug} href={`/${m.slug}`} className="minyan-card">
                 <div>
@@ -92,7 +90,7 @@ export default async function HomePage() {
                 </div>
                 <div className="minyan-card__strip">
                   <span className="minyan-card__from">
-                    From {usd(minyanFromPrice(m.slug))}
+                    {fromPrice ? `From ${usd(fromPrice)}` : "Closed"}
                   </span>
                   <span className="micro micro--bronze">{fraction} available</span>
                 </div>
@@ -120,7 +118,6 @@ export default async function HomePage() {
             <figure className="yeshiva-story__image yeshiva-story__image--aron">
               <img
                 src={withBasePath("/images/yeshiva/aron-700.webp")}
-                sizes="(max-width: 900px) 30vw, 18vw"
                 width={700}
                 height={1400}
                 alt="A talmid explaining a sugya before the carved golden aron kodesh of Ponevez"

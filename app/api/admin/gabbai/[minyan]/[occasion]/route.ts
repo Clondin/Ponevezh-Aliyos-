@@ -23,11 +23,13 @@ export async function GET(
       throw new ApiError("not_found", "Minyan or occasion not found.", 404);
     }
     const repository = getRepository();
-    const [statuses, orders, pledges] = await Promise.all([
+    const [statuses, allOrders, pledges, activeCheckouts] = await Promise.all([
       repository.statuses(items.map((item) => item.id)),
       repository.allOrders(),
       repository.pendingPledges(),
+      repository.activeCheckouts(),
     ]);
+    const orders = allOrders.filter((order) => order.status !== "refunded");
     const statusById = new Map(statuses.map((status) => [status.id, status]));
     const orderByItem = new Map(orders.map((order) => [order.kibbudId, order]));
     const pledgeByItem = new Map(
@@ -37,9 +39,18 @@ export async function GET(
         )
       )
     );
+    const checkoutByItem = new Map(
+      activeCheckouts.flatMap((checkout) =>
+        (checkout.kibbudIds?.length ? checkout.kibbudIds : [checkout.kibbudId]).map(
+          (kibbudId) => [kibbudId, checkout] as const
+        )
+      )
+    );
     const rows = items.map((item) => {
       const state = statusById.get(item.id)?.state ?? "available";
-      const owner = state === "sold" ? orderByItem.get(item.id) : pledgeByItem.get(item.id);
+      const owner = state === "sold"
+        ? orderByItem.get(item.id)
+        : pledgeByItem.get(item.id) ?? checkoutByItem.get(item.id);
       return {
         id: item.id,
         name: item.name,

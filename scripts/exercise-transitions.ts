@@ -3,6 +3,8 @@ import type { StoredPledge } from "../lib/storage/types";
 import { ApiError } from "../lib/api/errors";
 import { assertBeforeCutoff, requireKibbud } from "../lib/api/validation";
 import { MemoryStateStore } from "../lib/storage/memory";
+import { keys } from "../lib/storage/keys";
+import type { StoredOrder } from "../lib/storage/types";
 import {
   AlreadyTakenError,
   KibbudRepository,
@@ -32,11 +34,73 @@ await repository.saveCheckout({
 await repository.markCheckoutSold("pay_test_card", "card");
 assert.deepEqual(await repository.statuses([cardItem]), [{ id: cardItem, state: "sold" }]);
 
+// A full reversal reopens inventory but retains append-only order history.
+await repository.reverseCheckout("pay_test_card", "transition test refund");
+assert.deepEqual(await repository.statuses([cardItem]), []);
+const refundedOrder = await repository.order("ord_pay_test_card");
+assert.equal(refundedOrder?.status, "refunded");
+assert.equal(refundedOrder?.refundReason, "transition test refund");
+
+// Multi-item settlement is all-or-nothing when one sold key conflicts.
+const cartItems = ["test/cart/one", "test/cart/two"];
+for (const id of cartItems) await repository.acquireHold(id, "cart-token");
+await repository.saveCheckout({
+  paymentId: "pay_atomic_cart",
+  kibbudId: cartItems[0],
+  kibbudIds: cartItems,
+  amounts: { [cartItems[0]]: 100, [cartItems[1]]: 200 },
+  holdToken: "cart-token",
+  donorName: "Atomic Cart",
+  email: "atomic@example.com",
+  misheberachNames: [],
+  amount: 300,
+  preferredMethod: "card",
+  status: "created",
+  createdAt: new Date().toISOString(),
+});
+const conflictingOrder: StoredOrder = {
+  id: "ord_conflict",
+  kibbudId: cartItems[1],
+  donorName: "Other Donor",
+  email: "other@example.com",
+  misheberachNames: [],
+  amount: 200,
+  method: "card",
+  createdAt: new Date().toISOString(),
+};
+await store.set(keys.sold(cartItems[1]), conflictingOrder);
+await assert.rejects(
+  repository.markCheckoutGroupSold("pay_atomic_cart", "card"),
+  AlreadyTakenError
+);
+assert.equal(await repository.orderFor(cartItems[0]), null);
+assert.equal((await repository.checkout("pay_atomic_cart"))?.status, "processing");
+await repository.releaseCheckout("pay_atomic_cart");
+
 // available -> held -> expired -> available
 const expiringItem = "grodna/rh-1/kohen";
 await repository.acquireHold(expiringItem, "short-token", 1);
 await new Promise((resolve) => setTimeout(resolve, 1100));
 assert.deepEqual(await repository.statuses([expiringItem]), []);
+
+// A worker crash before the gateway responds cannot strand inventory indefinitely.
+const staleProcessingItem = "test/checkout/stale-processing";
+await repository.acquireHold(staleProcessingItem, "stale-processing-token");
+await repository.saveCheckout({
+  paymentId: "pay_stale_processing",
+  kibbudId: staleProcessingItem,
+  holdToken: "stale-processing-token",
+  donorName: "Interrupted Donor",
+  email: "interrupted@example.com",
+  misheberachNames: [],
+  amount: 100,
+  preferredMethod: "card",
+  status: "created",
+  createdAt: new Date().toISOString(),
+});
+assert.equal(await repository.releaseStaleProcessingCheckouts(0), 1);
+assert.deepEqual(await repository.statuses([staleProcessingItem]), []);
+assert.equal((await repository.checkout("pay_stale_processing"))?.status, "released");
 
 // double-hold rejection
 const doubleItem = "grodna/rh-1/levi";

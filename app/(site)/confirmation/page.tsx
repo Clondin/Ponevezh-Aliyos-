@@ -5,7 +5,6 @@ import { getCatalog, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalo
 import { kibbudHe } from "@/lib/hebrew";
 import { usd } from "@/lib/format";
 import { getRepository } from "@/lib/storage/repository";
-import { emailRecord } from "@/lib/notifications/email";
 import PhotoBand from "@/components/PhotoBand";
 import PrintButton from "@/components/PrintButton";
 
@@ -42,12 +41,11 @@ export default async function ConfirmationPage({
       ? orderCandidate
       : null;
   const accessValid = isWire ? Boolean(pledge) : Boolean(checkout);
-  const delivery = order
-    ? await emailRecord(`order-confirmation-${order.id}`)
-    : pledge
-      ? await emailRecord(`pledge-donor-${pledge.id}`)
-      : null;
-  const pending = checkout?.status === "created" || checkout?.status === "pending";
+  const pending =
+    checkout?.status === "created" ||
+    checkout?.status === "processing" ||
+    checkout?.status === "pending" ||
+    checkout?.status === "needs_review";
   const unsuccessful = checkout?.status === "released" || checkout?.status === "reversed";
   const donor = order?.donorName ?? checkout?.donorName ?? pledge?.donorName;
   const amount = order?.amount ?? checkout?.amount ?? pledge?.amount ??
@@ -104,22 +102,18 @@ export default async function ConfirmationPage({
         {!accessValid
           ? "This confirmation link is incomplete or has expired. No donor information is shown."
           : isWire
-          ? delivery?.status === "sent"
-            ? "The kibbud is held for you for 72 hours. Payment instructions were emailed to the address you provided."
-            : "The kibbud is held for 72 hours. We will email payment instructions shortly."
+          ? "This legacy reservation is awaiting office review."
           : unsuccessful
             ? "Your payment was not completed. The kibbud is available again."
             : pending
               ? "Your payment is being confirmed."
-              : delivery?.status === "sent"
-                ? "Your receipt was emailed. The names you entered will be read at the Mi Shebeirach."
-                : "Your sponsorship is confirmed. Your receipt will be emailed, and the names you entered will be read at the Mi Shebeirach."}
+              : "Your sponsorship is confirmed. Admire will email your official receipt, and the names you entered will be read at the Mi Shebeirach."}
       </p>
       <p className="confirm__note">
         {!accessValid
           ? "Return to the kibbudim list or contact the office."
           : isWire
-          ? "If payment does not arrive within 72 hours, the kibbud is released."
+          ? "Contact the office if this reservation should be confirmed or released."
           : pending
             ? "We will email your receipt after confirmation."
             : "No goods or services were provided in exchange for this contribution."}

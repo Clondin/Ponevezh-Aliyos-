@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { setStateStoreForTests } from "../lib/storage/client";
 import { MemoryStateStore } from "../lib/storage/memory";
 import { keys } from "../lib/storage/keys";
+import type { StoredOrder } from "../lib/storage/types";
 import { getRepository } from "../lib/storage/repository";
 import { banquestPublicConfiguration, setBanquestFetchForTests } from "../lib/banquest/client";
 import { setAdmireFetchForTests } from "../lib/admire/client";
@@ -15,9 +16,15 @@ import { POST as pledgePost } from "../app/api/pledge/route";
 import { POST as retiredAdmirePost } from "../app/api/admire/reservation/route";
 import { GET as stateGet } from "../app/api/state/[minyan]/[occasion]/route";
 import { POST as webhookPost } from "../app/api/webhook/banquest/route";
-import { POST as pledgeConfirmPost } from "../app/api/admin/pledge/[id]/confirm/route";
 import ConfirmationPage from "../app/(site)/confirmation/page";
 import { cardPaymentPayload } from "../lib/api/validation";
+import { reconcileBanquestTransactions } from "../lib/banquest/reconcile";
+import { enforceRateLimit } from "../lib/api/rate-limit";
+import {
+  adminSessionMatches,
+  createAdminSession,
+  revokeAdminSession,
+} from "../lib/api/admin-session";
 
 process.env.BANQUEST_WEBHOOK_SIGNATURE = "banquest-contract-signature";
 process.env.BANQUEST_SOURCE_KEY = "sandbox-source-key";
@@ -25,7 +32,6 @@ process.env.BANQUEST_PIN = "sandbox-pin";
 process.env.BANQUEST_TOKENIZATION_KEY = "pk_contract_tokenization_key";
 process.env.BANQUEST_ENV = "sandbox";
 process.env.BANQUEST_SANDBOX_AMOUNT_USD = "1";
-process.env.OFFICE_NOTIFY_EMAIL = "office@example.com";
 process.env.ADMIN_TOKEN = "test-admin-token";
 process.env.SITE_URL = "http://localhost:3110";
 process.env.WAVE_1_OPENS_AT = "2026-01-01T00:00:00-05:00";
@@ -43,6 +49,11 @@ assert.equal(retiredAdmireResponse.status, 410);
 
 const stateStore = new MemoryStateStore();
 setStateStoreForTests(stateStore);
+
+const revocableSession = await createAdminSession(process.env.ADMIN_TOKEN);
+assert.equal(await adminSessionMatches(revocableSession, process.env.ADMIN_TOKEN), true);
+await revokeAdminSession(revocableSession);
+assert.equal(await adminSessionMatches(revocableSession, process.env.ADMIN_TOKEN), false);
 
 assert.throws(
   () =>
@@ -132,9 +143,6 @@ const checkoutOrder = (await getRepository().allOrders()).find(
 );
 assert.ok(checkoutOrder?.assignmentAcceptedAt);
 assert.equal(checkoutOrder?.phone, "+1 212 555 0118");
-const queuedEmailIds = await stateStore.smembers<string[]>(keys.emailOutbox);
-assert.ok(queuedEmailIds.includes(`order-confirmation-${checkoutOrderId}`));
-assert.ok(queuedEmailIds.includes(`order-office-${checkoutOrderId}`));
 
 // A guessed item-only confirmation URL must never reveal its donor.
 const untrustedConfirmation = renderToStaticMarkup(
@@ -148,6 +156,55 @@ const trustedConfirmation = renderToStaticMarkup(
   })
 );
 assert.match(trustedConfirmation, /Checkout Donor/);
+setBanquestFetchForTests(undefined);
+
+// A post-capture inventory conflict triggers exactly one gateway reversal.
+const conflictItem = "grodna/rh-1/shlishi";
+const conflictHoldResponse = await holdPost(
+  jsonRequest("http://localhost:3110/api/hold", { kibbudId: conflictItem })
+);
+const conflictCookie = conflictHoldResponse.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+let reversalCalls = 0;
+setBanquestFetchForTests((async (input, init) => {
+  if (String(input).endsWith("/transactions/charge")) {
+    const conflictingOrder: StoredOrder = {
+      id: "ord_external_conflict",
+      kibbudId: conflictItem,
+      donorName: "Existing Donor",
+      email: "existing@example.com",
+      misheberachNames: [],
+      amount: 1,
+      method: "card",
+      createdAt: new Date().toISOString(),
+    };
+    await stateStore.set(keys.sold(conflictItem), conflictingOrder);
+    return Response.json({
+      status: "Approved",
+      reference_number: 887766,
+      transaction: { id: 887766 },
+    });
+  }
+  assert.match(String(input), /\/transactions\/reversal$/);
+  reversalCalls += 1;
+  assert.deepEqual(JSON.parse(String(init?.body)), { reference_number: 887766 });
+  return Response.json({ status: "Approved", reference_number: 887767 });
+}) as typeof fetch);
+const conflictResponse = await checkoutPost(
+  jsonRequest(
+    "http://localhost:3110/api/checkout",
+    {
+      kibbudId: conflictItem,
+      donorName: "Conflict Donor",
+      email: "conflict@example.com",
+      misheberachNames: [],
+      assignmentAccepted: true,
+      payment: { nonce: "conflictNonce123", expiryMonth: 12, expiryYear: 2030 },
+    },
+    { cookie: conflictCookie }
+  )
+);
+assert.equal(conflictResponse.status, 409);
+assert.equal(reversalCalls, 1);
 setBanquestFetchForTests(undefined);
 
 // Two simultaneous submits for one hold must result in exactly one gateway call.
@@ -284,6 +341,96 @@ assert.equal((await getRepository().ordersForPayment(cartCheckout.paymentId)).le
 assert.deepEqual(await getRepository().statuses(cartItems), cartItems.map((id) => ({ id, state: "sold" })));
 setBanquestFetchForTests(undefined);
 
+// A partial cart refund is flagged for review without reopening or deleting any item.
+const partialRefundPayload = JSON.stringify({
+  id: "evt_partial_cart_refund",
+  event: "transaction",
+  type: "succeeded",
+  subType: "refund",
+  data: {
+    transaction: {
+      amount_details: { amount: 0.5 },
+      custom_fields: { custom1: cartCheckout.paymentId },
+      status_details: { status: "settled" },
+    },
+  },
+});
+const partialRefundSignature = createHmac("sha256", process.env.BANQUEST_WEBHOOK_SIGNATURE)
+  .update(partialRefundPayload)
+  .digest("hex");
+const partialRefundResponse = await webhookPost(
+  new Request("http://localhost:3110/api/webhook/banquest", {
+    method: "POST",
+    headers: { "x-signature": partialRefundSignature },
+    body: partialRefundPayload,
+  })
+);
+assert.equal(partialRefundResponse.status, 200);
+assert.equal((await getRepository().checkout(cartCheckout.paymentId))?.status, "needs_review");
+assert.deepEqual(
+  await getRepository().statuses(cartItems),
+  cartItems.map((id) => ({ id, state: "sold" }))
+);
+
+// Reconciliation isolates a poison transaction and continues to the next payment.
+const reconcileItems = ["test/reconcile/poison", "test/reconcile/good"];
+for (const [index, id] of reconcileItems.entries()) {
+  await getRepository().acquireHold(id, `reconcile-token-${index}`);
+  await getRepository().saveCheckout({
+    paymentId: `pay_reconcile_${index}`,
+    kibbudId: id,
+    holdToken: `reconcile-token-${index}`,
+    donorName: `Reconcile ${index}`,
+    email: `reconcile-${index}@example.com`,
+    misheberachNames: [],
+    amount: 10,
+    preferredMethod: "card",
+    status: "created",
+    createdAt: new Date().toISOString(),
+  });
+}
+await stateStore.set(keys.sold(reconcileItems[0]), {
+  id: "ord_reconcile_conflict",
+  kibbudId: reconcileItems[0],
+  donorName: "Conflict",
+  email: "conflict@example.com",
+  misheberachNames: [],
+  amount: 10,
+  method: "card",
+  createdAt: new Date().toISOString(),
+} satisfies StoredOrder);
+setBanquestFetchForTests((async (input) => {
+  assert.match(String(input), /\/transactions\?/);
+  return Response.json(
+    reconcileItems.map((_, index) => ({
+      id: 9000 + index,
+      custom_fields: { custom1: `pay_reconcile_${index}` },
+      status_details: { status: "approved" },
+      amount_details: { amount: 10 },
+      card_details: { card_type: "Visa", last4: "1118" },
+    }))
+  );
+}) as typeof fetch);
+const reconciliation = await reconcileBanquestTransactions();
+assert.deepEqual(reconciliation, { checked: 2, updated: 1, failed: 1 });
+assert.deepEqual(await getRepository().statuses([reconcileItems[1]]), [
+  { id: reconcileItems[1], state: "sold" },
+]);
+setBanquestFetchForTests(undefined);
+
+// Concurrent requests cannot exceed an atomic rate-limit bucket.
+const limited = await Promise.allSettled(
+  Array.from({ length: 12 }, () =>
+    enforceRateLimit(
+      new Request("http://localhost", { headers: { "cf-connecting-ip": "203.0.113.10" } }),
+      "atomic-contract",
+      5,
+      60
+    )
+  )
+);
+assert.equal(limited.filter((result) => result.status === "fulfilled").length, 5);
+
 const stateResponse = await stateGet(
   new Request("http://localhost:3110/api/state/grodna/rh-1"),
   { params: Promise.resolve({ minyan: "grodna", occasion: "rh-1" }) }
@@ -309,29 +456,8 @@ assert.deepEqual(await doubleHoldResponse.json(), {
   },
 });
 
-const pledgeItem = "grodna/rh-1/shlishi";
-const pledgeResponse = await pledgePost(
-  jsonRequest("http://localhost:3110/api/pledge", {
-    kibbudId: pledgeItem,
-    donorName: "Pledge Donor",
-    email: "pledge@example.com",
-    phone: "+1 212 555 0100",
-    misheberachNames: ["Pledge Name"],
-    assignmentAccepted: true,
-  })
-);
-assert.equal(pledgeResponse.status, 200);
-const pledge = (await pledgeResponse.json()) as { pledgeId: string; expiresAt: string };
-assert.deepEqual(Object.keys(pledge).sort(), ["expiresAt", "pledgeId"]);
-const confirmResponse = await pledgeConfirmPost(
-  new Request(`http://localhost:3110/api/admin/pledge/${pledge.pledgeId}/confirm`, {
-    method: "POST",
-    headers: { "x-admin-token": "test-admin-token" },
-  }),
-  { params: Promise.resolve({ id: pledge.pledgeId }) }
-);
-assert.equal(confirmResponse.status, 200);
-assert.deepEqual(await confirmResponse.json(), { ok: true });
+const pledgeResponse = await pledgePost();
+assert.equal(pledgeResponse.status, 410);
 
 // A signature-verified card webhook fulfills a stored payment record.
 const webhookItem = "grodna/rh-1/maftir";

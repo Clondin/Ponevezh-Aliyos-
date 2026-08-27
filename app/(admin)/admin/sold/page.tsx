@@ -9,7 +9,9 @@ export const dynamic = "force-dynamic";
 export default async function SoldSummaryPage() {
   const minyanim = getMinyanim();
   const catalog = getCatalog();
-  const orders = await getRepository().allOrders();
+  const orders = (await getRepository().allOrders()).filter(
+    (order) => order.status !== "refunded"
+  );
   const soldIds = new Set(orders.map((o) => o.kibbudId));
 
   const rows = minyanim.map((m) => {

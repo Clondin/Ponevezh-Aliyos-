@@ -42,7 +42,7 @@ export default function PledgeQueue({
         <div className="notice__glyph" aria-hidden="true">
           ✳
         </div>
-        <h1>No payments to review</h1>
+        <h2>No legacy reservations</h2>
         <p>Everything is up to date.</p>
       </div>
     );

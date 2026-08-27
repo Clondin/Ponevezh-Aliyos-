@@ -11,7 +11,8 @@ function csvCell(value: string | number): string {
 export async function GET(request: Request): Promise<Response> {
   try {
     await requireAdmin(request);
-    const orders = await getRepository().allOrders();
+    const repository = getRepository();
+    const orders = await repository.allOrders();
     const rows = [
       [
         "id",
@@ -23,6 +24,7 @@ export async function GET(request: Request): Promise<Response> {
         "dedicationType",
         "dedicationName",
         "dedicationMessage",
+        "honoreeEmail",
         "publicRecognition",
         "recognitionName",
         "assignmentAcceptedAt",
@@ -32,8 +34,12 @@ export async function GET(request: Request): Promise<Response> {
         "paymentId",
         "gatewayTransactionId",
         "gatewayReference",
+        "status",
+        "refundedAt",
+        "refundReason",
+        "admireStatus",
       ],
-      ...orders.map((order) => [
+      ...(await Promise.all(orders.map(async (order) => [
         order.id,
         order.kibbudId,
         order.donorName,
@@ -43,6 +49,7 @@ export async function GET(request: Request): Promise<Response> {
         order.dedicationType ?? "",
         order.dedicationName ?? "",
         order.dedicationMessage ?? "",
+        order.honoreeEmail ?? "",
         order.publicRecognition ? "yes" : "no",
         order.recognitionName ?? "",
         order.assignmentAcceptedAt ?? "",
@@ -52,9 +59,13 @@ export async function GET(request: Request): Promise<Response> {
         order.paymentId ?? "",
         order.gatewayTransactionId ?? "",
         order.gatewayReference ?? "",
-      ]),
+        order.status ?? "paid",
+        order.refundedAt ?? "",
+        order.refundReason ?? "",
+        order.paymentId ? await repository.admireSyncStatus(order.paymentId) : "not_queued",
+      ]))),
     ];
-    const csv = `${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
+    const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
     return new Response(csv, {
       headers: {
         "content-type": "text/csv; charset=utf-8",

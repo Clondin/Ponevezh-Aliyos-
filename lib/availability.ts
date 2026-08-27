@@ -2,8 +2,9 @@
  * Availability counts — pure functions over the catalog and state layers.
  * The redesign leads with what is still available rather than what has sold.
  */
-import type { KibbudStatus, MinyanSlug, OccasionSlug } from "@/contracts/types";
-import { itemsFor, occasionsForMinyan, priceForKibbud } from "@/lib/catalog";
+import type { KibbudStatus, MinyanSlug } from "@/contracts/types";
+import { getCatalog, itemsFor, occasionsForMinyan, priceForKibbud } from "@/lib/catalog";
+import { saleWindowFor } from "@/lib/calendar/sales";
 import { getRepository } from "@/lib/storage/repository";
 
 export interface Availability {
@@ -21,51 +22,60 @@ function fraction(available: number, total: number): string {
 
 export function availabilityFromStatuses(
   total: number,
-  statuses: KibbudStatus[]
+  statuses: KibbudStatus[],
+  saleOpen = true
 ): Availability {
   const unavailable = new Set(statuses.map((status) => status.id));
-  const available = Math.max(0, total - unavailable.size);
+  const available = saleOpen ? Math.max(0, total - unavailable.size) : 0;
   return { available, total, fraction: fraction(available, total) };
 }
 
-export async function occasionAvailability(
-  minyan: MinyanSlug,
-  occasion: OccasionSlug
-): Promise<Availability> {
-  const items = itemsFor(minyan, occasion);
-  const statuses = await getRepository().statuses(items.map((item) => item.id));
-  return availabilityFromStatuses(items.length, statuses);
+export interface AvailabilitySnapshot {
+  minyan: Map<MinyanSlug, Availability>;
+  occasion: Map<string, Availability>;
+  minyanFromPrice: Map<MinyanSlug, number>;
+  occasionFromPrice: Map<string, number>;
 }
 
-/** Summed across every day that minyan offers. */
-export async function minyanAvailability(minyan: MinyanSlug): Promise<Availability> {
-  let available = 0;
-  let total = 0;
-  const results = await Promise.all(
-    occasionsForMinyan(minyan).map((occasion) =>
-      occasionAvailability(minyan, occasion.slug)
-    )
-  );
-  for (const a of results) {
-    available += a.available;
-    total += a.total;
+/** One state read for the entire catalog, then all counts are derived in memory. */
+export async function availabilitySnapshot(): Promise<AvailabilitySnapshot> {
+  const catalog = getCatalog();
+  const statuses = await getRepository().statuses(catalog.items.map((item) => item.id));
+  const unavailable = new Set(statuses.map((status) => status.id));
+  const minyan = new Map<MinyanSlug, Availability>();
+  const occasion = new Map<string, Availability>();
+  const minyanFromPrice = new Map<MinyanSlug, number>();
+  const occasionFromPrice = new Map<string, number>();
+
+  for (const m of catalog.minyanim) {
+    let minyanAvailable = 0;
+    let minyanTotal = 0;
+    const minyanPrices: number[] = [];
+    for (const o of occasionsForMinyan(m.slug)) {
+      const items = itemsFor(m.slug, o.slug);
+      const open = saleWindowFor(o) === "open";
+      const availableItems = open
+        ? items.filter((item) => !unavailable.has(item.id))
+        : [];
+      const key = `${m.slug}/${o.slug}`;
+      const count: Availability = {
+        available: availableItems.length,
+        total: items.length,
+        fraction: fraction(availableItems.length, items.length),
+      };
+      occasion.set(key, count);
+      minyanAvailable += count.available;
+      minyanTotal += count.total;
+      const prices = availableItems.map(priceForKibbud);
+      occasionFromPrice.set(key, prices.length ? Math.min(...prices) : 0);
+      minyanPrices.push(...prices);
+    }
+    minyan.set(m.slug, {
+      available: minyanAvailable,
+      total: minyanTotal,
+      fraction: fraction(minyanAvailable, minyanTotal),
+    });
+    minyanFromPrice.set(m.slug, minyanPrices.length ? Math.min(...minyanPrices) : 0);
   }
-  return { available, total, fraction: fraction(available, total) };
-}
-
-/** Lowest price among that day's items. */
-export function occasionFromPrice(
-  minyan: MinyanSlug,
-  occasion: OccasionSlug
-): number {
-  const prices = itemsFor(minyan, occasion).map(priceForKibbud);
-  return prices.length ? Math.min(...prices) : 0;
-}
-
-/** Lowest price across everything that minyan offers. */
-export function minyanFromPrice(minyan: MinyanSlug): number {
-  const prices = occasionsForMinyan(minyan).flatMap((o) =>
-    itemsFor(minyan, o.slug).map(priceForKibbud)
-  );
-  return prices.length ? Math.min(...prices) : 0;
+  return { minyan, occasion, minyanFromPrice, occasionFromPrice };
 }

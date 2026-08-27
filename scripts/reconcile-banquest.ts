@@ -1,13 +1,13 @@
 export {};
 
 const siteUrl = process.env.SITE_URL?.trim();
-const adminToken = process.env.ADMIN_TOKEN?.trim();
+const adminToken = process.env.ADMIN_API_TOKEN?.trim();
 
 if (!siteUrl || !adminToken) {
-  throw new Error("SITE_URL and ADMIN_TOKEN are required for reconciliation");
+  throw new Error("SITE_URL and ADMIN_API_TOKEN are required for reconciliation");
 }
 
-const response = await fetch(new URL("/api/admin/reconcile-banquest", siteUrl), {
+const response = await fetch(`${siteUrl.replace(/\/$/, "")}/api/admin/reconcile-banquest`, {
   method: "POST",
   headers: { "x-admin-token": adminToken },
 });

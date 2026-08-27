@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import EmailRetryButton from "@/components/EmailRetryButton";
 import { formatDateTime, usd } from "@/lib/format";
 
 export interface AdminOrderRow {
@@ -20,9 +19,9 @@ export interface AdminOrderRow {
   paymentId?: string;
   gatewayTransactionId?: string;
   gatewayReference?: string;
-  emailStatus: "sent" | "queued" | "missing";
-  receiptEmailId: string;
+  admireStatus: "synced" | "queued" | "failed" | "not_queued";
   assignmentAcceptedAt?: string;
+  status: "paid" | "refunded";
 }
 
 export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
@@ -36,8 +35,14 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
       return matchesMethod && (!needle || haystack.includes(needle));
     });
   }, [method, query, rows]);
-  const emailLabel = (status: AdminOrderRow["emailStatus"]) =>
-    status === "sent" ? "Sent" : status === "queued" ? "Waiting" : "Not sent";
+  const admireLabel = (status: AdminOrderRow["admireStatus"]) =>
+    status === "synced"
+      ? "Synced"
+      : status === "queued"
+        ? "Waiting"
+        : status === "failed"
+          ? "Retrying"
+          : "Not queued";
 
   return (
     <>
@@ -58,15 +63,15 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
       </div>
       <div className="table-wrap">
         <table className="table admin-orders-table">
-          <thead><tr><th>Order</th><th>Sponsorship</th><th>Donor</th><th>Payment</th><th>Receipt</th></tr></thead>
+          <thead><tr><th>Order</th><th>Sponsorship</th><th>Donor</th><th>Payment</th><th>Admire</th></tr></thead>
           <tbody>
             {filtered.map((row) => (
               <tr key={row.id}>
                 <td><strong>{row.id}</strong><div className="muted">{formatDateTime(row.createdAt)}</div></td>
                 <td><strong>{row.itemName}</strong><div className="muted">{row.occasionName} · {row.minyanName}</div>{row.dedication ? <div>{row.dedication}</div> : null}</td>
                 <td><strong>{row.donorName}</strong><div><a href={`mailto:${row.email}`}>{row.email}</a></div>{row.phone ? <div><a href={`tel:${row.phone}`}>{row.phone}</a></div> : null}<div className="muted">{row.assignmentAcceptedAt ? `Terms accepted ${formatDateTime(row.assignmentAcceptedAt)}` : "No acceptance date"}</div></td>
-                <td><strong>{usd(row.amount)}</strong><div className="muted">{row.method === "card" ? "Credit card" : "Office confirmed"}</div><div className="muted">Payment reference: {row.gatewayTransactionId ?? row.gatewayReference ?? "—"}</div></td>
-                <td><span className={`badge${row.emailStatus === "queued" ? " badge--pending" : ""}`}>{emailLabel(row.emailStatus)}</span>{row.emailStatus !== "sent" ? <div style={{ marginTop: 8 }}><EmailRetryButton id={row.receiptEmailId} /></div> : null}</td>
+                <td><strong>{usd(row.amount)}</strong>{row.status === "refunded" ? <div className="badge badge--pending">Refunded</div> : null}<div className="muted">{row.method === "card" ? "Credit card" : "Office confirmed"}</div><div className="muted">Payment reference: {row.gatewayTransactionId ?? row.gatewayReference ?? "—"}</div></td>
+                <td><span className={`badge${row.admireStatus !== "synced" ? " badge--pending" : ""}`}>{admireLabel(row.admireStatus)}</span></td>
               </tr>
             ))}
           </tbody>

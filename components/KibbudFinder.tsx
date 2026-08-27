@@ -60,7 +60,7 @@ export default function KibbudFinder({ items }: { items: FinderItem[] }) {
           return available ? <div className="finder-result" key={item.id}><Link className={`kibbud-card kibbud-card--${item.tier}`} href={item.href}>{body}</Link><BasketButton itemId={item.id} compact /></div> : <div className={`kibbud-card kibbud-card--${item.tier} kibbud-card--dim`} key={item.id}>{body}</div>;
         })}
       </div>
-      {!results.length ? <div className="notice" style={{ padding: "48px 0" }}><h1>No matching kibbudim</h1><p>Try removing a filter or increasing the price range.</p></div> : null}
+      {!results.length ? <div className="notice" style={{ padding: "48px 0" }}><h2>No matching kibbudim</h2><p>Try removing a filter or increasing the price range.</p></div> : null}
     </>
   );
 }

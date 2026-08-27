@@ -11,9 +11,13 @@ export default function ShareActions({ title, text }: { title: string; text: str
       await navigator.share({ title, text, url: shareUrl }).catch(() => undefined);
       return;
     }
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+    } catch {
+      window.prompt("Copy this link:", shareUrl);
+    }
   }
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${text} ${shareUrl}`)}`;
-  return <div className="share-actions no-print"><button type="button" className="btn btn--sm btn--outline-bronze" onClick={() => void share()} disabled={!shareUrl}>{copied ? "Link copied" : "Share"}</button><a className="btn btn--sm btn--outline-bronze" href={whatsapp} target="_blank" rel="noreferrer" aria-disabled={!shareUrl}>WhatsApp</a></div>;
+  return <div className="share-actions no-print"><button type="button" className="btn btn--sm btn--outline-bronze" onClick={() => void share()} disabled={!shareUrl}>{copied ? "Link copied" : "Share"}</button>{shareUrl ? <a className="btn btn--sm btn--outline-bronze" href={whatsapp} target="_blank" rel="noreferrer">WhatsApp</a> : <button type="button" className="btn btn--sm btn--outline-bronze" disabled>WhatsApp</button>}</div>;
 }

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import {
   ADMIN_COOKIE,
   ADMIN_SESSION_SECONDS,
-  adminSessionValue,
+  createAdminSession,
   passwordMatches,
 } from "@/lib/api/admin-session";
 import { enforceRateLimit } from "@/lib/api/rate-limit";
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const response = NextResponse.redirect(new URL(withBasePath("/admin"), request.url), 303);
-  response.cookies.set(ADMIN_COOKIE, await adminSessionValue(expected), {
+  response.cookies.set(ADMIN_COOKIE, await createAdminSession(expected), {
     httpOnly: true,
     secure: new URL(request.url).protocol === "https:",
     sameSite: "strict",

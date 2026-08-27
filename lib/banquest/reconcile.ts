@@ -1,5 +1,5 @@
 import { listBanquestTransactions } from "@/lib/banquest/transactions";
-import { sendOrderNotifications, sendReversalNotifications } from "@/lib/notifications/email";
+import { queueAndSyncCheckoutToAdmire } from "@/lib/admire/client";
 import { getRepository } from "@/lib/storage/repository";
 
 const FAILED = new Set([
@@ -15,6 +15,7 @@ const FAILED = new Set([
 export interface ReconciliationResult {
   checked: number;
   updated: number;
+  failed: number;
 }
 
 export async function reconcileBanquestTransactions(): Promise<ReconciliationResult> {
@@ -22,50 +23,72 @@ export async function reconcileBanquestTransactions(): Promise<ReconciliationRes
   let offset = 0;
   let checked = 0;
   let updated = 0;
+  let failed = 0;
+  const pageSize = 100;
+  const maxPages = 3;
 
-  for (;;) {
-    const transactions = await listBanquestTransactions(offset, 100);
+  for (let page = 0; page < maxPages; page += 1) {
+    const transactions = await listBanquestTransactions(offset, pageSize);
     for (const transaction of transactions) {
-      const paymentId =
-        transaction.custom_fields?.custom1 ?? transaction.transaction_details?.key;
-      if (!paymentId || !(await repository.checkout(paymentId))) continue;
-      checked += 1;
-      const checkout = await repository.checkout(paymentId);
-      if (checkout && transaction.id != null) {
-        await repository.updateCheckoutGateway(paymentId, {
-          gatewayTransactionId: String(transaction.id),
-        });
-      }
-      const status = transaction.status_details?.status;
-      if (status && FAILED.has(status)) {
-        await repository.reverseCheckout(paymentId);
-        if (checkout) {
-          await sendReversalNotifications(checkout).catch((error) => console.error(error));
+      try {
+        const paymentId =
+          transaction.custom_fields?.custom1 ?? transaction.transaction_details?.key;
+        if (!paymentId) continue;
+        const checkout = await repository.checkout(paymentId);
+        if (!checkout) continue;
+        checked += 1;
+        if (transaction.id != null) {
+          await repository.updateCheckoutGateway(paymentId, {
+            gatewayTransactionId: String(transaction.id),
+            cardType:
+              typeof transaction.card_details?.card_type === "string"
+                ? transaction.card_details.card_type
+                : undefined,
+            cardLastFour:
+              typeof transaction.card_details?.last4 === "string"
+                ? transaction.card_details.last4
+                : undefined,
+          });
         }
-        updated += 1;
-      } else if (status === "settled" || status === "captured" || status === "approved") {
-        if (
-          checkout &&
-          transaction.amount_details?.amount != null &&
-          transaction.amount_details.amount + 0.005 < checkout.amount
-        ) {
-          continue;
+        const status = transaction.status_details?.status;
+        if (status && FAILED.has(status)) {
+          if (checkout.status !== "reversed" && checkout.status !== "released") {
+            await repository.reverseCheckout(paymentId, `Banquest reconciliation: ${status}`);
+            updated += 1;
+          }
+        } else if (status === "settled" || status === "captured" || status === "approved") {
+          if (
+            transaction.amount_details?.amount != null &&
+            transaction.amount_details.amount + 0.005 < checkout.amount
+          ) {
+            await repository.markCheckoutNeedsReview(
+              paymentId,
+              `Reconciliation found $${transaction.amount_details.amount.toFixed(2)} for an expected $${checkout.amount.toFixed(2)}.`
+            );
+            updated += 1;
+            continue;
+          }
+          if (checkout.status !== "sold") {
+            await repository.markCheckoutGroupSold(paymentId, "card");
+            updated += 1;
+          }
+          await queueAndSyncCheckoutToAdmire(paymentId).catch((error) =>
+            console.error(error)
+          );
         }
-        const orders = await repository.markCheckoutGroupSold(paymentId, "card");
-        await Promise.all(
-          orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
-        );
-        updated += 1;
+      } catch (error) {
+        failed += 1;
+        console.error("Banquest reconciliation skipped one transaction:", error);
       }
     }
-    if (transactions.length < 100) break;
+    if (transactions.length < pageSize) break;
     offset += transactions.length;
   }
 
   await repository.appendAudit({
     action: "reconciliation_run",
-    detail: `${checked} payments checked; ${updated} updated`,
+    detail: `${checked} payments checked; ${updated} updated; ${failed} failed`,
   });
 
-  return { checked, updated };
+  return { checked, updated, failed };
 }

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import PhotoBand from "@/components/PhotoBand";
 import { getMinyan, occasionsForMinyan } from "@/lib/catalog";
-import { occasionAvailability, occasionFromPrice } from "@/lib/availability";
+import { availabilitySnapshot } from "@/lib/availability";
 import {
   HEADING_HE,
   MINYAN_HE,
@@ -13,6 +13,7 @@ import {
 } from "@/lib/hebrew";
 import { shortDate, usd } from "@/lib/format";
 import { minyanPhoto } from "@/lib/photos";
+import { campaignUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { minyan } = await params;
   const m = getMinyan(minyan);
-  return { title: m ? `${m.name} Minyan` : "Minyan" };
+  return {
+    title: m ? `${m.name} Minyan` : "Minyan",
+    ...(m ? { alternates: { canonical: campaignUrl(`/${m.slug}`) } } : {}),
+  };
 }
 
 export default async function MinyanPage({
@@ -36,14 +40,7 @@ export default async function MinyanPage({
   if (!m) notFound();
 
   const occasions = occasionsForMinyan(m.slug);
-  const availability = new Map(
-    await Promise.all(
-      occasions.map(async (occasion) => [
-        occasion.slug,
-        await occasionAvailability(m.slug, occasion.slug),
-      ] as const)
-    )
-  );
+  const availability = await availabilitySnapshot();
 
   return (
     <>
@@ -78,7 +75,9 @@ export default async function MinyanPage({
 
         <div className="day-list">
           {occasions.map((o) => {
-            const fraction = availability.get(o.slug)?.fraction ?? "00 / 00";
+            const key = `${m.slug}/${o.slug}`;
+            const fraction = availability.occasion.get(key)?.fraction ?? "00 / 00";
+            const fromPrice = availability.occasionFromPrice.get(key) ?? 0;
             return (
               <Link key={o.slug} href={`/${m.slug}/${o.slug}`} className="day-row">
                 <span className="day-row__date">
@@ -98,7 +97,7 @@ export default async function MinyanPage({
                   <span className="day-row__avail">Available</span>
                 </span>
                 <span className="day-row__from">
-                  {usd(occasionFromPrice(m.slug, o.slug))}
+                  {fromPrice ? usd(fromPrice) : "Closed"}
                 </span>
                 <span className="day-row__chevron" aria-hidden="true">
                   &rarr;

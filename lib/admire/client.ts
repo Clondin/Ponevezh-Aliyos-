@@ -1,5 +1,4 @@
 import { currentKibbud, currentMinyan, currentOccasion } from "@/lib/calendar/current";
-import type { BanquestWebhookEvent } from "@/lib/banquest/webhook";
 import { getRepository } from "@/lib/storage/repository";
 import type { CheckoutRecord } from "@/lib/storage/types";
 
@@ -115,8 +114,7 @@ export async function testAdmireAuthentication(): Promise<void> {
  * The local completion marker prevents a direct webhook replay from importing it twice.
  */
 export async function syncBanquestCheckoutToAdmire(
-  checkout: CheckoutRecord,
-  event: BanquestWebhookEvent
+  checkout: CheckoutRecord
 ): Promise<AdmireSyncResult> {
   if (!admireSyncConfigured()) return "not_configured";
 
@@ -140,13 +138,13 @@ export async function syncBanquestCheckoutToAdmire(
           amount: checkout.amount,
           paymentMethod: { name: "Credit Card", id: null },
           creditCard: {
-            cardType: admireCardType(event.cardType),
-            lastFourDigits: event.cardLastFour || null,
+            cardType: admireCardType(checkout.cardType),
+            lastFourDigits: checkout.cardLastFour || null,
             token: null,
             tokenGateway: "Banquest",
           },
           authCode: null,
-          refNumber: checkout.gatewayReference || event.referenceNumber || null,
+          refNumber: checkout.gatewayReference || null,
           processorBatchID: null,
           note: paymentNote(checkout),
         },
@@ -160,6 +158,63 @@ export async function syncBanquestCheckoutToAdmire(
     await repository.failAdmireSync(checkout.paymentId);
     throw error;
   }
+}
+
+export interface AdmireDrainResult {
+  checked: number;
+  synced: number;
+  failed: number;
+}
+
+/**
+ * Persists the CRM handoff before attempting it. A failed request remains in D1
+ * for the scheduled maintenance worker to retry with exponential backoff.
+ */
+export async function queueAndSyncCheckoutToAdmire(paymentId: string): Promise<AdmireSyncResult> {
+  const repository = getRepository();
+  if (!admireSyncConfigured()) return "not_configured";
+  const queued = await repository.queueAdmireSync(paymentId);
+  if (queued === "done") return "already_synced";
+  const checkout = await repository.checkout(paymentId);
+  if (!checkout || checkout.status !== "sold") {
+    await repository.recordAdmireSyncFailure(
+      paymentId,
+      new Error("The paid checkout is not ready for Admire sync.")
+    );
+    return "not_configured";
+  }
+  try {
+    return await syncBanquestCheckoutToAdmire(checkout);
+  } catch (error) {
+    await repository.recordAdmireSyncFailure(paymentId, error);
+    throw error;
+  }
+}
+
+export async function drainAdmireSyncQueue(limit = 25): Promise<AdmireDrainResult> {
+  const repository = getRepository();
+  if (!admireSyncConfigured()) return { checked: 0, synced: 0, failed: 0 };
+  const jobs = await repository.admireSyncJobs(limit);
+  const result: AdmireDrainResult = { checked: jobs.length, synced: 0, failed: 0 };
+  for (const job of jobs) {
+    const checkout = await repository.checkout(job.paymentId);
+    if (!checkout || checkout.status !== "sold") {
+      await repository.recordAdmireSyncFailure(
+        job.paymentId,
+        new Error("The checkout is missing or is not in a paid state.")
+      );
+      result.failed += 1;
+      continue;
+    }
+    try {
+      const synced = await syncBanquestCheckoutToAdmire(checkout);
+      if (synced === "synced" || synced === "already_synced") result.synced += 1;
+    } catch (error) {
+      await repository.recordAdmireSyncFailure(job.paymentId, error);
+      result.failed += 1;
+    }
+  }
+  return result;
 }
 
 /** Test-only transport injection. Production always uses the platform fetch. */

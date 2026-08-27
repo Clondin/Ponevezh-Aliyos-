@@ -22,11 +22,3 @@ export function formatSecs(s: number): string {
   const r = s % 60;
   return `${m}:${String(r).padStart(2, "0")}`;
 }
-
-/** Inline countdown for a held card in the grid: "Held — 9:42". */
-export default function Countdown({ expiresAt }: { expiresAt: string }) {
-  const secs = useCountdown(expiresAt);
-  if (secs === null) return <>Held</>;
-  if (secs <= 0) return <>Hold expiring&hellip;</>;
-  return <>Held &mdash; {formatSecs(secs)}</>;
-}

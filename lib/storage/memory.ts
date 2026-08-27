@@ -1,4 +1,4 @@
-import type { SetOptions, StateStore } from "@/lib/storage/types";
+import type { AtomicWrite, SetOptions, StateStore } from "@/lib/storage/types";
 
 type Entry = { value: unknown; expiresAt?: number };
 
@@ -35,7 +35,7 @@ export class MemoryStateStore implements StateStore {
     if (options.xx && !existing) return null;
     this.values.set(key, {
       value: structuredClone(value),
-      expiresAt: options.ex ? Date.now() + options.ex * 1000 : undefined,
+      expiresAt: options.ex == null ? undefined : Date.now() + options.ex * 1000,
     });
     return "OK";
   }
@@ -74,5 +74,68 @@ export class MemoryStateStore implements StateStore {
 
   async smembers<T extends unknown[] = string[]>(key: string): Promise<T> {
     return Array.from(this.sets.get(key) ?? []) as T;
+  }
+
+  async atomic(write: AtomicWrite): Promise<boolean> {
+    for (const condition of write.conditions ?? []) {
+      const entry = this.entry(condition.key);
+      if (condition.exists === true && !entry) return false;
+      if (condition.exists === false && entry) return false;
+      if (
+        Object.prototype.hasOwnProperty.call(condition, "equals") &&
+        (!entry || JSON.stringify(entry.value) !== JSON.stringify(condition.equals))
+      ) {
+        return false;
+      }
+    }
+    for (const operation of write.sets ?? []) {
+      if (operation.nx && this.entry(operation.key)) return false;
+    }
+
+    const now = Date.now();
+    for (const operation of write.sets ?? []) {
+      this.values.set(operation.key, {
+        value: structuredClone(operation.value),
+        expiresAt: operation.ex == null ? undefined : now + operation.ex * 1000,
+      });
+    }
+    for (const key of write.deletes ?? []) {
+      this.values.delete(key);
+      this.sets.delete(key);
+    }
+    for (const operation of write.setAdds ?? []) {
+      const set = this.sets.get(operation.key) ?? new Set<unknown>();
+      for (const member of operation.members) set.add(structuredClone(member));
+      this.sets.set(operation.key, set);
+    }
+    for (const operation of write.setRemoves ?? []) {
+      const set = this.sets.get(operation.key);
+      if (!set) continue;
+      for (const member of operation.members) set.delete(member);
+    }
+    return true;
+  }
+
+  async increment(key: string, seconds: number): Promise<number> {
+    const current = this.entry(key);
+    const next = typeof current?.value === "number" ? current.value + 1 : 1;
+    this.values.set(key, {
+      value: next,
+      expiresAt: Date.now() + seconds * 1000,
+    });
+    return next;
+  }
+
+  async purgeExpired(limit = 500): Promise<number> {
+    const now = Date.now();
+    let removed = 0;
+    for (const [key, entry] of this.values) {
+      if (removed >= limit) break;
+      if (entry.expiresAt != null && entry.expiresAt <= now) {
+        this.values.delete(key);
+        removed += 1;
+      }
+    }
+    return removed;
   }
 }

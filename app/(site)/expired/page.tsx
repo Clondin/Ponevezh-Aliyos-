@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Notice from "@/components/Notice";
 import { getCatalog } from "@/lib/catalog";
 
-export const metadata: Metadata = { title: "Hold expired" };
+export const metadata: Metadata = { title: "Hold expired", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function ExpiredPage({

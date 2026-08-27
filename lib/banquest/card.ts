@@ -1,15 +1,16 @@
 import { randomUUID } from "node:crypto";
 import type { Kibbud } from "@/contracts/types";
 import type { CardPaymentPayload, CartPaymentPayload } from "@/lib/api/validation";
+import { queueAndSyncCheckoutToAdmire } from "@/lib/admire/client";
 import {
   banquestEnvironment,
   banquestRequest,
   BanquestApiError,
   BanquestConfigurationError,
 } from "@/lib/banquest/client";
-import { sendOrderNotifications } from "@/lib/notifications/email";
+import { reverseBanquestTransaction } from "@/lib/banquest/reversal";
 import { getRepository } from "@/lib/storage/repository";
-import { CheckoutInProgressError } from "@/lib/storage/repository";
+import { AlreadyTakenError, CheckoutInProgressError } from "@/lib/storage/repository";
 import type { CheckoutRecord } from "@/lib/storage/types";
 
 interface CardChargeResponse {
@@ -54,8 +55,12 @@ export async function chargeBanquestCard(
   const existing = await repository.checkoutForHold(holdToken);
   if (existing) {
     if (existing.status === "sold") return { paymentId: existing.paymentId, status: "sold" };
-    if (existing.status === "created" || existing.status === "pending") {
-      if (existing.status === "created") await repository.markCheckoutPending(existing.paymentId);
+    if (
+      existing.status === "created" ||
+      existing.status === "processing" ||
+      existing.status === "pending" ||
+      existing.status === "needs_review"
+    ) {
       return { paymentId: existing.paymentId, status: "pending" };
     }
   }
@@ -149,10 +154,35 @@ export async function chargeBanquestCard(
     });
 
     if (response.status === "Approved") {
-      const orders = await repository.markCheckoutGroupSold(paymentId, "card");
-      await Promise.all(
-        orders.map((order) => sendOrderNotifications(order).catch((error) => console.error(error)))
-      );
+      try {
+        await repository.markCheckoutGroupSold(paymentId, "card");
+      } catch (error) {
+        if (!(error instanceof AlreadyTakenError)) throw error;
+        const reference = response.reference_number?.toString();
+        if (reference) {
+          try {
+            await reverseBanquestTransaction(reference);
+            await repository.reverseCheckout(
+              paymentId,
+              "Automatically reversed because inventory settlement failed"
+            );
+          } catch (reversalError) {
+            await repository.markCheckoutNeedsReview(
+              paymentId,
+              `Captured payment could not be settled or reversed: ${
+                reversalError instanceof Error ? reversalError.message : "unknown reversal error"
+              }`
+            );
+          }
+        } else {
+          await repository.markCheckoutNeedsReview(
+            paymentId,
+            "Captured payment could not be settled and Banquest returned no reversal reference."
+          );
+        }
+        throw error;
+      }
+      await queueAndSyncCheckoutToAdmire(paymentId).catch((error) => console.error(error));
       return { paymentId, status: "sold" };
     }
     if (response.status === "Submitted") {
@@ -160,13 +190,31 @@ export async function chargeBanquestCard(
       return { paymentId, status: "pending" };
     }
     if (response.status === "Partially Approved") {
-      await repository.markCheckoutPending(paymentId);
+      const reference = response.reference_number?.toString();
+      if (reference) {
+        try {
+          await reverseBanquestTransaction(reference);
+          await repository.reverseCheckout(paymentId, "Automatically reversed partial approval");
+        } catch (error) {
+          await repository.markCheckoutNeedsReview(
+            paymentId,
+            `Partial approval requires manual reversal: ${
+              error instanceof Error ? error.message : "unknown reversal error"
+            }`
+          );
+        }
+      } else {
+        await repository.markCheckoutNeedsReview(
+          paymentId,
+          "Partial approval returned without a Banquest reference."
+        );
+      }
       return { paymentId, status: "pending" };
     }
 
     await repository.releaseCheckout(paymentId);
     throw new BanquestDeclinedError(
-      response.error_message || "The card was not approved. Please try another card."
+      "The card was not approved. Please try another card."
     );
   } finally {
     await repository.finishCheckoutAttempt(holdToken);

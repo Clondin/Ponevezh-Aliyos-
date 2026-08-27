@@ -33,7 +33,7 @@ export default function SiteFooter() {
           <div>
             <a href="mailto:office@ponevez.com">office@ponevez.com</a>
             <br />
-            <a href="tel:+12126759260">+1 (212) 675&ndash;9260</a>
+            <a href="tel:+12126759260">+1 (212) 675-9260</a>
           </div>
           <Link href="/find" className="site-footer__cta">
             Sponsor a kibbud

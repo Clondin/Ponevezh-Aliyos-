@@ -29,7 +29,13 @@ export async function POST(request: Request): Promise<Response> {
     const item = requireKibbud(payload.kibbudId);
     assertSaleOpen(item);
     const holdCookie = holdCookieFromRequest(request);
-    if (!holdCookie || holdCookie.kibbudId !== item.id) throw new HoldExpiredError();
+    if (
+      !holdCookie ||
+      holdCookie.kibbudId !== item.id ||
+      Boolean(holdCookie.kibbudIds?.length)
+    ) {
+      throw new HoldExpiredError();
+    }
     await getRepository().checkoutHold(item.id, holdCookie.token);
     const payment = await chargeBanquestCard(
       item,

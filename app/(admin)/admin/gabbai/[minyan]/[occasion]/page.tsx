@@ -32,17 +32,26 @@ export default async function GabbaiSheet({
 
   const items = itemsFor(m.slug, o.slug);
   const repository = getRepository();
-  const [statusList, orders, pledges] = await Promise.all([
+  const [statusList, allOrders, pledges, activeCheckouts] = await Promise.all([
     repository.statuses(items.map((item) => item.id)),
     repository.allOrders(),
     repository.pendingPledges(),
+    repository.activeCheckouts(),
   ]);
+  const orders = allOrders.filter((order) => order.status !== "refunded");
   const statuses = new Map(statusList.map((status) => [status.id, status]));
   const ordersByItem = new Map(orders.map((order) => [order.kibbudId, order]));
   const pledgesByItem = new Map(
     pledges.flatMap((pledge) =>
       (pledge.kibbudIds?.length ? pledge.kibbudIds : [pledge.kibbudId]).map(
         (kibbudId) => [kibbudId, pledge] as const
+      )
+    )
+  );
+  const checkoutsByItem = new Map(
+    activeCheckouts.flatMap((checkout) =>
+      (checkout.kibbudIds?.length ? checkout.kibbudIds : [checkout.kibbudId]).map(
+        (kibbudId) => [kibbudId, checkout] as const
       )
     )
   );
@@ -86,6 +95,7 @@ export default async function GabbaiSheet({
                 const st = statuses.get(item.id)?.state ?? "available";
                 const order = st === "sold" ? ordersByItem.get(item.id) : undefined;
                 const pledge = st === "pending" ? pledgesByItem.get(item.id) : undefined;
+                const checkout = st === "pending" ? checkoutsByItem.get(item.id) : undefined;
                 const unsold = st !== "sold" && st !== "pending";
                 return (
                   <tr key={item.id} className={unsold ? "row--muted" : undefined}>
@@ -101,7 +111,7 @@ export default async function GabbaiSheet({
                       <span style={{ fontWeight: 600 }}>{item.name}</span>
                     </td>
                     <td>
-                      {order?.donorName ??
+                      {order?.donorName ?? checkout?.donorName ??
                         (pledge ? (
                           <>
                             {pledge.donorName}{" "}
@@ -112,7 +122,7 @@ export default async function GabbaiSheet({
                         ))}
                     </td>
                     <td className="rtl" lang="he">
-                      {(order?.misheberachNames ?? pledge?.misheberachNames)?.join(" וכן ") ?? ""}
+                      {(order?.misheberachNames ?? checkout?.misheberachNames ?? pledge?.misheberachNames)?.join(" וכן ") ?? ""}
                     </td>
                   </tr>
                 );
