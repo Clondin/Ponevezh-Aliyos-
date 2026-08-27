@@ -1256,20 +1256,125 @@ a.kibbud-card--very-special:hover {
   outline-offset: 1px;
 }
 
-.card-fields {
-  min-height: 178px;
-  border: 1px solid var(--hairline);
+/* The payment panel: a quiet, bank-like frame around Banquest's hosted
+   card fields, with the trust signals a donor expects to see. */
+.pay-panel {
+  border: 1px solid var(--rule);
   background: var(--surface);
-  padding: 16px;
-  margin: 0 0 26px;
+  margin-top: 30px;
+}
+.pay-panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+.pay-panel__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.pay-panel__label svg {
+  color: var(--bronze);
+}
+.pay-panel__secure {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.pay-panel__body {
+  padding: 18px;
+}
+.pay-panel__summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+.pay-panel__summary > span:first-child {
+  font-size: 14px;
+  color: var(--muted);
+}
+.pay-panel__amount {
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.pay-panel__brands {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 14px;
+}
+.pay-panel__trust {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--faint);
+  margin-top: 12px;
+}
+.pay-panel__trust svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--bronze);
+}
+
+.card-fields {
+  position: relative;
+  min-height: 178px;
+  margin: 0 0 14px;
 }
 .card-fields--hidden {
   display: none;
 }
 .card-fields__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--surface);
   color: var(--faint);
-  font-size: 13px;
-  margin: 8px 0 0;
+  font-size: 13.5px;
+}
+.card-fields__spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--bronze-lt);
+  border-top-color: var(--bronze);
+  border-radius: 50%;
+  animation: pay-spin 0.9s linear infinite;
+}
+@keyframes pay-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-fields__spinner {
+    animation: none;
+  }
 }
 
 .fineprint {
