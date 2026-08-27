@@ -21,7 +21,6 @@ export default function CheckoutExperience({
   banquestEnvironment,
   checkoutReady,
   turnstileSiteKey,
-  testPayment = false,
 }: {
   itemId: string;
   amount: number;
@@ -31,7 +30,6 @@ export default function CheckoutExperience({
   banquestEnvironment: "sandbox" | "production";
   checkoutReady: boolean;
   turnstileSiteKey: string;
-  testPayment?: boolean;
 }) {
   const [state, setState] = useState<HoldState>({ kind: "loading" });
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -109,7 +107,6 @@ export default function CheckoutExperience({
           tokenizationKey={tokenizationKey}
           banquestEnvironment={banquestEnvironment}
           checkoutReady={checkoutReady}
-          testPayment={testPayment}
         />
       </div>
     </>

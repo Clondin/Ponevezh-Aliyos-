@@ -80,7 +80,6 @@ export const KIBBUD_HE: Record<string, string> = {
   "kol-hanearim": "כל הנערים",
   "chasan-torah": "חתן תורה",
   "chasan-bereishis": "חתן בראשית",
-  "production-test": "בדיקת תשלום",
 };
 
 export function kibbudHe(slug: string, fallback: string): string {

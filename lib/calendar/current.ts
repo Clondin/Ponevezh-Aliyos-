@@ -6,11 +6,6 @@ import type {
   OccasionSlug,
 } from "@/contracts/types";
 import generatedCatalog from "@/lib/calendar/generated/catalog-5787.json";
-import {
-  isProductionTestItem,
-  PRODUCTION_TEST_AMOUNT,
-  PRODUCTION_TEST_ITEM,
-} from "@/lib/production-test";
 
 const catalog = generatedCatalog as unknown as Catalog;
 
@@ -19,7 +14,6 @@ export function currentCatalog(): Catalog {
 }
 
 export function currentKibbud(kibbudId: string): Kibbud | undefined {
-  if (isProductionTestItem(kibbudId)) return PRODUCTION_TEST_ITEM;
   return catalog.items.find((item) => item.id === kibbudId);
 }
 
@@ -38,7 +32,6 @@ export function currentItems(minyan: string, occasion: string): Kibbud[] {
 }
 
 export function currentPrice(item: Kibbud): number {
-  if (isProductionTestItem(item)) return PRODUCTION_TEST_AMOUNT;
   const minyan = currentMinyan(item.minyan);
   if (!minyan) throw new Error(`Unknown minyan ${item.minyan}`);
   return catalog.prices[minyan.level][item.tier];

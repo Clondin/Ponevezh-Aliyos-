@@ -5,11 +5,6 @@ import { minyanAvailability, minyanFromPrice } from "@/lib/availability";
 import { HEADING_HE, MINYAN_HE, OCCASION_HE } from "@/lib/hebrew";
 import { shortDate, usd } from "@/lib/format";
 import { withBasePath } from "@/lib/site-paths";
-import {
-  PRODUCTION_TEST_AMOUNT,
-  PRODUCTION_TEST_ITEM,
-} from "@/lib/production-test";
-import { getRepository } from "@/lib/storage/repository";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +37,6 @@ export default async function HomePage() {
       ] as const)
     )
   );
-  const [testStatus] = await getRepository().statuses([PRODUCTION_TEST_ITEM.id]);
 
   return (
     <>
@@ -207,23 +201,6 @@ export default async function HomePage() {
           <Link href="/about" className="facade__link">
             About the Yeshiva <span aria-hidden="true">&rarr;</span>
           </Link>
-        </div>
-      </section>
-
-      <section className="container" style={{ padding: "32px 40px 72px" }} aria-label="Production payment test">
-        <div className="production-test-card">
-          <div>
-            <div className="micro">Production checkout test</div>
-            <h2>{usd(PRODUCTION_TEST_AMOUNT)} test payment</h2>
-            <p>Verify the live Banquest payment and Admire record before launch.</p>
-          </div>
-          {testStatus?.state === "sold" || testStatus?.state === "pending" ? (
-            <span className="production-test-card__status">Test submitted</span>
-          ) : (
-            <Link href="/ponevez-yeshiva/test-payment" className="btn btn--sm btn--fill">
-              Run test
-            </Link>
-          )}
         </div>
       </section>
     </>
