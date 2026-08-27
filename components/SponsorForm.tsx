@@ -48,6 +48,7 @@ interface SponsorFormProps {
   tokenizationKey: string;
   banquestEnvironment: "sandbox" | "production";
   checkoutReady: boolean;
+  testPayment?: boolean;
 }
 
 function tokenizationScript(environment: "sandbox" | "production"): string {
@@ -72,6 +73,7 @@ export default function SponsorForm({
   tokenizationKey,
   banquestEnvironment,
   checkoutReady,
+  testPayment = false,
 }: SponsorFormProps) {
   const router = useRouter();
   const hostedTokenization = useRef<HostedTokenizationClient | null>(null);
@@ -86,7 +88,7 @@ export default function SponsorForm({
   const [honoreeEmail, setHonoreeEmail] = useState("");
   const [publicRecognition, setPublicRecognition] = useState(false);
   const [recognitionName, setRecognitionName] = useState("");
-  const [assignmentAccepted, setAssignmentAccepted] = useState(false);
+  const [assignmentAccepted, setAssignmentAccepted] = useState(testPayment);
   const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -208,7 +210,7 @@ export default function SponsorForm({
                 }
               : {}),
             publicRecognition,
-            assignmentAccepted,
+            assignmentAccepted: testPayment || assignmentAccepted,
             ...(publicRecognition
               ? { recognitionName: recognitionName.trim() || donorName }
               : {}),
@@ -250,8 +252,11 @@ export default function SponsorForm({
   return (
     <form onSubmit={onSubmit} aria-busy={submitting}>
       <div className="campaign-notice">
-        <span className="campaign-notice__step">Sponsorship details</span>
-        Reserved. Enter your details and pay <strong>{usd(amount)}</strong>.
+        <span className="campaign-notice__step">
+          {testPayment ? "Live checkout test" : "Sponsorship details"}
+        </span>
+        {testPayment ? "This is a real production charge of " : "Reserved. Enter your details and pay "}
+        <strong>{usd(amount)}</strong>.
       </div>
 
       <div className="field">
@@ -271,21 +276,23 @@ export default function SponsorForm({
         <input id="phone" type="tel" className="input" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" />
       </div>
 
-      <div className="field field--names">
-        <span className="field-label">Names for the Mi Shebeirach</span>
-        <div className="name-rows">
-          {names.map((name, index) => (
-            <div className="name-row" key={index}>
-              <input className="input input--hebrew" dir="rtl" lang="he" value={name} onChange={(event) => setName(index, event.target.value)} placeholder="פלוני בן פלונית" aria-label={`Name ${index + 1}`} />
-              {names.length > 1 ? (
-                <button type="button" className="name-row__remove" onClick={() => removeName(index)} aria-label={`Remove name ${index + 1}`}>&times;</button>
-              ) : null}
+      {!testPayment ? (
+        <>
+          <div className="field field--names">
+            <span className="field-label">Names for the Mi Shebeirach</span>
+            <div className="name-rows">
+              {names.map((name, index) => (
+                <div className="name-row" key={index}>
+                  <input className="input input--hebrew" dir="rtl" lang="he" value={name} onChange={(event) => setName(index, event.target.value)} placeholder="פלוני בן פלונית" aria-label={`Name ${index + 1}`} />
+                  {names.length > 1 ? (
+                    <button type="button" className="name-row__remove" onClick={() => removeName(index)} aria-label={`Remove name ${index + 1}`}>&times;</button>
+                  ) : null}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <button type="button" className="add-name" onClick={addName}>+ Add another name</button>
-        <div className="hint">Enter names exactly as they should be read. Hebrew is welcome.</div>
-      </div>
+            <button type="button" className="add-name" onClick={addName}>+ Add another name</button>
+            <div className="hint">Enter names exactly as they should be read. Hebrew is welcome.</div>
+          </div>
 
       <fieldset className="form-section">
         <legend className="field-label">Dedication <span className="label-optional">optional</span></legend>
@@ -328,10 +335,12 @@ export default function SponsorForm({
         ) : null}
       </div>
 
-      <div className="assignment-disclosure">
-        <p><strong>Aliyah assignment:</strong> The Yeshiva assigns aliyos to Roshei Yeshiva, Rabbanim, and congregants. Sponsorship does not guarantee that you will receive the aliyah. It guarantees a Mi Shebeirach for the names you provide.</p>
-        <label><input type="checkbox" required checked={assignmentAccepted} onChange={(event) => setAssignmentAccepted(event.target.checked)} /><span>I understand and agree.</span></label>
-      </div>
+          <div className="assignment-disclosure">
+            <p><strong>Aliyah assignment:</strong> The Yeshiva assigns aliyos to Roshei Yeshiva, Rabbanim, and congregants. Sponsorship does not guarantee that you will receive the aliyah. It guarantees a Mi Shebeirach for the names you provide.</p>
+            <label><input type="checkbox" required checked={assignmentAccepted} onChange={(event) => setAssignmentAccepted(event.target.checked)} /><span>I understand and agree.</span></label>
+          </div>
+        </>
+      ) : null}
 
       <span className="field-label">Credit card</span>
       <div className="card-fields">

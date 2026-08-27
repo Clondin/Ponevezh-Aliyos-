@@ -1,7 +1,8 @@
 import Link from "next/link";
 import React from "react";
 import type { Metadata } from "next";
-import { getCatalog, getMinyan, getOccasion, priceForKibbud } from "@/lib/catalog";
+import { getMinyan, getOccasion } from "@/lib/catalog";
+import { currentKibbud, currentPrice } from "@/lib/calendar/current";
 import { kibbudHe } from "@/lib/hebrew";
 import { usd } from "@/lib/format";
 import { getRepository } from "@/lib/storage/repository";
@@ -23,7 +24,7 @@ export default async function ConfirmationPage({
   }>;
 }) {
   const { item: itemId, method, key, pledge: pledgeId } = await searchParams;
-  const item = getCatalog().items.find((i) => i.id === itemId);
+  const item = itemId ? currentKibbud(itemId) : undefined;
   const m = item ? getMinyan(item.minyan) : undefined;
   const o = item ? getOccasion(item.occasion) : undefined;
   const isWire = method === "wire";
@@ -51,7 +52,7 @@ export default async function ConfirmationPage({
   const unsuccessful = checkout?.status === "released" || checkout?.status === "reversed";
   const donor = order?.donorName ?? checkout?.donorName ?? pledge?.donorName;
   const amount = order?.amount ?? checkout?.amount ?? pledge?.amount ??
-    (item ? priceForKibbud(item) : 0);
+    (item ? currentPrice(item) : 0);
 
   return (
     <div className="confirm">

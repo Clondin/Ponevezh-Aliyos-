@@ -17,7 +17,15 @@ import { GET as stateGet } from "../app/api/state/[minyan]/[occasion]/route";
 import { POST as webhookPost } from "../app/api/webhook/banquest/route";
 import { POST as pledgeConfirmPost } from "../app/api/admin/pledge/[id]/confirm/route";
 import ConfirmationPage from "../app/(site)/confirmation/page";
-import { cardPaymentPayload } from "../lib/api/validation";
+import {
+  cardPaymentPayload,
+  requireKibbud,
+  trustedAmount,
+} from "../lib/api/validation";
+import {
+  PRODUCTION_TEST_AMOUNT,
+  PRODUCTION_TEST_ITEM,
+} from "../lib/production-test";
 
 process.env.BANQUEST_WEBHOOK_SIGNATURE = "banquest-contract-signature";
 process.env.BANQUEST_SOURCE_KEY = "sandbox-source-key";
@@ -56,12 +64,77 @@ assert.throws(
   /acknowledge the aliyah assignment terms/
 );
 
+assert.equal(requireKibbud(PRODUCTION_TEST_ITEM.id).name, "Production Payment Test");
+assert.equal(trustedAmount(requireKibbud(PRODUCTION_TEST_ITEM.id)), PRODUCTION_TEST_AMOUNT);
+
 const jsonRequest = (url: string, body: unknown, headers: HeadersInit = {}) =>
   new Request(url, {
     method: "POST",
     headers: { "content-type": "application/json", ...headers },
     body: JSON.stringify(body),
   });
+
+// The production test item is isolated from the generated catalog but uses the
+// same hold, trusted-price, charge, confirmation, and storage pipeline.
+const productionTestHoldResponse = await holdPost(
+  jsonRequest("http://localhost:3110/api/hold", { kibbudId: PRODUCTION_TEST_ITEM.id })
+);
+assert.equal(productionTestHoldResponse.status, 200);
+const productionTestCookie =
+  productionTestHoldResponse.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+setBanquestFetchForTests((async (_input, init) => {
+  const requestBody = JSON.parse(String(init?.body)) as {
+    amount: number;
+    custom_fields: { custom2: string };
+  };
+  assert.equal(requestBody.amount, PRODUCTION_TEST_AMOUNT);
+  assert.equal(requestBody.custom_fields.custom2, PRODUCTION_TEST_ITEM.id);
+  return Response.json({
+    status: "Approved",
+    status_code: "A",
+    reference_number: 10001,
+    transaction: { id: 10001 },
+  });
+}) as typeof fetch);
+const productionTestCheckoutResponse = await checkoutPost(
+  jsonRequest(
+    "http://localhost:3110/api/checkout",
+    {
+      kibbudId: PRODUCTION_TEST_ITEM.id,
+      donorName: "Production Test Donor",
+      email: "production-test@example.com",
+      misheberachNames: [],
+      assignmentAccepted: true,
+      payment: {
+        nonce: "productionTestNonce123",
+        expiryMonth: 12,
+        expiryYear: 2030,
+      },
+    },
+    { cookie: productionTestCookie }
+  )
+);
+assert.equal(productionTestCheckoutResponse.status, 200);
+const productionTestCheckout = (await productionTestCheckoutResponse.json()) as {
+  paymentId: string;
+  status: string;
+};
+assert.equal(productionTestCheckout.status, "sold");
+assert.deepEqual(await getRepository().statuses([PRODUCTION_TEST_ITEM.id]), [
+  { id: PRODUCTION_TEST_ITEM.id, state: "sold" },
+]);
+const productionTestConfirmation = renderToStaticMarkup(
+  await ConfirmationPage({
+    searchParams: Promise.resolve({
+      item: PRODUCTION_TEST_ITEM.id,
+      method: "card",
+      key: productionTestCheckout.paymentId,
+    }),
+  })
+);
+assert.match(productionTestConfirmation, /Production Payment Test/);
+assert.match(productionTestConfirmation, /\$1/);
+setBanquestFetchForTests(undefined);
 
 const heldItem = "grodna/rh-1/kohen";
 const holdResponse = await holdPost(

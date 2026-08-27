@@ -904,6 +904,38 @@ img {
   font-size: 16px;
 }
 
+.production-test-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  width: min(100%, 620px);
+  margin-top: 28px;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--bronze);
+}
+.production-test-card h2 {
+  margin-top: 5px;
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--ink);
+}
+.production-test-card p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.production-test-card__status {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bronze);
+}
+
 /* ---- occasion head: title + availability ---- */
 
 .head-split {
@@ -2055,6 +2087,13 @@ a.kibbud-card--very-special:hover {
     flex-direction: column;
     align-items: flex-start;
     gap: 18px;
+  }
+  .production-test-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .production-test-card .btn {
+    width: 100%;
   }
   .btn {
     padding: 15px 26px;
