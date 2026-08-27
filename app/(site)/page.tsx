@@ -77,6 +77,24 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="intro band" aria-label="About sponsoring a kibbud">
+        <div className="container container--narrow intro__inner">
+          <div className="eyebrow">Ponevez Yeshiva</div>
+          <div className="intro__he" lang="he">
+            קול התורה מפוניבז׳
+          </div>
+          <h2 className="intro__title">A chelek in the avodah of these days</h2>
+          <p className="intro__body">
+            For generations, the tefillos of the Yomim Noraim have risen from
+            the beis medrash of Ponevez — the kol Torah of thousands, carried
+            before the Kisei HaKavod. Sponsoring a kibbud gives your family a
+            chelek in that avodah: the honor is given in your name, and your Mi
+            Shebeirach is said from the bimah, on the day the gates of tefillah
+            are open widest.
+          </p>
+        </div>
+      </section>
+
       <section id="minyanim" className="container" style={{ padding: "88px 40px" }}>
         <SectionHeading he={HEADING_HE.chooseMinyan}>Choose a minyan</SectionHeading>
         <div className="minyan-grid">

@@ -522,6 +522,41 @@ img {
   letter-spacing: 0;
 }
 
+/* ---- home: intro band ---- */
+
+.intro__inner {
+  padding: 76px 40px;
+  text-align: center;
+}
+.intro .eyebrow {
+  display: block;
+  margin-bottom: 20px;
+}
+.intro__he {
+  font-family: var(--hebrew);
+  direction: rtl;
+  font-size: 40px;
+  line-height: 1.2;
+  color: var(--bronze);
+  margin-bottom: 14px;
+}
+.intro__title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 22px;
+}
+.intro__body {
+  max-width: 60ch;
+  margin: 0 auto;
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--body);
+  text-wrap: pretty;
+}
+
 /* ---- home: minyan cards ---- */
 
 .minyan-grid {
@@ -2241,6 +2276,10 @@ a.kibbud-card--very-special:hover {
 }
 
 @media (max-width: 560px) {
+  .intro__inner { padding: 54px 24px; }
+  .intro__he { font-size: 32px; }
+  .intro__title { font-size: 26px; }
+  .intro__body { font-size: 16px; line-height: 1.75; }
   .site-header__inner { height: 74px; gap: 14px; }
   .site-header__mark { font-size: 17px; letter-spacing: 0.22em; }
   .site-header__donate { padding: 9px 12px; }
