@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { withBasePath } from "@/lib/site-paths";
 import type { Metadata } from "next";
+import AdminNav from "@/components/AdminNav";
 
 export const metadata: Metadata = {
   title: { default: "Office", template: "%s — Ponevez Office" },
@@ -14,22 +13,7 @@ export default function AdminLayout({
 }) {
   return (
     <>
-      <div className="admin-bar no-print">
-        <div className="container admin-bar__inner">
-          <span className="brand">PONEVEZ &middot; Office</span>
-          <Link href="/admin">Overview</Link>
-          <Link href="/admin/orders">Orders</Link>
-          <Link href="/admin/pledges">Payments</Link>
-          <Link href="/admin/sold">Summary</Link>
-          <Link href="/admin/activity">History</Link>
-          <span style={{ marginLeft: "auto" }}>
-            <Link href="/">&larr; Donor site</Link>
-          </span>
-          <form action={withBasePath("/api/admin/logout")} method="post">
-            <button className="admin-logout" type="submit">Log out</button>
-          </form>
-        </div>
-      </div>
+      <AdminNav />
       <main>{children}</main>
     </>
   );

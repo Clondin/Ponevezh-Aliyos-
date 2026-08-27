@@ -39,5 +39,18 @@ export default async function OrdersPage() {
       status: order.status ?? "paid",
     };
   }));
-  return <section className="admin-section"><div className="container"><h1 className="admin-title">Orders</h1><p className="admin-sub">Search donors, payments, and Admire records.</p><AdminOrdersTable rows={rows} /></div></section>;
+  return (
+    <section className="admin-section">
+      <div className="container">
+        <div className="admin-head">
+          <div>
+            <div className="admin-eyebrow">Ponevez Office</div>
+            <h1 className="admin-title">Orders</h1>
+            <p className="admin-sub">Search donors, payments, and Admire records.</p>
+          </div>
+        </div>
+        <AdminOrdersTable rows={rows} />
+      </div>
+    </section>
+  );
 }

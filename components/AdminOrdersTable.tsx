@@ -35,14 +35,12 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
       return matchesMethod && (!needle || haystack.includes(needle));
     });
   }, [method, query, rows]);
-  const admireLabel = (status: AdminOrderRow["admireStatus"]) =>
-    status === "synced"
-      ? "Synced"
-      : status === "queued"
-        ? "Waiting"
-        : status === "failed"
-          ? "Retrying"
-          : "Not queued";
+  const admireBadge = (status: AdminOrderRow["admireStatus"]) => {
+    if (status === "synced") return { cls: "status status--ok", label: "Synced" };
+    if (status === "queued") return { cls: "status status--warn", label: "Waiting" };
+    if (status === "failed") return { cls: "status status--bad", label: "Retrying" };
+    return { cls: "status status--muted", label: "Not queued" };
+  };
 
   return (
     <>
@@ -70,8 +68,25 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                 <td><strong>{row.id}</strong><div className="muted">{formatDateTime(row.createdAt)}</div></td>
                 <td><strong>{row.itemName}</strong><div className="muted">{row.occasionName} · {row.minyanName}</div>{row.dedication ? <div>{row.dedication}</div> : null}</td>
                 <td><strong>{row.donorName}</strong><div><a href={`mailto:${row.email}`}>{row.email}</a></div>{row.phone ? <div><a href={`tel:${row.phone}`}>{row.phone}</a></div> : null}<div className="muted">{row.assignmentAcceptedAt ? `Terms accepted ${formatDateTime(row.assignmentAcceptedAt)}` : "No acceptance date"}</div></td>
-                <td><strong>{usd(row.amount)}</strong>{row.status === "refunded" ? <div className="badge badge--pending">Refunded</div> : null}<div className="muted">{row.method === "card" ? "Credit card" : "Office confirmed"}</div><div className="muted">Payment reference: {row.gatewayTransactionId ?? row.gatewayReference ?? "—"}</div></td>
-                <td><span className={`badge${row.admireStatus !== "synced" ? " badge--pending" : ""}`}>{admireLabel(row.admireStatus)}</span></td>
+                <td>
+                  <strong>{usd(row.amount)}</strong>
+                  {row.status === "refunded" ? (
+                    <div style={{ marginTop: 8 }}>
+                      <span className="status status--bad">Refunded</span>
+                    </div>
+                  ) : null}
+                  <div className="muted">
+                    {row.method === "card" ? "Credit card" : "Office confirmed"}
+                  </div>
+                  <div className="muted">
+                    Payment reference: {row.gatewayTransactionId ?? row.gatewayReference ?? "—"}
+                  </div>
+                </td>
+                <td>
+                  <span className={admireBadge(row.admireStatus).cls}>
+                    {admireBadge(row.admireStatus).label}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
