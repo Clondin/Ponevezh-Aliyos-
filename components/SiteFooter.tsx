@@ -23,7 +23,6 @@ export default function SiteFooter() {
           <div className="site-footer__links">
             <Link href="/">Kibbudim</Link>
             <Link href="/find">Find a kibbud</Link>
-            <Link href="/sponsors">With gratitude</Link>
             <Link href="/about">About the Yeshiva</Link>
             <Link href="/admin">Office</Link>
           </div>

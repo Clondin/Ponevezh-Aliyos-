@@ -47,10 +47,6 @@ export const PHOTOS = {
     key: "find-overview",
     alt: "The full beis medrash seen from above, every shtender occupied",
   },
-  "sponsors-tefillah": {
-    key: "sponsors-tefillah",
-    alt: "The beis medrash standing in tefillah before the aron kodesh",
-  },
   "basket-seforim": {
     key: "basket-seforim",
     alt: "Stacks of well-worn seforim piled on the beis medrash tables",

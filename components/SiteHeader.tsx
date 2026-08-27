@@ -19,7 +19,6 @@ export default function SiteHeader() {
           <nav aria-label="Mobile">
             <Link href="/">Kibbudim</Link>
             <Link href="/find">Find a kibbud</Link>
-            <Link href="/sponsors">With gratitude</Link>
             <Link href="/about">The Yeshiva</Link>
             <Link href="/contact">Contact</Link>
           </nav>

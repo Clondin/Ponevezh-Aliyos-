@@ -5,7 +5,7 @@ import { publicSiteUrl } from "@/lib/site-url";
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = publicSiteUrl();
   const catalog = getCatalog();
-  const staticPaths = ["", "/find", "/about", "/contact", "/privacy", "/terms", "/refunds", "/sponsors"];
+  const staticPaths = ["", "/find", "/about", "/contact", "/privacy", "/terms", "/refunds"];
   const minyanPaths = catalog.minyanim.map((minyan) => `/${minyan.slug}`);
   const occasionPaths = catalog.minyanim.flatMap((minyan) =>
     catalog.occasions

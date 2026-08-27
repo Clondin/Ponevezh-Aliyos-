@@ -84,8 +84,6 @@ export default function SponsorForm({
   const [dedicationName, setDedicationName] = useState("");
   const [dedicationMessage, setDedicationMessage] = useState("");
   const [honoreeEmail, setHonoreeEmail] = useState("");
-  const [publicRecognition, setPublicRecognition] = useState(false);
-  const [recognitionName, setRecognitionName] = useState("");
   const [assignmentAccepted, setAssignmentAccepted] = useState(false);
   const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -207,11 +205,7 @@ export default function SponsorForm({
                   ...(honoreeEmail.trim() ? { honoreeEmail: honoreeEmail.trim() } : {}),
                 }
               : {}),
-            publicRecognition,
             assignmentAccepted,
-            ...(publicRecognition
-              ? { recognitionName: recognitionName.trim() || donorName }
-              : {}),
             payment: {
               nonce: token.nonce,
               expiryMonth,
@@ -314,19 +308,6 @@ export default function SponsorForm({
           </div>
         ) : null}
       </fieldset>
-
-      <div className="recognition-option">
-        <label>
-          <input type="checkbox" checked={publicRecognition} onChange={(event) => setPublicRecognition(event.target.checked)} />
-          <span><strong>Show my name on the sponsor page</strong><small>Your email and Mi Shebeirach names stay private.</small></span>
-        </label>
-        {publicRecognition ? (
-          <div className="field">
-            <label htmlFor="recognition-name">Display name</label>
-            <input id="recognition-name" className="input" value={recognitionName} onChange={(event) => setRecognitionName(event.target.value)} placeholder={donorName || "Family or sponsor name"} />
-          </div>
-        ) : null}
-      </div>
 
       <div className="assignment-disclosure">
         <p><strong>Aliyah assignment:</strong> The Yeshiva assigns aliyos to Roshei Yeshiva, Rabbanim, and congregants. Sponsorship does not guarantee that you will receive the aliyah. It guarantees a Mi Shebeirach for the names you provide.</p>
