@@ -57,6 +57,26 @@ function tokenizationScript(environment: "sandbox" | "production"): string {
     : "https://tokenization.sandbox.banquestgateway.com/tokenization/v0.3";
 }
 
+const FIELD_STYLE =
+  "font-size: 16px; padding: 12px 14px; border: 1px solid #d8d2c7; border-radius: 0; background: #ffffff; color: #1a1815;";
+
+function LockIcon({ size = 13 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <rect x="3" y="7" width="10" height="7" rx="0.5" />
+      <path d="M5 7V5a3 3 0 0 1 6 0v2" />
+    </svg>
+  );
+}
+
 function tokenizationMessage(error: unknown): string {
   if (error && typeof error === "object" && "fieldErrors" in error) {
     return "Check the highlighted card details and try again.";
@@ -107,15 +127,19 @@ export default function SponsorForm({
           showZip: true,
           requireCvv2: true,
           showFieldErrors: true,
+          // Matched to the site's "Vault Light" tokens: ink text, --rule
+          // borders, square corners, uppercase micro labels.
           styles: {
-            container: "font-family: Arial, sans-serif; color: #211f1b;",
-            card: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
-            expiryMonth: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
-            expiryYear: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
-            cvv2: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
-            avsZip: "font-size: 16px; padding: 12px; border: 1px solid #c8c0b4;",
-            labels: "font-size: 12px; font-weight: 600; color: #655f56;",
-            fieldErrors: "font-size: 12px; color: #9d2b22;",
+            container:
+              "font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; color: #1a1815;",
+            card: FIELD_STYLE,
+            expiryMonth: FIELD_STYLE,
+            expiryYear: FIELD_STYLE,
+            cvv2: FIELD_STYLE,
+            avsZip: FIELD_STYLE,
+            labels:
+              "font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #625d55; margin-bottom: 6px;",
+            fieldErrors: "font-size: 12.5px; color: #8b2f2d;",
           },
         });
         hostedTokenization.current = client;
@@ -342,22 +366,60 @@ export default function SponsorForm({
         </>
       ) : null}
 
-      <span className="field-label">Credit card</span>
-      <div className="card-fields">
-        {checkoutReady ? <div id="banquest-card-fields" /> : null}
-        {checkoutReady && !cardReady ? (
-          <p className="card-fields__loading" role="status">Loading secure card fields&hellip;</p>
-        ) : null}
-        {!checkoutReady ? (
-          <p className="form-error" role="alert">Online card payment is being configured. Please try again shortly.</p>
-        ) : null}
-      </div>
+      <section className="pay-panel" aria-label="Payment">
+        <div className="pay-panel__head">
+          <span className="pay-panel__label">
+            <LockIcon /> Payment
+          </span>
+          <span className="pay-panel__secure">Secured by Banquest</span>
+        </div>
+        <div className="pay-panel__body">
+          <div className="pay-panel__summary">
+            <span>
+              {testPayment
+                ? "Live checkout test"
+                : isCombined
+                  ? "Selected kibbudim"
+                  : "Kibbud sponsorship"}
+            </span>
+            <span className="pay-panel__amount">{usd(amount)}</span>
+          </div>
 
-      <button type="submit" className="btn btn--fill btn--block" disabled={submitting || !cardReady}>
-        {submitting ? "Processing payment…" : `Pay ${usd(amount)}`}
-      </button>
-      {error ? <p className="form-error" role="alert">{error}</p> : null}
-      <p className="fineprint">Card details are collected securely by Banquest and never pass through this website.</p>
+          <div className="card-fields">
+            {checkoutReady ? <div id="banquest-card-fields" /> : null}
+            {checkoutReady && !cardReady ? (
+              <div className="card-fields__loading" role="status">
+                <span className="card-fields__spinner" aria-hidden="true" />
+                Loading secure card fields&hellip;
+              </div>
+            ) : null}
+            {!checkoutReady ? (
+              <p className="form-error" role="alert">Online card payment is being configured. Please try again shortly.</p>
+            ) : null}
+          </div>
+
+          <div className="pay-panel__brands">
+            Visa &middot; Mastercard &middot; American Express &middot; Discover
+          </div>
+
+          <button type="submit" className="btn btn--fill btn--block" disabled={submitting || !cardReady}>
+            {submitting ? "Processing payment…" : `Pay ${usd(amount)}`}
+          </button>
+          {error ? <p className="form-error" role="alert">{error}</p> : null}
+          <p className="pay-panel__trust">
+            <LockIcon size={12} />
+            <span>
+              Encrypted connection. Your card details are entered in
+              Banquest&rsquo;s secure fields and never pass through this
+              website.
+            </span>
+          </p>
+        </div>
+      </section>
+      <p className="fineprint">
+        Contributions are processed for American Friends of Ponevez Yeshiva in
+        Israel, Inc., a 501(c)(3) organization. A receipt is emailed to you.
+      </p>
     </form>
   );
 }
