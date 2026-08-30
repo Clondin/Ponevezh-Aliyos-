@@ -1141,6 +1141,12 @@ a.kibbud-card--very-special:hover {
 .field {
   margin-bottom: 24px;
 }
+/* Paired short fields (first/last name) share one row. */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+}
 .field--names {
   margin-bottom: 30px;
 }
@@ -1237,6 +1243,7 @@ a.kibbud-card--very-special:hover {
    card fields, with the trust signals a donor expects to see. */
 .pay-panel {
   border: 1px solid var(--rule);
+  border-top: 2px solid var(--bronze);
   background: var(--surface);
   margin-top: 30px;
 }
@@ -1293,14 +1300,6 @@ a.kibbud-card--very-special:hover {
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
-.pay-panel__brands {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--faint);
-  margin-bottom: 14px;
-}
 .pay-panel__trust {
   display: flex;
   justify-content: center;
@@ -1317,38 +1316,112 @@ a.kibbud-card--very-special:hover {
   color: var(--bronze);
 }
 
+/* "Card details" caption with the accepted brand marks on its right. */
+.card-fields__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.card-fields__caption {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.card-brands {
+  display: inline-flex;
+  gap: 6px;
+}
+.card-brand {
+  display: inline-flex;
+  width: 40px;
+  height: 26px;
+  border: 1px solid var(--hairline);
+  background: #fff;
+  overflow: hidden;
+}
+.card-brand svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .card-fields {
   position: relative;
   min-height: 178px;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
 }
 .card-fields__loading {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
   background: var(--surface);
-  color: var(--faint);
-  font-size: 13.5px;
 }
-.card-fields__spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--bronze-lt);
-  border-top-color: var(--bronze);
-  border-radius: 50%;
-  animation: pay-spin 0.9s linear infinite;
+
+/* Skeleton shaped like the hosted fields: number row, then
+   expiry / CVV / ZIP, shimmering quietly until the iframe is ready. */
+.card-skeleton__label {
+  height: 10px;
+  width: 88px;
+  margin-bottom: 8px;
+}
+.card-skeleton__input {
+  height: 44px;
+}
+.card-skeleton__label,
+.card-skeleton__input {
+  background: linear-gradient(
+    100deg,
+    var(--paper) 40%,
+    #efece5 50%,
+    var(--paper) 60%
+  );
+  background-size: 200% 100%;
+  animation: card-shimmer 1.6s ease-in-out infinite;
+}
+.card-skeleton__row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.card-skeleton__row .card-skeleton__label {
+  width: 60%;
+}
+@keyframes card-shimmer {
+  from { background-position: 120% 0; }
+  to { background-position: -80% 0; }
 }
 @keyframes pay-spin {
   to { transform: rotate(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .card-fields__spinner {
+  .card-skeleton__label,
+  .card-skeleton__input {
     animation: none;
   }
+  .btn__spinner {
+    animation: none;
+  }
+}
+
+.btn--pay {
+  gap: 10px;
+}
+.btn--pay svg {
+  flex: none;
+  margin-top: -1px;
+}
+.btn__spinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: var(--surface);
+  border-radius: 50%;
+  animation: pay-spin 0.8s linear infinite;
 }
 
 .fineprint {
@@ -2382,6 +2455,7 @@ a.kibbud-card--very-special:hover {
   }
   .finder-search { grid-column: auto; }
   .segmented-control { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
   .share-actions { justify-content: stretch; }
   .share-actions .btn { flex: 1; }
   .site-footer__legal-row { flex-direction: column; gap: 8px; }
