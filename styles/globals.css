@@ -1350,10 +1350,17 @@ a.kibbud-card--very-special:hover {
   display: block;
 }
 
+/* Banquest's iframe fills #banquest-card-fields (100% × 100%), so the
+   container height must exactly fit the grid the hosted styles build:
+   two 47px rows + 14px row gap + 4px breathing room = 112px. Keep in
+   sync with HOSTED_FIELD_STYLES in components/SponsorForm.tsx. */
 .card-fields {
   position: relative;
-  min-height: 178px;
+  min-height: 112px;
   margin: 0 0 16px;
+}
+#banquest-card-fields {
+  height: 112px;
 }
 .card-fields__loading {
   position: absolute;
@@ -1361,18 +1368,10 @@ a.kibbud-card--very-special:hover {
   background: var(--surface);
 }
 
-/* Skeleton shaped like the hosted fields: number row, then
+/* Skeleton mirroring the hosted layout: card number row, then
    expiry / CVV / ZIP, shimmering quietly until the iframe is ready. */
-.card-skeleton__label {
-  height: 10px;
-  width: 88px;
-  margin-bottom: 8px;
-}
 .card-skeleton__input {
-  height: 44px;
-}
-.card-skeleton__label,
-.card-skeleton__input {
+  height: 47px;
   background: linear-gradient(
     100deg,
     var(--paper) 40%,
@@ -1384,12 +1383,9 @@ a.kibbud-card--very-special:hover {
 }
 .card-skeleton__row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.15fr 0.85fr 1fr;
   gap: 12px;
-  margin-top: 16px;
-}
-.card-skeleton__row .card-skeleton__label {
-  width: 60%;
+  margin-top: 14px;
 }
 @keyframes card-shimmer {
   from { background-position: 120% 0; }
@@ -1399,7 +1395,6 @@ a.kibbud-card--very-special:hover {
   to { transform: rotate(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .card-skeleton__label,
   .card-skeleton__input {
     animation: none;
   }
