@@ -57,7 +57,11 @@ function tokenizationScript(environment: "sandbox" | "production"): string {
 }
 
 const FIELD_STYLE =
-  "font-size: 16px; padding: 12px 14px; border: 1px solid #d8d2c7; border-radius: 0; background: #ffffff; color: #1a1815;";
+  "box-sizing: border-box; font-size: 16px; line-height: 1.4; width: 100%; padding: 12px 14px; border: 1px solid #d8d2c7; border-radius: 0; background: #ffffff; color: #1a1815; box-shadow: none; transition: border-color 0.15s ease;";
+
+// Card number reads best as evenly spaced tabular digits.
+const CARD_FIELD_STYLE =
+  FIELD_STYLE + " font-variant-numeric: tabular-nums; letter-spacing: 0.04em;";
 
 function LockIcon({ size = 13 }: { size?: number }) {
   return (
@@ -73,6 +77,107 @@ function LockIcon({ size = 13 }: { size?: number }) {
       <rect x="3" y="7" width="10" height="7" rx="0.5" />
       <path d="M5 7V5a3 3 0 0 1 6 0v2" />
     </svg>
+  );
+}
+
+/* Accepted card brand marks, drawn inline so they stay crisp at chip
+   size. Wrapped in one labelled row; the drawings are decorative. */
+function CardBrands() {
+  return (
+    <span
+      className="card-brands"
+      role="img"
+      aria-label="We accept Visa, Mastercard, American Express, and Discover"
+    >
+      <span className="card-brand" aria-hidden="true">
+        <svg viewBox="0 0 44 28">
+          <text
+            x="22"
+            y="18.5"
+            textAnchor="middle"
+            fontFamily="Helvetica, Arial, sans-serif"
+            fontSize="12.5"
+            fontStyle="italic"
+            fontWeight="700"
+            fill="#1a1f71"
+          >
+            VISA
+          </text>
+        </svg>
+      </span>
+      <span className="card-brand" aria-hidden="true">
+        <svg viewBox="0 0 44 28">
+          <circle cx="17" cy="14" r="9" fill="#eb001b" />
+          <circle cx="27" cy="14" r="9" fill="#f79e1b" />
+          <path
+            d="M22 6.55a9 9 0 0 1 0 14.9 9 9 0 0 1 0-14.9z"
+            fill="#ff5f00"
+          />
+        </svg>
+      </span>
+      <span className="card-brand" aria-hidden="true">
+        <svg viewBox="0 0 44 28">
+          <rect width="44" height="28" fill="#016fd0" />
+          <text
+            x="22"
+            y="17.5"
+            textAnchor="middle"
+            fontFamily="Helvetica, Arial, sans-serif"
+            fontSize="9"
+            fontWeight="700"
+            letterSpacing="0.6"
+            fill="#ffffff"
+          >
+            AMEX
+          </text>
+        </svg>
+      </span>
+      <span className="card-brand" aria-hidden="true">
+        <svg viewBox="0 0 44 28">
+          <path d="M12 28h32V15c-9 7.5-21 11.5-32 13z" fill="#f76b1c" />
+          <text
+            x="22"
+            y="13.5"
+            textAnchor="middle"
+            fontFamily="Helvetica, Arial, sans-serif"
+            fontSize="6.4"
+            fontWeight="700"
+            letterSpacing="0.4"
+            fill="#231f20"
+          >
+            DISCOVER
+          </text>
+        </svg>
+      </span>
+    </span>
+  );
+}
+
+/* Placeholder shaped like the hosted card fields, shown while
+   Banquest's secure iframe loads so the panel never jumps. */
+function CardFieldsSkeleton() {
+  return (
+    <div className="card-fields__loading" role="status">
+      <span className="sr-only">Loading secure card fields…</span>
+      <div className="card-skeleton" aria-hidden="true">
+        <div className="card-skeleton__label" />
+        <div className="card-skeleton__input" />
+        <div className="card-skeleton__row">
+          <div>
+            <div className="card-skeleton__label" />
+            <div className="card-skeleton__input" />
+          </div>
+          <div>
+            <div className="card-skeleton__label" />
+            <div className="card-skeleton__input" />
+          </div>
+          <div>
+            <div className="card-skeleton__label" />
+            <div className="card-skeleton__input" />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -128,14 +233,14 @@ export default function SponsorForm({
           styles: {
             container:
               "font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; color: #1a1815;",
-            card: FIELD_STYLE,
+            card: CARD_FIELD_STYLE,
             expiryMonth: FIELD_STYLE,
             expiryYear: FIELD_STYLE,
             cvv2: FIELD_STYLE,
             avsZip: FIELD_STYLE,
             labels:
               "font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #625d55; margin-bottom: 6px;",
-            fieldErrors: "font-size: 12.5px; color: #8b2f2d;",
+            fieldErrors: "font-size: 12.5px; color: #8b2f2d; margin-top: 5px;",
           },
         });
         hostedTokenization.current = client;
@@ -272,13 +377,15 @@ export default function SponsorForm({
         Reserved. Enter your details and pay <strong>{usd(amount)}</strong>.
       </div>
 
-      <div className="field">
-        <label htmlFor="first-name">First name</label>
-        <input id="first-name" className="input" required value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name" />
-      </div>
-      <div className="field">
-        <label htmlFor="last-name">Last name</label>
-        <input id="last-name" className="input" required value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" />
+      <div className="field-row">
+        <div className="field">
+          <label htmlFor="first-name">First name</label>
+          <input id="first-name" className="input" required value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name" />
+        </div>
+        <div className="field">
+          <label htmlFor="last-name">Last name</label>
+          <input id="last-name" className="input" required value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" />
+        </div>
       </div>
       <div className="field">
         <label htmlFor="email">Email</label>
@@ -351,25 +458,31 @@ export default function SponsorForm({
             <span className="pay-panel__amount">{usd(amount)}</span>
           </div>
 
+          <div className="card-fields__head">
+            <span className="card-fields__caption">Card details</span>
+            <CardBrands />
+          </div>
+
           <div className="card-fields">
             {checkoutReady ? <div id="banquest-card-fields" /> : null}
-            {checkoutReady && !cardReady ? (
-              <div className="card-fields__loading" role="status">
-                <span className="card-fields__spinner" aria-hidden="true" />
-                Loading secure card fields&hellip;
-              </div>
-            ) : null}
+            {checkoutReady && !cardReady ? <CardFieldsSkeleton /> : null}
             {!checkoutReady ? (
               <p className="form-error" role="alert">Online card payment is being configured. Please try again shortly.</p>
             ) : null}
           </div>
 
-          <div className="pay-panel__brands">
-            Visa &middot; Mastercard &middot; American Express &middot; Discover
-          </div>
-
-          <button type="submit" className="btn btn--fill btn--block" disabled={submitting || !cardReady}>
-            {submitting ? "Processing payment…" : `Pay ${usd(amount)}`}
+          <button type="submit" className="btn btn--fill btn--block btn--pay" disabled={submitting || !cardReady}>
+            {submitting ? (
+              <>
+                <span className="btn__spinner" aria-hidden="true" />
+                Processing payment&hellip;
+              </>
+            ) : (
+              <>
+                <LockIcon size={14} />
+                Pay {usd(amount)}
+              </>
+            )}
           </button>
           {error ? <p className="form-error" role="alert">{error}</p> : null}
           <p className="pay-panel__trust">
