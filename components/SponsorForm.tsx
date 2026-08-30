@@ -56,12 +56,42 @@ function tokenizationScript(environment: "sandbox" | "production"): string {
     : "https://tokenization.sandbox.banquestgateway.com/tokenization/v0.3";
 }
 
+/* Banquest's iframe fills its target container (width/height 100%) and
+   lays its fields out inline by default, so both the layout and the
+   height are ours to control. The styles below arrange the hosted form
+   as a grid — card number full-width, then expiry / CVV / ZIP on one
+   row — sized to exactly fit CARD_FIELDS_HEIGHT (see .card-fields in
+   globals.css: 2 × 47px rows + 14px row gap + 4px breathing room). */
+const IFRAME_FONT =
+  "font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;";
 const FIELD_STYLE =
-  "box-sizing: border-box; font-size: 16px; line-height: 1.4; width: 100%; padding: 12px 14px; border: 1px solid #d8d2c7; border-radius: 0; background: #ffffff; color: #1a1815; box-shadow: none; transition: border-color 0.15s ease;";
+  "box-sizing: border-box; display: block; width: 100%; height: 47px; margin: 0; " +
+  IFRAME_FONT +
+  " font-size: 16px; line-height: 21px; padding: 12px 14px; border: 1px solid #d8d2c7; border-radius: 0; background: #ffffff; color: #1a1815; font-variant-numeric: tabular-nums;";
+const EXPIRY_PART_STYLE =
+  "box-sizing: border-box; border: none; margin: 0; padding: 12px 2px; width: 2.4em; min-width: 0; flex: 1; " +
+  IFRAME_FONT +
+  " font-size: 16px; line-height: 21px; text-align: center; background: transparent; color: #1a1815; font-variant-numeric: tabular-nums;";
 
-// Card number reads best as evenly spaced tabular digits.
-const CARD_FIELD_STYLE =
-  FIELD_STYLE + " font-variant-numeric: tabular-nums; letter-spacing: 0.04em;";
+const HOSTED_FIELD_STYLES = {
+  container:
+    "box-sizing: border-box; display: grid; grid-template-columns: 1.15fr 0.85fr 1fr; gap: 14px 12px; align-items: start; " +
+    IFRAME_FONT +
+    " color: #1a1815;",
+  cardContainer: "grid-column: 1 / -1; display: block;",
+  card: FIELD_STYLE + " letter-spacing: 0.04em;",
+  // MM and YY render as one bordered box with a quiet separator.
+  expiryContainer:
+    "box-sizing: border-box; display: flex; align-items: center; height: 47px; border: 1px solid #d8d2c7; background: #ffffff; padding: 0 6px;",
+  expiryMonth: EXPIRY_PART_STYLE,
+  expirySeparator:
+    "display: inline-block; color: #a9a294; font-size: 15px; line-height: 1; padding: 0 1px; vertical-align: baseline;",
+  expiryYear: EXPIRY_PART_STYLE,
+  cvv2Container: "display: block;",
+  cvv2: FIELD_STYLE,
+  avsZipContainer: "display: block;",
+  avsZip: FIELD_STYLE,
+};
 
 function LockIcon({ size = 13 }: { size?: number }) {
   return (
@@ -153,37 +183,55 @@ function CardBrands() {
   );
 }
 
-/* Placeholder shaped like the hosted card fields, shown while
-   Banquest's secure iframe loads so the panel never jumps. */
+/* Placeholder mirroring the hosted layout — card number row, then
+   expiry / CVV / ZIP — shown while Banquest's secure iframe loads so
+   the panel never jumps. */
 function CardFieldsSkeleton() {
   return (
     <div className="card-fields__loading" role="status">
       <span className="sr-only">Loading secure card fields…</span>
-      <div className="card-skeleton" aria-hidden="true">
-        <div className="card-skeleton__label" />
+      <div aria-hidden="true">
         <div className="card-skeleton__input" />
         <div className="card-skeleton__row">
-          <div>
-            <div className="card-skeleton__label" />
-            <div className="card-skeleton__input" />
-          </div>
-          <div>
-            <div className="card-skeleton__label" />
-            <div className="card-skeleton__input" />
-          </div>
-          <div>
-            <div className="card-skeleton__label" />
-            <div className="card-skeleton__input" />
-          </div>
+          <div className="card-skeleton__input" />
+          <div className="card-skeleton__input" />
+          <div className="card-skeleton__input" />
         </div>
       </div>
     </div>
   );
 }
 
+/* With showFieldErrors off, the iframe reports which fields failed as
+   an array of keys; name them in the message shown under the button. */
+const FIELD_NAMES: Record<string, string> = {
+  card: "card number",
+  expiryMonth: "expiry date",
+  expiryYear: "expiry date",
+  cvv2: "security code (CVV)",
+  avsZip: "billing ZIP code",
+};
+
 function tokenizationMessage(error: unknown): string {
   if (error && typeof error === "object" && "fieldErrors" in error) {
-    return "Check the highlighted card details and try again.";
+    const fields = (error as { fieldErrors?: unknown }).fieldErrors;
+    if (Array.isArray(fields)) {
+      const names = [
+        ...new Set(
+          fields
+            .map((field) => FIELD_NAMES[String(field)])
+            .filter((name): name is string => Boolean(name))
+        ),
+      ];
+      if (names.length) {
+        const list =
+          names.length > 1
+            ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+            : names[0];
+        return `Check the ${list} and try again.`;
+      }
+    }
+    return "Check your card details and try again.";
   }
   return error instanceof Error && error.message
     ? error.message
@@ -227,21 +275,11 @@ export default function SponsorForm({
           target: "#banquest-card-fields",
           showZip: true,
           requireCvv2: true,
-          showFieldErrors: true,
-          // Matched to the site's "Vault Light" tokens: ink text, --rule
-          // borders, square corners, uppercase micro labels.
-          styles: {
-            container:
-              "font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; color: #1a1815;",
-            card: CARD_FIELD_STYLE,
-            expiryMonth: FIELD_STYLE,
-            expiryYear: FIELD_STYLE,
-            cvv2: FIELD_STYLE,
-            avsZip: FIELD_STYLE,
-            labels:
-              "font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #625d55; margin-bottom: 6px;",
-            fieldErrors: "font-size: 12.5px; color: #8b2f2d; margin-top: 5px;",
-          },
+          // The iframe's own error text is nowrap and overflows the
+          // narrow grid columns; errors surface in our styled message
+          // below the fields instead (see tokenizationMessage).
+          showFieldErrors: false,
+          styles: HOSTED_FIELD_STYLES,
         });
         hostedTokenization.current = client;
         client.on("ready", () => {
