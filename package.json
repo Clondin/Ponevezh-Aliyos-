@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3110",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
+    "build:next": "next build",
     "start": "next start -p 3110",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --keep-vars",
@@ -26,7 +27,7 @@
     "catalog:diff": "tsx scripts/catalog-diff.ts",
     "reconcile": "node --env-file-if-exists=.env.local --import tsx scripts/reconcile-banquest.ts"
   },
-  "dependencies": {
+  "dependencies": { 
     "@hebcal/core": "^6.9.2",
     "@hebcal/leyning": "^10.0.0",
     "@opennextjs/cloudflare": "^1.20.2",
